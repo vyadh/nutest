@@ -2,7 +2,9 @@
 use std assert
 
 # Usage:
+#   cd crates/nu-std
 #   nu -c "source bstest.nu; source <test-file>.nu; run-all-tests <test-file>.nu"
+#   nu -c "source std/testing/bstest.nu; source tests/testing_tests/test_discover.nu; run-all-tests tests/testing_tests/test_discover.nu"
 
 def run-all-tests [file: string] {
     let test_plan = (
@@ -14,7 +16,7 @@ def run-all-tests [file: string] {
             | str join ", "
     )
     let plan = $"run_tests [ ($test_plan) ]"
-    ^$nu.current-exe --commands $"source bstest.nu; source ($file); ($plan)"
+    ^$nu.current-exe --commands $"source std/testing/bstest.nu; source ($file); ($plan)"
 }
 
 def create_execution_plan [test: string] -> string {
