@@ -56,3 +56,54 @@ def discover-no-files [] {
   # todo remove in #[after-each]
   rm --recursive $temp
 }
+
+# [test]
+def discover-command-with-test-annotation [] {
+    let temp = mktemp --directory
+
+    "
+    #[test]
+    def test_foo [] { }
+    # [test]
+    def test_bar [] { }
+    " | save ($temp | path join "test_1.nu")
+
+    let result = testing list-tests $temp | sort
+
+    assert equal $result [
+      "test_foo"
+      "test_bar"
+    ]
+
+    # todo remove in #[after-each]
+    rm --recursive $temp
+}
+
+# [test]
+def discover-commands-with-test-annotation [] {
+    let temp = mktemp --directory
+
+    "
+    #[test]
+    def test_foo [] { }
+    # [test]
+    def test_bar [] { }
+    " | save ($temp | path join "test_1.nu")
+
+    "
+    # [test]
+    def test_baz [] { }
+    def test_qux [] { }
+    " | save ($temp | path join "test_2.nu")
+
+    let result = testing list-tests $temp | sort
+
+    assert equal $result [
+      "test_foo"
+      "test_bar"
+      "test_baz"
+    ]
+
+    # todo remove in #[after-each]
+    rm --recursive $temp
+}
