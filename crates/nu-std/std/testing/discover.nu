@@ -24,7 +24,7 @@ export def list-tests [file: string] -> list<string> {
     let tests = list-files $file $default_pattern
         | each { list-tests-internal $in }
 
-    print ($tests | table --expand)
+    #print ($tests | table --expand)
     $tests
 
 #    do {
@@ -32,32 +32,44 @@ export def list-tests [file: string] -> list<string> {
 #    }
 }
 
-def list-tests-internal [file: string] -> record {
+def list-tests-internal [file: string] -> record<path: string, tests<table<name: string, type: string>> {
     let query = test-query $file
     let result = (^$nu.current-exe --no-config-file --commands $query)
         | complete
 
-    print $result
 
     if $result.exit_code == 0 {
-        { name: $file, tests: ($result.stdout | from nuon) }
+        let tests = $result.stdout | from nuon
+        let result = {
+            path: $file,
+            tests: ($tests | each { parse-test $in })
+        }
+        $result
     } else {
         error make { msg: $result.stderr }
     }
 }
 
+def parse-test [test: record<name: string, description: string>] -> record<name: string, type: string> {
+    let type = $test.description
+        | parse --regex '.*\[([a-z]+)\].*'
+        | get capture0
+        | first
+
+    {
+        name: $test.name,
+        type: $type
+    }
+}
+
+# Query any method with a specific [tag] in the description
 def test-query [file: string] -> string {
     let query = "
         scope commands
             | where ( $it.type == 'custom' and $it.description =~ '\\[[a-z]+\\]' )
             | each { |test| {
                 name: $test.name
-                type: (
-                    $test.description
-                        | parse --regex '.*\\[([a-z]+)\\].*'
-                        | get capture0
-                        | first
-                )
+                description: $test.description
             } }
             | to nuon
     "
@@ -90,14 +102,14 @@ def discover-commands-with-annotations [] {
 
     assert equal $result [
         {
-            name: $test_file_1
+            path: $test_file_1
             tests: [
                 { name: "test_bar", type: "test" }
                 { name: "test_foo", type: "test" }
             ]
         }
         {
-            name: $test_file_2
+            path: $test_file_2
             tests: [
                 { name: "test_baz", type: "test" }
                 { name: "test_quux", type: "other" }
