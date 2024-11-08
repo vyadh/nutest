@@ -13,6 +13,8 @@ const default_pattern = "**/{*_test,test_*}.nu"
 
 # Work todo
 # - Error handling of delegated nu commands and exit codes and visibility of what went wrong incl syntax errors
+# - filter unknown types before they hit runner
+# - Logging of process
 
 export def list-files [
     path: string
