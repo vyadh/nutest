@@ -25,9 +25,9 @@ export def list-files [
     glob $pattern
 }
 
-export def list-test-suites [path: string] -> list<record<path: string, tests<table<name: string, type: string>>> {
+export def list-test-suites [path: string] -> list<record<name: string, path: string, tests<table<name: string, type: string>>> {
     let suites = list-files $path $default_pattern
-        | each { list-suites $in }
+        | each { discover-suite $in }
 
     print ($suites | describe)
     print ($suites | table --expand)
@@ -39,7 +39,7 @@ export def list-test-suites [path: string] -> list<record<path: string, tests<ta
 #    }
 }
 
-def list-suites [test_file: string] -> record<name: string, path: string, tests: table<name: string, type: string>> {
+def discover-suite [test_file: string] -> record<name: string, path: string, tests: table<name: string, type: string>> {
     let query = test-query $test_file
     let result = (^$nu.current-exe --no-config-file --commands $query)
         | complete

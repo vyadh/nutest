@@ -33,15 +33,17 @@ use std/assert
 #     results: list<test-result>
 # }
 
+def run-suites [suites: table<name: string, path: string, tests: table<name: string, type: string>>] -> table<name: string, results: table<name: string, result: bool, output: string, error: record<msg: string, debug: string>> {
+    $suites | each { |suite| run-suite $suite.name $suite.path $suite.tests }
+}
 
-# tests: table<name: string, type: string>
-def run-suite [suite: record<name: string, path: string, tests: list>] -> record<name: string, results: table<name: string, result: bool, output: string, error: record<msg: string, debug: string>> {
-    let plan_data = create-suite-plan-data $suite.tests
+def run-suite [name: string, path: string, tests: table<name: string, type: string>] -> record<name: string, results: table<name: string, result: bool, output: string, error: record<msg: string, debug: string>> {
+    let plan_data = create-suite-plan-data $tests
 
     let result = (
         ^$nu.current-exe
             --no-config-file
-            --commands $"source std/testing/runner_embedded.nu; source ($suite.path); plan-execute-suite ($plan_data) | to nuon"
+            --commands $"source std/testing/runner_embedded.nu; source ($path); plan-execute-suite ($plan_data) | to nuon"
     ) | complete
 
     # todo success/failure of the plan-execute-suite command (exit code)
@@ -51,7 +53,7 @@ def run-suite [suite: record<name: string, path: string, tests: list>] -> record
     let data = $result.stdout | from nuon
     print $data
     {
-        name: $suite.name
+        name: $name
         results: $data
     }
 
@@ -89,10 +91,12 @@ def create-test-plan-data [test: record<name: string, type: string>] -> string {
 def main [] {
     let temp = mktemp --tmpdir --directory
     try {
-        #validate-test-plan
-        #run-suite-with-no-tests $temp
+        validate-test-plan
+        run-suite-with-no-tests $temp
         run-suite-with-passing-test $temp
         run-suite-with-failing-test $temp
+        run-suite-with-multiple-tests $temp
+        run-multiple-suites $temp
 
         rm --recursive $temp
     } catch { |e|
@@ -125,13 +129,7 @@ def run-suite-with-no-tests [temp: string] {
     let test_file = $temp | path join "test.nu"
     touch $test_file
 
-    let suite = {
-        name: "test"
-        path: $test_file
-        tests: []
-    }
-
-    let result = run-suite $suite
+    let result = run-suite "test" $test_file []
 
     assert equal $result {
         name: "test"
@@ -141,12 +139,12 @@ def run-suite-with-no-tests [temp: string] {
 
 # [test]
 def run-suite-with-passing-test [temp: string] {
-    let suite = "assert equal 1 1" | create-test-suite $temp "passing-test"
+    let suite = "assert equal 1 1" | create-single-test-suite $temp "passing-test"
 
-    let result = run-suite $suite
+    let result = run-suite $suite.name $suite.path $suite.tests
 
     assert equal $result {
-        name: "suite"
+        name: "passing-test"
 
         results: [
             {
@@ -161,12 +159,12 @@ def run-suite-with-passing-test [temp: string] {
 
 # [test]
 def run-suite-with-failing-test [temp: string] {
-    let suite = "assert equal 1 2" | create-test-suite $temp "failing-test"
+    let suite = "assert equal 1 2" | create-single-test-suite $temp "failing-test"
 
-    let result = run-suite $suite
+    let result = run-suite $suite.name $suite.path $suite.tests
 
     assert equal ($result | reject results.error) {
-        name: "suite"
+        name: "failing-test"
 
         results: [
             {
@@ -182,22 +180,91 @@ def run-suite-with-failing-test [temp: string] {
     assert str contains $error "These are not equal."
 }
 
-def create-test-suite [temp: string, test_name: string]: string -> record {
-    let path = $temp | path join $"($test_name).nu"
+# [test]
+def run-suite-with-multiple-tests [temp: string] {
+    mut suite = create-suite $temp "multi-test"
+    let suite = "assert equal 1 1" | append-test $temp $suite "test1"
+    let suite = "assert equal 1 2" | append-test $temp $suite "test2"
+
+    let result = run-suite $suite.name $suite.path $suite.tests
+
+    assert equal ($result | reject results.error) {
+        name: "multi-test"
+
+        results: [
+            {
+                name: "test1"
+                success: true
+                output: ""
+            }
+            {
+                name: "test2"
+                success: false
+                output: ""
+            }
+        ]
+    }
+}
+
+# [test]
+def run-multiple-suites [temp: string] {
+    mut suite1 = create-suite $temp "suite1"
+    let suite1 = "assert equal 1 1" | append-test $temp $suite1 "test1"
+    let suite1 = "assert equal 1 2" | append-test $temp $suite1 "test2"
+    mut suite2 = create-suite $temp "suite2"
+    let suite2 = "assert equal 1 1" | append-test $temp $suite2 "test3"
+    let suite2 = "assert equal 1 2" | append-test $temp $suite2 "test4"
+
+    let result = run-suites [$suite1, $suite2]
+
+    assert equal ($result | reject results.error) [
+        {
+            name: "suite1"
+            results: [
+                { name: "test1", success: true, output: "" }
+                { name: "test2", success: false, output: "" }
+            ]
+        }
+        {
+            name: "suite2"
+            results: [
+                { name: "test3", success: true, output: "" }
+                { name: "test4", success: false, output: "" }
+            ]
+        }
+    ]
+}
+
+def create-single-test-suite [temp: string, test: string]: string -> record {
+    let suite = create-suite $temp $test
+    $in | append-test $temp $suite $test
+}
+
+def create-suite [temp: string, suite: string] -> record {
+    let path = $temp | path join $"($suite).nu"
 
     $"
         use std/assert
-        def ($test_name) [] {
-            ($in)
-        }
     " | save $path
 
     {
-        name: "suite"
+        name: $suite
         path: $path
-        tests: [
-            { name: $test_name, type: "test" }
-        ]
+        tests: []
+    }
+}
+
+def append-test [temp: string, suite: record, test: string]: string -> record {
+    let path = $temp | path join $"($suite.name).nu"
+
+    $"
+        def ($test) [] {
+            ($in)
+        }
+    " | save --append $path
+
+    $suite | merge {
+        tests: ($suite.tests | append { name: $test, type: "test" })
     }
 }
 
