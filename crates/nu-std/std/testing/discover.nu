@@ -11,6 +11,9 @@ const default_pattern = "**/{*_test,test_*}.nu"
 # test file <file>
 # test path <path>
 
+# Work todo
+# - Error handling of delegated nu commands and exit codes and visibility of what went wrong incl syntax errors
+
 export def list-files [
     path: string
     pattern: string = $default_pattern
@@ -20,33 +23,37 @@ export def list-files [
     glob $pattern
 }
 
-export def list-tests [file: string] -> list<string> {
-    let tests = list-files $file $default_pattern
-        | each { list-tests-internal $in }
+export def list-test-suites [path: string] -> list<record<path: string, tests<table<name: string, type: string>>> {
+    let suites = list-files $path $default_pattern
+        | each { list-suites $in }
 
-    #print ($tests | table --expand)
-    $tests
+    print ($suites | describe)
+    print ($suites | table --expand)
+
+    $suites
 
 #    do {
 #        source $file
 #    }
 }
 
-def list-tests-internal [file: string] -> record<path: string, tests<table<name: string, type: string>> {
-    let query = test-query $file
+def list-suites [test_file: string] -> record<name: string, path: string, tests: table<name: string, type: string>> {
+    let query = test-query $test_file
     let result = (^$nu.current-exe --no-config-file --commands $query)
         | complete
 
-
     if $result.exit_code == 0 {
-        let tests = $result.stdout | from nuon
-        let result = {
-            path: $file,
-            tests: ($tests | each { parse-test $in })
-        }
-        $result
+        parse-suite $test_file ($result.stdout | from nuon)
     } else {
         error make { msg: $result.stderr }
+    }
+}
+
+def parse-suite [test_file: string, tests: list<record<name: string, description: string>>] -> record<name: string, path: string, tests: table<name: string, type: string>> {
+    {
+        name: ($test_file | path parse | get stem)
+        path: $test_file
+        tests: ($tests | each { parse-test $in })
     }
 }
 
@@ -98,10 +105,11 @@ def discover-commands-with-annotations [] {
     def test_quux [] { }
     " | save $test_file_2
 
-    let result = list-tests $temp | sort
+    let result = list-test-suites $temp | sort
 
     assert equal $result [
         {
+            name: "test_1"
             path: $test_file_1
             tests: [
                 { name: "test_bar", type: "test" }
@@ -109,6 +117,7 @@ def discover-commands-with-annotations [] {
             ]
         }
         {
+            name: "test_2"
             path: $test_file_2
             tests: [
                 { name: "test_baz", type: "test" }
