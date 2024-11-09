@@ -1,5 +1,34 @@
+module discover.nu
+module runner.nu
 
-export use discover.nu [
-    list-files
-    list-tests
-]
+#export use std/testing/discover.du [
+#export use ./discover.nu [
+#    list-files
+#    list-tests
+#]
+
+#export use runner.nu [
+#    run-suites
+#]
+#    use runner [ run-suites ]
+#module runner { export run-suites }
+
+export def main [] {
+    use discover
+    use runner
+
+    #list<record<name: string, path: string, tests<table<name: string, type: string>>>
+    let suites = discover list-test-suites "."
+
+    print "=========>"
+    print ($suites | describe)
+    #print ($suites | table --expand)
+    print "<========"
+
+    #table<name: string, results: table<name: string, result: bool, output: string, error: record<msg: string, debug: string>>
+    let results = runner run-suites $suites
+    print "====================>"
+    print ($results | describe)
+    print ($results | table --expand)
+    print "<===================="
+}

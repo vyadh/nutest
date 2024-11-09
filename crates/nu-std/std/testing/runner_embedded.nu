@@ -31,16 +31,16 @@
 use std log
 
 def plan-execute-suite [suite_data: list] -> table<name, success, output> {
-    print -e "planning"
-    print -e $suite_data
+    #print -e "planning"
+    #print -e $suite_data
 
-    print -e "executing"
+    #print -e "executing"
     let results = $suite_data
         | where ($it.type == "test")
         | each { |test| execute-test $test.name $test.execute }
 
-    print -e "results" $results
-    print -e "return"
+    #print -e "results" $results
+    #print -e "return"
     $results
 }
 

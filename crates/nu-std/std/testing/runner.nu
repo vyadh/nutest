@@ -1,4 +1,4 @@
-use std/assert
+#use std/assert
 
 # This script generates the test suite data and embeds a runner into a nushell sub-process to execute.
 
@@ -33,7 +33,8 @@ use std/assert
 #     results: list<test-result>
 # }
 
-def run-suites [suites: table<name: string, path: string, tests: table<name: string, type: string>>] -> table<name: string, results: table<name: string, result: bool, output: string, error: record<msg: string, debug: string>> {
+#suites: table<name: string, path: string, tests: table<name: string, type: string>>
+export def run-suites [suites: list] -> table<name: string, results: table<name: string, result: bool, output: string, error: record<msg: string, debug: string>> {
     $suites | each { |suite| run-suite $suite.name $suite.path $suite.tests }
 }
 
@@ -47,11 +48,12 @@ def run-suite [name: string, path: string, tests: table<name: string, type: stri
     ) | complete
 
     # todo success/failure of the plan-execute-suite command (exit code)
+#print "!3"
 
-    print $result
+#    print $result
 
     let data = $result.stdout | from nuon
-    print $data
+#    print $data
     {
         name: $name
         results: $data
@@ -88,7 +90,14 @@ def create-test-plan-data [test: record<name: string, type: string>] -> string {
 }
 
 
-def main [] {
+
+
+
+export def main [] {
+    print "main"
+}
+
+def main2 [] {
     let temp = mktemp --tmpdir --directory
     try {
         validate-test-plan

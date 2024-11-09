@@ -1,4 +1,4 @@
-use std/assert
+#use ../../std/assert
 
 const default_pattern = "**/{*_test,test_*}.nu"
 
@@ -25,12 +25,14 @@ export def list-files [
     glob $pattern
 }
 
-export def list-test-suites [path: string] -> list<record<name: string, path: string, tests<table<name: string, type: string>>> {
+export def list-test-suites [path: string] -> table<name: string, path: string, tests<table<name: string, type: string>> {
     let suites = list-files $path $default_pattern
         | each { discover-suite $in }
 
+print "!2"
     print ($suites | describe)
-    print ($suites | table --expand)
+#    print ($suites | table --expand)
+print "!3"
 
     $suites
 
@@ -135,7 +137,7 @@ def discover-commands-with-annotations [] {
 # todo failure executing nu command
 
 
-def main [] {
+def main2 [] {
     let test_plan = (
         scope commands
             | where ($it.type == "custom")
@@ -172,7 +174,7 @@ def print_results [results: list<record<name: string, result: string>>] {
     if ("GITHUB_ACTIONS" in $env) {
         print ($display_table | to md --pretty)
     } else {
-        print $display_table
+        #print $display_table
     }
 }
 
