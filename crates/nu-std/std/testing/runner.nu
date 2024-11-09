@@ -35,7 +35,7 @@
 
 #suites: table<name: string, path: string, tests: table<name: string, type: string>>
 export def run-suites [suites: list] -> table<name: string, results: table<name: string, result: bool, output: string, error: record<msg: string, debug: string>> {
-    $suites | each { |suite| run-suite $suite.name $suite.path $suite.tests }
+    $suites | par-each { |suite| run-suite $suite.name $suite.path $suite.tests }
 }
 
 def run-suite [name: string, path: string, tests: table<name: string, type: string>] -> record<name: string, results: table<name: string, result: bool, output: string, error: record<msg: string, debug: string>> {

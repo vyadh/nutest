@@ -21,14 +21,23 @@ export def main [] {
     let suites = discover list-test-suites "."
 
     print "=========>"
-    print ($suites | describe)
+    #print ($suites | describe)
     #print ($suites | table --expand)
     print "<========"
 
     #table<name: string, results: table<name: string, result: bool, output: string, error: record<msg: string, debug: string>>
     let results = runner run-suites $suites
     print "====================>"
-    print ($results | describe)
+    #print ($results | describe)
     print ($results | table --expand)
     print "<===================="
+
+    let tests = $results
+        | where ($it.results != null)
+        | each { |result| $result.results | insert suite $result.name }
+        | flatten
+        | select suite name success output error
+
+    print ($tests | table --expand)
+
 }
