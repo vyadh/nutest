@@ -1,4 +1,4 @@
-#use std/assert
+use std/assert
 
 # This script generates the test suite data and embeds a runner into a nushell sub-process to execute.
 
@@ -50,13 +50,27 @@ def run-suite [name: string, path: string, tests: table<name: string, type: stri
     # todo success/failure of the plan-execute-suite command (exit code)
 #print "!3"
 
-#    print $result
+    #print $tests
+    #print $result
 
-    let data = $result.stdout | from nuon
-#    print $data
+    let test_results = if $result.exit_code == 0 { # todo filter to tests only
+        ($result.stdout | from nuon)
+    } else {
+        # Repeat the suite-level failure for every test
+        $tests | each { |test|
+            {
+                name: $test.name
+                success: false
+                output: ""
+                error: $result.stderr
+            }
+        }
+
+    }
+
     {
         name: $name
-        results: $data
+        results: $test_results
     }
 
     #let results = $suite.tests | each { run-test $in }
@@ -93,19 +107,24 @@ def create-test-plan-data [test: record<name: string, type: string>] -> string {
 
 
 
-export def main [] {
+export def main2 [] {
     print "main"
 }
 
-def main2 [] {
+def main [] {
     let temp = mktemp --tmpdir --directory
+    let context = {
+        temp: $temp
+    }
     try {
-        validate-test-plan
-        run-suite-with-no-tests $temp
-        run-suite-with-passing-test $temp
-        run-suite-with-failing-test $temp
-        run-suite-with-multiple-tests $temp
-        run-multiple-suites $temp
+        $context | validate-test-plan
+        $context | run-suite-with-missing-test
+        $context | run-suite-with-broken-test
+        $context | run-suite-with-no-tests
+        $context | run-suite-with-passing-test
+        $context | run-suite-with-failing-test
+        $context | run-suite-with-multiple-tests
+        $context | run-multiple-suites
 
         rm --recursive $temp
     } catch { |e|
@@ -134,7 +153,13 @@ def validate-test-plan [] {
 }
 
 # [test]
-def run-suite-with-no-tests [temp: string] {
+def run-suite-with-no-tests [] {
+    let context = $in
+    #print -e "START"
+    #print -e $context
+    #print -e "END"
+    let $temp = $context.temp
+
     let test_file = $temp | path join "test.nu"
     touch $test_file
 
@@ -147,7 +172,10 @@ def run-suite-with-no-tests [temp: string] {
 }
 
 # [test]
-def run-suite-with-passing-test [temp: string] {
+def run-suite-with-passing-test [] {
+    let context = $in
+    let $temp = $context.temp
+
     let suite = "assert equal 1 1" | create-single-test-suite $temp "passing-test"
 
     let result = run-suite $suite.name $suite.path $suite.tests
@@ -167,7 +195,64 @@ def run-suite-with-passing-test [temp: string] {
 }
 
 # [test]
-def run-suite-with-failing-test [temp: string] {
+def run-suite-with-broken-test [] {
+    let context = $in
+    let $temp = $context.temp
+
+    let test_file = $temp | path join "broken-test.nu"
+    "def broken-test" | save $test_file # Parse error
+    let tests = [{ name: "broken-test", type: "test" }]
+    let result = run-suite "suite" $test_file $tests
+
+    assert equal ($result | reject results.error) {
+        name: "suite"
+
+        results: [
+            {
+                name: "broken-test"
+                success: false
+                output: ""
+            }
+        ]
+    }
+
+    let error = $result.results | get error | first
+    assert str contains $error "Missing required positional argument"
+}
+
+# [test]
+def run-suite-with-missing-test [] {
+    let context = $in
+    let $temp = $context.temp
+
+    let test_file = $temp | path join "missing-test.nu"
+    touch $test_file
+    let tests = [{ name: "missing-test", type: "test" }]
+
+    let result = run-suite "test" $test_file $tests
+    #print -e ($result | table --expand)
+
+    assert equal ($result | reject results.error) {
+        name: "test"
+
+        results: [
+            {
+                name: "missing-test"
+                success: false
+                output: ""
+            }
+        ]
+    }
+
+    let error = $result.results | get error | first
+    assert str contains $error "Command `missing-test` not found"
+}
+
+# [test]
+def run-suite-with-failing-test [] {
+    let context = $in
+    let $temp = $context.temp
+
     let suite = "assert equal 1 2" | create-single-test-suite $temp "failing-test"
 
     let result = run-suite $suite.name $suite.path $suite.tests
@@ -190,7 +275,10 @@ def run-suite-with-failing-test [temp: string] {
 }
 
 # [test]
-def run-suite-with-multiple-tests [temp: string] {
+def run-suite-with-multiple-tests [] {
+    let context = $in
+    let $temp = $context.temp
+
     mut suite = create-suite $temp "multi-test"
     let suite = "assert equal 1 1" | append-test $temp $suite "test1"
     let suite = "assert equal 1 2" | append-test $temp $suite "test2"
@@ -216,7 +304,10 @@ def run-suite-with-multiple-tests [temp: string] {
 }
 
 # [test]
-def run-multiple-suites [temp: string] {
+def run-multiple-suites [] {
+    let context = $in
+    let $temp = $context.temp
+
     mut suite1 = create-suite $temp "suite1"
     let suite1 = "assert equal 1 1" | append-test $temp $suite1 "test1"
     let suite1 = "assert equal 1 2" | append-test $temp $suite1 "test2"
@@ -280,4 +371,3 @@ def append-test [temp: string, suite: record, test: string]: string -> record {
 def trim []: string -> string {
     $in | str replace --all --regex '[\n\r ]+' ' '
 }
-

@@ -1,7 +1,7 @@
-#use ../../std/assert
+use ../../std/assert
 
-const default_pattern = "**/{*_test,test_*}.nu"
-#const default_pattern = "**/*.nu"
+#const default_pattern = "**/{*_test,test_*}.nu"
+const default_pattern = "**/*.nu"
 
 # Usage:
 #  cd crates/nu-std
@@ -27,19 +27,8 @@ export def list-files [
 }
 
 export def list-test-suites [path: string] -> table<name: string, path: string, tests<table<name: string, type: string>> {
-    let suites = list-files $path $default_pattern
+    list-files $path $default_pattern
         | each { discover-suite $in }
-
-print "!2"
-    print ($suites | describe)
-#    print ($suites | table --expand)
-print "!3"
-
-    $suites
-
-#    do {
-#        source $file
-#    }
 }
 
 def discover-suite [test_file: string] -> record<name: string, path: string, tests: table<name: string, type: string>> {
@@ -74,7 +63,7 @@ def parse-test [test: record<name: string, description: string>] -> record<name:
     }
 }
 
-# Query any method with a specific [tag] in the description
+# Query any method with a specific tag in the description
 def test-query [file: string] -> string {
     let query = "
         scope commands

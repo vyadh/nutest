@@ -13,22 +13,22 @@ module runner.nu
 #    use runner [ run-suites ]
 #module runner { export run-suites }
 
-export def main [] {
+export def main [path: string = "."] {
     use discover
     use runner
 
     #list<record<name: string, path: string, tests<table<name: string, type: string>>>
-    let suites = discover list-test-suites "."
+    let suites = discover list-test-suites $path
 
     print "=========>"
     #print ($suites | describe)
-    #print ($suites | table --expand)
+    print ($suites | table --expand)
     print "<========"
 
     #table<name: string, results: table<name: string, result: bool, output: string, error: record<msg: string, debug: string>>
     let results = runner run-suites $suites
     print "====================>"
-    #print ($results | describe)
+    print ($results | describe)
     print ($results | table --expand)
     print "<===================="
 
