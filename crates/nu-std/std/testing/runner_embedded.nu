@@ -30,6 +30,9 @@
 
 use std log
 
+# TODO - Move all tests to main test dir
+# TODO - Add support for before-all, after-all, before-each, after-each
+
 def plan-execute-suite [suite_data: list] -> table<name, success, output> {
     #print -e "planning"
     #print -e $suite_data

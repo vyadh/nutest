@@ -54,7 +54,7 @@ def run-suite [name: string, path: string, tests: table<name: string, type: stri
     #print $result
 
     let test_results = if $result.exit_code == 0 { # todo filter to tests only
-        ($result.stdout | from nuon)
+        $result.stdout | from nuon
     } else {
         # Repeat the suite-level failure for every test
         $tests | each { |test|
@@ -91,7 +91,7 @@ def run-suite [name: string, path: string, tests: table<name: string, type: stri
 #    }
 #}
 
-def create-suite-plan-data [tests: table<name: string, type: string>] -> string {
+export def create-suite-plan-data [tests: table<name: string, type: string>] -> string {
     let plan_data = $tests
             | each { |test| create-test-plan-data $test }
             | str join ", "
@@ -133,24 +133,6 @@ def main [] {
     }
 }
 
-# [test]
-def validate-test-plan [] {
-    let tests = [
-        { name: "test_a", type: "test" }
-        { name: "test_b", type: "test" }
-        { name: "setup", type: "before-all" }
-        { name: "cleanup", type: "after-each" }
-    ]
-
-    let plan = create-suite-plan-data $tests
-
-    assert equal $plan ('[
-        { name: "test_a", type: "test", execute: { test_a } },
-        { name: "test_b", type: "test", execute: { test_b } },
-        { name: "setup", type: "before-all", execute: { setup } },
-        { name: "cleanup", type: "after-each", execute: { cleanup } }
-    ]' | trim)
-}
 
 # [test]
 def run-suite-with-no-tests [] {
@@ -366,8 +348,4 @@ def append-test [temp: string, suite: record, test: string]: string -> record {
     $suite | merge {
         tests: ($suite.tests | append { name: $test, type: "test" })
     }
-}
-
-def trim []: string -> string {
-    $in | str replace --all --regex '[\n\r ]+' ' '
 }
