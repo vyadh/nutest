@@ -30,20 +30,48 @@
 
 use std log
 
-# TODO - Add support for before-all, after-all, before-each, after-each
-# TODO - Figure out what we need to do with print and print -e output
+# TODO - Add support for: before-all, after-all
+# TODO - Std output/error not reflected in the test results (capture issue)
+# TODO - Document `print` breaking of tests and should use `print -e`
 export def plan-execute-suite [suite_data: list] -> table<name, success, output, error> {
-    let results = $suite_data
-        | where ($it.type == "test")
-        | each { |test| execute-test $test.name $test.execute }
+    let before_each_items = $suite_data | items-with-type "before-each"
+    let after_each_items = $suite_data | items-with-type "after-each"
+    let tests = $suite_data | items-with-type "test"
+
+    let results = $tests | each { |test|
+        let context = execute-before $before_each_items
+        let result = execute-test $context $test.name $test.execute
+        $context | execute-after $after_each_items
+        $result
+    }
 
     $results
 }
 
-def execute-test [name: string, execute: closure] {
+def items-with-type [type: string] {
+    $in | where ($it.type == $type)
+}
+
+def execute-before [items: list] -> record {
+    # TODO failure handling
+    $items | reduce --fold {} { |item, acc|
+        $acc | merge (do $item.execute)
+    }
+}
+
+def execute-after [items: list] {
+    # TODO failure handling
+    let context = $in
+    $items | each { |item|
+        let execute = $item.execute
+        $context | do $execute
+    }
+}
+
+def execute-test [context: record, name: string, execute: closure] {
     try {
-        # TODO what to do with result itself?
-        let result = do $execute
+        # TODO what to do with result of this?
+        $context | do $execute
         {
             name: $name
             success: true
@@ -62,12 +90,19 @@ def execute-test [name: string, execute: closure] {
 
 def format_error [error: string] {
     # Get the text from errors like: GenericError { error: "Error message" }
-    let error_text = $error | parse --regex 'error: "(?<error>[^"]+)"'
-    if ($error_text | is-not-empty) {
-        $error_text | first | get error
-    } else {
-        $error
+    let error_generic = $error | parse --regex 'error: "(?<error>[^"]+)"'
+    if ($error_generic | is-not-empty) {
+        return ($error_generic | first | get error)
     }
+
+    # Get the text from errors like: LabeledError(LabeledError { msg: "Assertion failed.", labels: [ErrorLabel { text: "These are not equal...
+    let error_label = $error | parse --regex 'msg: "(?<msg>[^"]+).+text: "(?<text>.+)'
+    if ($error_label | is-not-empty) {
+        return $"($error_label | first | get msg) ($error_label | first | get text)"
+    }
+
+    # Anything else
+    $error
 }
 
 #export def ($test_function_name) [] {
