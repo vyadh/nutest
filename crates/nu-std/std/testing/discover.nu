@@ -16,6 +16,7 @@ const default_pattern = "**/*.nu"
 # - Error handling of delegated nu commands and exit codes and visibility of what went wrong incl syntax errors
 # - filter unknown types before they hit runner
 # - Logging of process
+# - test searching of files that do not parse
 
 export def list-files [
     path: string
@@ -28,7 +29,7 @@ export def list-files [
 
 export def list-test-suites [path: string] -> table<name: string, path: string, tests<table<name: string, type: string>> {
     list-files $path $default_pattern
-        | each { discover-suite $in }
+        | par-each { discover-suite $in }
 }
 
 def discover-suite [test_file: string] -> record<name: string, path: string, tests: table<name: string, type: string>> {
@@ -53,7 +54,7 @@ def parse-suite [test_file: string, tests: list<record<name: string, description
 
 def parse-test [test: record<name: string, description: string>] -> record<name: string, type: string> {
     let type = $test.description
-        | parse --regex '.*\[([a-z]+)\].*'
+        | parse --regex '.*\[([a-z-]+)\].*'
         | get capture0
         | first
 
@@ -67,10 +68,10 @@ def parse-test [test: record<name: string, description: string>] -> record<name:
 def test-query [file: string] -> string {
     let query = "
         scope commands
-            | where ( $it.type == 'custom' and $it.description =~ '\\[[a-z]+\\]' )
-            | each { |test| {
-                name: $test.name
-                description: $test.description
+            | where ( $it.type == 'custom' and $it.description =~ '\\[[a-z-]+\\]' )
+            | each { |item| {
+                name: $item.name
+                description: $item.description
             } }
             | to nuon
     "
