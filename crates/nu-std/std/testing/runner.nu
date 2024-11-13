@@ -33,6 +33,9 @@ use std/assert
 #     results: list<test-result>
 # }
 
+
+# TODO - Move all tests to main test dir
+
 #suites: table<name: string, path: string, tests: table<name: string, type: string>>
 export def run-suites [suites: list] -> table<name: string, results: table<name: string, result: bool, output: string, error: record<msg: string, debug: string>> {
     $suites | par-each { |suite| run-suite $suite.name $suite.path $suite.tests }
@@ -47,16 +50,11 @@ def run-suite [name: string, path: string, tests: table<name: string, type: stri
             --commands $"source std/testing/runner_embedded.nu; source ($path); plan-execute-suite ($plan_data) | to nuon"
     ) | complete
 
-    # todo success/failure of the plan-execute-suite command (exit code)
-#print "!3"
-
-    #print $tests
-    #print $result
-
     let test_results = if $result.exit_code == 0 { # todo filter to tests only
         $result.stdout | from nuon
     } else {
-        # Repeat the suite-level failure for every test
+        # This is only triggered on a suite-level failure not caught by the embedded runner
+        # Replicate this suite-level failure for every test
         $tests | each { |test|
             {
                 name: $test.name
@@ -72,24 +70,7 @@ def run-suite [name: string, path: string, tests: table<name: string, type: stri
         name: $name
         results: $test_results
     }
-
-    #let results = $suite.tests | each { run-test $in }
-    #{
-    #    name: $suite.name
-    #    results: $results
-    #}
 }
-
-# subshell context
-#def run-test [test: record<name: string, type: string>] -> record<name: string, result: bool, output: string, error: record<msg: string, debug: string>> {
-#    try {
-#        print $"Running: ($test.name)"
-#        do { $test.name }
-#        { name: $test.name, result: true, output: "", error: { msg: "", debug: "" } }
-#    } catch { |error|
-#        { name: $test.name, result: false, output: "", error: { msg: $error.msg, debug: $error.debug } }
-#    }
-#}
 
 export def create-suite-plan-data [tests: table<name: string, type: string>] -> string {
     let plan_data = $tests

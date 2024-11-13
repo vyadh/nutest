@@ -30,26 +30,20 @@
 
 use std log
 
-# TODO - Move all tests to main test dir
 # TODO - Add support for before-all, after-all, before-each, after-each
-
-def plan-execute-suite [suite_data: list] -> table<name, success, output> {
-    #print -e "planning"
-    #print -e $suite_data
-
-    #print -e "executing"
+# TODO - Figure out what we need to do with print and print -e output
+export def plan-execute-suite [suite_data: list] -> table<name, success, output, error> {
     let results = $suite_data
         | where ($it.type == "test")
         | each { |test| execute-test $test.name $test.execute }
 
-    #print -e "results" $results
-    #print -e "return"
     $results
 }
 
 def execute-test [name: string, execute: closure] {
     try {
-        let result = (do $execute)
+        # TODO what to do with result itself?
+        let result = do $execute
         {
             name: $name
             success: true
@@ -61,8 +55,18 @@ def execute-test [name: string, execute: closure] {
             name: $name
             success: false
             output: ""
-            error: $error.debug
+            error: (format_error $error.debug)
         }
+    }
+}
+
+def format_error [error: string] {
+    # Get the text from errors like: GenericError { error: "Error message" }
+    let error_text = $error | parse --regex 'error: "(?<error>[^"]+)"'
+    if ($error_text | is-not-empty) {
+        $error_text | first | get error
+    } else {
+        $error
     }
 }
 
