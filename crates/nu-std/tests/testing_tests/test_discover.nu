@@ -1,4 +1,3 @@
-use std *
 use std/assert
 use ../../std/testing/discover.nu [
     list-files

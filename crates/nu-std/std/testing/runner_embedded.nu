@@ -28,12 +28,11 @@
 #   `execute` is the closure function of `type`
 #
 
-use std log
-
 # TODO - Add support for: before-all, after-all
 # TODO - Std output/error not reflected in the test results (capture issue)
 # TODO - Document `print` breaking of tests and should use `print -e`
 export def plan-execute-suite [suite_data: list] -> table<name, success, output, error> {
+    # TODO group by type
     let before_each_items = $suite_data | items-with-type "before-each"
     let after_each_items = $suite_data | items-with-type "after-each"
     let tests = $suite_data | items-with-type "test"
@@ -53,18 +52,27 @@ def items-with-type [type: string] {
 }
 
 def execute-before [items: list] -> record {
-    # TODO failure handling
-    $items | reduce --fold {} { |item, acc|
-        $acc | merge (do $item.execute)
+    # TODO test failure handling
+    try {
+        $items | reduce --fold {} { |item, acc|
+            $acc | merge (do $item.execute)
+        }
+    } catch { |error|
+        print -e $error
+        {}
     }
 }
 
 def execute-after [items: list] {
-    # TODO failure handling
-    let context = $in
-    $items | each { |item|
-        let execute = $item.execute
-        $context | do $execute
+    # TODO test failure handling
+    try {
+        let context = $in
+        $items | each { |item|
+            let execute = $item.execute
+            $context | do $execute
+        }
+    } catch { |error|
+        print -e $error
     }
 }
 

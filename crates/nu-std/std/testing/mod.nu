@@ -1,17 +1,7 @@
 module discover.nu
 module runner.nu
 
-#export use std/testing/discover.du [
-#export use ./discover.nu [
-#    list-files
-#    list-tests
-#]
-
-#export use runner.nu [
-#    run-suites
-#]
-#    use runner [ run-suites ]
-#module runner { export run-suites }
+# nu -c "use std/testing; (testing .)"
 
 export def main [path: string = "."] {
     use discover
@@ -26,6 +16,5 @@ export def main [path: string = "."] {
         | flatten
         | select suite name success output error
 
-    print ($tests | table --expand)
-
+    $tests
 }

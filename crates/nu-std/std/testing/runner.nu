@@ -49,7 +49,7 @@ export def run-suite [name: string, path: string, tests: table<name: string, typ
             --commands $"source std/testing/runner_embedded.nu; source ($path); plan-execute-suite ($plan_data) | to nuon"
     ) | complete
 
-    let test_results = if $result.exit_code == 0 { # todo filter to tests only
+    let test_results = if $result.exit_code == 0 {
         # TODO required to output `print -e` usage in tests
         #print -e $result.stderr
         $result.stdout | from nuon
@@ -64,7 +64,6 @@ export def run-suite [name: string, path: string, tests: table<name: string, typ
                 error: $result.stderr
             }
         }
-
     }
 
     {
