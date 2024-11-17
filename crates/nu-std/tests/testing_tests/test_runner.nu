@@ -76,6 +76,7 @@ def run-suite-with-passing-test [] {
                 success: true
                 output: ""
                 error: ""
+                failure: null
             }
         ]
     }
@@ -91,7 +92,7 @@ def run-suite-with-broken-test [] {
     let tests = [{ name: "broken-test", type: "test" }]
     let result = run-suite "suite" $test_file $tests
 
-    assert equal ($result | reject results.error) {
+    assert equal ($result | reject results.failure) {
         name: "suite"
 
         results: [
@@ -99,11 +100,12 @@ def run-suite-with-broken-test [] {
                 name: "broken-test"
                 success: false
                 output: ""
+                error: ""
             }
         ]
     }
 
-    let error = $result.results | get error | first
+    let error = $result.results | get failure | first
     assert str contains $error "Missing required positional argument"
 }
 
@@ -119,7 +121,7 @@ def run-suite-with-missing-test [] {
     let result = run-suite "test" $test_file $tests
     #print -e ($result | table --expand)
 
-    assert equal ($result | reject results.error) {
+    assert equal ($result | reject results.failure) {
         name: "test"
 
         results: [
@@ -127,11 +129,12 @@ def run-suite-with-missing-test [] {
                 name: "missing-test"
                 success: false
                 output: ""
+                error: ""
             }
         ]
     }
 
-    let error = $result.results | get error | first
+    let error = $result.results | get failure | first
     assert str contains $error "Command `missing-test` not found"
 }
 
@@ -144,7 +147,7 @@ def run-suite-with-failing-test [] {
 
     let result = run-suite $suite.name $suite.path $suite.tests
 
-    assert equal ($result | reject results.error) {
+    assert equal ($result | reject results.failure) {
         name: "failing-test"
 
         results: [
@@ -152,11 +155,12 @@ def run-suite-with-failing-test [] {
                 name: "failing-test"
                 success: false
                 output: ""
+                error: ""
             }
         ]
     }
 
-    let error = $result.results | get error | first
+    let error = $result.results | get failure | first
     assert str contains $error "Assertion failed."
     assert str contains $error "These are not equal."
 }
@@ -172,7 +176,7 @@ def run-suite-with-multiple-tests [] {
 
     let result = run-suite $suite.name $suite.path $suite.tests
 
-    assert equal ($result | reject results.error) {
+    assert equal ($result | reject results.failure) {
         name: "multi-test"
 
         results: [
@@ -180,11 +184,13 @@ def run-suite-with-multiple-tests [] {
                 name: "test1"
                 success: true
                 output: ""
+                error: ""
             }
             {
                 name: "test2"
                 success: false
                 output: ""
+                error: ""
             }
         ]
     }
@@ -204,19 +210,19 @@ def run-multiple-suites [] {
 
     let result = run-suites [$suite1, $suite2]
 
-    assert equal ($result | reject results.error) [
+    assert equal ($result | reject results.failure) [
         {
             name: "suite1"
             results: [
-                { name: "test1", success: true, output: "" }
-                { name: "test2", success: false, output: "" }
+                { name: "test1", success: true, output: "", error: ""}
+                { name: "test2", success: false, output: "", error: "" }
             ]
         }
         {
             name: "suite2"
             results: [
-                { name: "test3", success: true, output: "" }
-                { name: "test4", success: false, output: "" }
+                { name: "test3", success: true, output: "", error: "" }
+                { name: "test4", success: false, output: "", error: "" }
             ]
         }
     ]

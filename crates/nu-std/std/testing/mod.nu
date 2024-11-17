@@ -14,7 +14,7 @@ export def main [path: string = "."] {
         | where ($it.results != null)
         | each { |result| $result.results | insert suite $result.name }
         | flatten
-        | select suite name success output error
+        | select suite name success output error failure
 
     $tests
 }

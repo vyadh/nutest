@@ -19,7 +19,8 @@
 #          name: string
 #          success: bool
 #          output: string
-#          error: record<msg: string, debug: string>
+#          error: string
+#          failure: record<msg: string, debug: string>
 #      }
 # ]
 #
@@ -29,7 +30,7 @@
 #
 
 # TODO - Add support for: before-all, after-all
-export def plan-execute-suite [suite_data: list] -> table<name, success, output, error> {
+export def plan-execute-suite [suite_data: list] -> table<name, success, output, error, failure> {
     nu-test-db-create
 
     # TODO group by type
@@ -90,14 +91,15 @@ def execute-test [context: record, name: string, execute: closure] -> record {
             success: true
             output: (nu-test-db-query $name "output")
             error: (nu-test-db-query $name "error")
+            failure: null
         }
     } catch { |error|
         {
             name: $name
             success: false
             output: (nu-test-db-query $name "output")
-            # TODO split errors output and failures?
-            error: (format_error $error.debug)
+            error: (nu-test-db-query $name "error")
+            failure: (format_error $error.debug)
         }
     }
 }

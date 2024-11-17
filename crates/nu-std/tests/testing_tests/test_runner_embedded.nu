@@ -36,6 +36,7 @@ def execute-plan-test [] {
             success: true
             output: $success_message
             error: ""
+            failure: null
         }
     ]
 }
@@ -46,16 +47,16 @@ def execute-plan-tests [] {
         { name: "test_success", type: "test", execute: { success } }
         { name: "test_success_warning", type: "test", execute: { warning; success } }
         { name: "test_failure", type: "test", execute: { failure } }
-        { name: "test_half_failure", type: "test", execute: { success; failure } }
+        { name: "test_half_failure", type: "test", execute: { success; warning; failure } }
     ]
 
     let results = plan-execute-suite $plan
 
     assert equal $results [
-        { name: "test_success", success: true, output: $success_message, error: "" }
-        { name: "test_success_warning", success: true, output: $success_message, error: $warning_message }
-        { name: "test_failure", success: false, output: "", error: $failure_message }
-        { name: "test_half_failure", success: false, output: $success_message, error: $failure_message }
+        { name: "test_success", success: true, output: $success_message, error: "", failure: null }
+        { name: "test_success_warning", success: true, output: $success_message, error: $warning_message, failure: null }
+        { name: "test_failure", success: false, output: "", error: "", failure: $failure_message }
+        { name: "test_half_failure", success: false, output: $success_message, error: $warning_message, failure: $failure_message }
     ]
 }
 
@@ -79,7 +80,7 @@ def execute-before-test [] {
     let results = plan-execute-suite $plan
 
     assert equal $results [
-        { name: "test-before-each", success: true, output: "", error: "" }
+        { name: "test-before-each", success: true, output: "", error: "", failure: null }
     ]
 }
 
@@ -104,7 +105,7 @@ def execute-after-test [] {
     let results = plan-execute-suite $plan
 
     assert equal $results [
-        { name: "test-each", success: true, output: "", error: "" }
+        { name: "test-each", success: true, output: "", error: "", failure: null }
     ]
 }
 

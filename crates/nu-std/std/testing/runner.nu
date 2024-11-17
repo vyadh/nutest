@@ -36,11 +36,11 @@ use std/assert
 # TODO - Move all tests to main test dir
 
 #suites: table<name: string, path: string, tests: table<name: string, type: string>>
-export def run-suites [suites: list] -> table<name: string, results: table<name: string, result: bool, output: string, error: record<msg: string, debug: string>> {
+export def run-suites [suites: list] -> table<name: string, results: table<name: string, result: bool, output: string, error: string, failure: record<msg: string, debug: string>> {
     $suites | par-each { |suite| run-suite $suite.name $suite.path $suite.tests }
 }
 
-export def run-suite [name: string, path: string, tests: table<name: string, type: string>] -> record<name: string, results: table<name: string, result: bool, output: string, error: record<msg: string, debug: string>> {
+export def run-suite [name: string, path: string, tests: table<name: string, type: string>] -> record<name: string, results: table<name: string, result: bool, output: string, error: string, failure: record<msg: string, debug: string>> {
     let plan_data = create-suite-plan-data $tests
 
     let result = (
@@ -61,7 +61,8 @@ export def run-suite [name: string, path: string, tests: table<name: string, typ
                 name: $test.name
                 success: false
                 output: ""
-                error: $result.stderr
+                error: ""
+                failure: $result.stderr
             }
         }
     }
