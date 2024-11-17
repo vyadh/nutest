@@ -75,7 +75,7 @@ def run-suite-with-passing-test [] {
                 name: "passing-test"
                 success: true
                 output: ""
-                error: null
+                error: ""
             }
         ]
     }

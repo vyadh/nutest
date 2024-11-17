@@ -29,19 +29,22 @@
 #
 
 # TODO - Add support for: before-all, after-all
-# TODO - Std output/error not reflected in the test results (capture issue)
-# TODO - Document `print` breaking of tests and should use `print -e`
 export def plan-execute-suite [suite_data: list] -> table<name, success, output, error> {
+    nu-test-db-create
+
     # TODO group by type
     let before_each_items = $suite_data | items-with-type "before-each"
     let after_each_items = $suite_data | items-with-type "after-each"
     let tests = $suite_data | items-with-type "test"
 
     let results = $tests | each { |test|
-        let context = execute-before $before_each_items
-        let result = execute-test $context $test.name $test.execute
-        $context | execute-after $after_each_items
-        $result
+        # Allow print output to be associated with specific tests by adding name to the environment
+        with-env { NU_TEST_NAME: $test.name } {
+            let context = execute-before $before_each_items
+            let result = execute-test $context $test.name $test.execute
+            $context | execute-after $after_each_items
+            $result
+        }
     }
 
     $results
@@ -51,6 +54,7 @@ def items-with-type [type: string] {
     $in | where ($it.type == $type)
 }
 
+#  TODO capture out/err
 def execute-before [items: list] -> record {
     # TODO test failure handling
     try {
@@ -63,6 +67,7 @@ def execute-before [items: list] -> record {
     }
 }
 
+#  TODO capture out/err
 def execute-after [items: list] {
     # TODO test failure handling
     try {
@@ -76,21 +81,22 @@ def execute-after [items: list] {
     }
 }
 
-def execute-test [context: record, name: string, execute: closure] {
+def execute-test [context: record, name: string, execute: closure] -> record {
     try {
         # TODO what to do with result of this?
         $context | do $execute
         {
             name: $name
             success: true
-            output: ""
-            error: null
+            output: (nu-test-db-query $name "output")
+            error: (nu-test-db-query $name "error")
         }
     } catch { |error|
         {
             name: $name
             success: false
-            output: ""
+            output: (nu-test-db-query $name "output")
+            # TODO split errors output and failures?
             error: (format_error $error.debug)
         }
     }
@@ -113,13 +119,38 @@ def format_error [error: string] {
     $error
 }
 
-#export def ($test_function_name) [] {
-#    ($test.before-each)
-#    try {
-#        $context | ($test.test)
-#        ($test.after-each)
-#    } catch { |err|
-#        ($test.after-each)
-#        $err | get raw
-#    }
-#}
+# Overriding the print command to capture and return test output
+# TODO test sql injection
+def print [--stderr (-e), --raw (-r), --no-newline (-n), ...rest: string] {
+    let test = $env.NU_TEST_NAME
+    let type = if $stderr { "error" } else { "output" }
+    let message = $rest | str join '\n'
+    let row = { test: $test, type: $type, message: $message }
+    $row | stor insert --table-name nu_test_prints
+}
+
+def nu-test-db-create [] {
+    stor create --table-name nu_test_prints --columns {
+        test : str
+        type : str
+        message : str
+    }
+}
+
+# We close the db so tests of this do not open the db multiple times
+def nu-test-db-close [] {
+    stor delete --table-name nu_test_prints
+}
+
+def nu-test-db-query [test: string, type: string] -> string {
+    (
+        stor open
+            | query db $"
+                SELECT message
+                FROM nu_test_prints
+                WHERE test = :test AND type = :type
+            " --params { test: $test, type: $type }
+            | get message
+            | str join "\n"
+    )
+}
