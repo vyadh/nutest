@@ -119,7 +119,6 @@ def run-suite-with-missing-test [] {
     let tests = [{ name: "missing-test", type: "test" }]
 
     let result = run-suite "test" $test_file $tests
-    #print -e ($result | table --expand)
 
     assert equal ($result | reject results.failure) {
         name: "test"
@@ -135,7 +134,7 @@ def run-suite-with-missing-test [] {
     }
 
     let error = $result.results | get failure | first
-    assert str contains $error "Command `missing-test` not found"
+    assert str contains $error "`missing-test` is neither a Nushell built-in or a known external command"
 }
 
 # [test]

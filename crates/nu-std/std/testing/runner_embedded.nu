@@ -99,26 +99,39 @@ def execute-test [context: record, name: string, execute: closure] -> record {
             success: false
             output: (nu-test-db-query $name "output")
             error: (nu-test-db-query $name "error")
-            failure: (format_error $error.debug)
+            failure: (format_error $error)
         }
     }
 }
 
-def format_error [error: string] {
-    # Get the text from errors like: GenericError { error: "Error message" }
-    let error_generic = $error | parse --regex 'error: "(?<error>[^"]+)"'
-    if ($error_generic | is-not-empty) {
-        return ($error_generic | first | get error)
-    }
+def format_error [error: record] -> string {
+    let json = $error.json | from json
+    let message = $json.msg
+    let help = $json | get help?
+    let labels = $json | get labels?
 
-    # Get the text from errors like: LabeledError(LabeledError { msg: "Assertion failed.", labels: [ErrorLabel { text: "These are not equal...
-    let error_label = $error | parse --regex 'msg: "(?<msg>[^"]+).+text: "(?<text>.+)'
-    if ($error_label | is-not-empty) {
-        return $"($error_label | first | get msg) ($error_label | first | get text)"
-    }
+    if $help != null {
+        $"($message)\n($help)"
+    } else if ($labels != null) {
+        let detail = $labels | each { |label|
+            | get text
+            # Not sure why this is in the middle of the error json...
+            | str replace --all "originates from here" ''
+        } | str join "\n"
 
-    # Anything else
-    $error
+        if ($message | str contains "Assertion failed") {
+            let formatted = ($detail
+                | str replace --all --regex '\n[ ]+Left' "\n|>Left"
+                | str replace --all --regex '\n[ ]+Right' "\n|>Right"
+                | str replace --all --regex '[\n\r]+' ''
+                | str replace --all "|>" "\n|>") | str join ""
+            $"(ansi red)($message)(ansi reset)\n($formatted)"
+         } else {
+            $"($message)($detail)"
+         }
+    } else {
+        $message
+    }
 }
 
 # Overriding the print command to capture and return test output
