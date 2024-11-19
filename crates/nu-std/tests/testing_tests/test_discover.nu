@@ -9,6 +9,22 @@ use ../../std/testing/discover.nu [
 #  nu -c 'use std/testing; testing list-files .'
 
 # [test]
+def discover-specific-test-file [] {
+  let temp = mktemp --directory
+  let file = $temp | path join "test_foo.nu"
+  touch ($file)
+
+  let result = list-files $file
+
+  assert equal $result [
+    ($temp | path join "test_foo.nu")
+  ]
+
+  # todo remove in #[after-each]
+  rm --recursive $temp
+}
+
+# [test]
 def discover-test-files [] {
   let temp = mktemp --directory
   mkdir ($temp | path join "subdir")
