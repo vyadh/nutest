@@ -1,7 +1,6 @@
 use std/assert
 use ../../std/testing/runner.nu [
     create-suite-plan-data
-    run-suite
     run-suites
 ]
 
@@ -64,7 +63,7 @@ def run-suite-with-no-tests [] {
     let test_file = $temp | path join "test.nu"
     touch $test_file
 
-    let result = run-suite "test" $test_file []
+    let result = run-suites [{name: "test", path: $test_file, tests: []}]
 
     assert equal $result []
 }
@@ -73,10 +72,9 @@ def run-suite-with-no-tests [] {
 def run-suite-with-passing-test [] {
     let context = $in
     let $temp = $context.temp
-
     let suite = "assert equal 1 1" | create-single-test-suite $temp "passing-test"
 
-    let result = run-suite $suite.name $suite.path $suite.tests
+    let result = run-suites [{ name: $suite.name, path: $suite.path, tests: $suite.tests }]
 
     assert equal ($result | reject failure) [
         {
@@ -93,38 +91,35 @@ def run-suite-with-passing-test [] {
 def run-suite-with-broken-test [] {
     let context = $in
     let $temp = $context.temp
-
     let test_file = $temp | path join "broken-test.nu"
     "def broken-test" | save $test_file # Parse error
     let tests = [{ name: "broken-test", type: "test" }]
-    let result = run-suite "suite" $test_file $tests
+
+    let result = run-suites [{ name: "suite", path: $test_file, tests: $tests }]
 
     assert equal ($result | reject failure) [
         {
             suite: "suite"
-            name: "broken-test"
+            test: "broken-test"
             success: false
             output: ""
             error: ""
         }
     ]
 
-    # TODO fix and others in this file
-    #let error = $result | get failure | first
-    #assert str contains $error "Missing required positional argument"
+    let error = $result | get failure | first
+    assert str contains $error "Missing required positional argument"
 }
 
 #[test]
 def run-suite-with-missing-test [] {
     let context = $in
     let $temp = $context.temp
-
     let test_file = $temp | path join "missing-test.nu"
     touch $test_file
     let tests = [{ name: "missing-test", type: "test" }]
 
-    let result = run-suite "test-suite" $test_file $tests
-    #print -e $result
+    let result = run-suites [{ name: "test-suite", path: $test_file, tests: $tests }]
 
     assert equal ($result | reject failure) [
         {
@@ -136,18 +131,17 @@ def run-suite-with-missing-test [] {
         }
     ]
 
-    #let error = $result | get failure | first
-    #assert str contains $error "`missing-test` is neither a Nushell built-in or a known external command"
+    let error = $result | get failure | first
+    assert str contains $error "`missing-test` is neither a Nushell built-in or a known external command"
 }
 
 #[test]
 def run-suite-with-failing-test [] {
     let context = $in
     let $temp = $context.temp
-
     let suite = "assert equal 1 2" | create-single-test-suite $temp "failing-test"
 
-    let result = run-suite $suite.name $suite.path $suite.tests
+    let result = run-suites [{ name: $suite.name, path: $suite.path, tests: $suite.tests }]
 
     assert equal ($result | reject failure) [
         {
@@ -159,21 +153,20 @@ def run-suite-with-failing-test [] {
         }
     ]
 
-    #let error = $result | get failure | first
-    #assert str contains $error "Assertion failed."
-    #assert str contains $error "These are not equal."
+    let error = $result | get failure | first
+    assert str contains $error "Assertion failed."
+    assert str contains $error "These are not equal."
 }
 
 #[test]
 def run-suite-with-multiple-tests [] {
     let context = $in
     let $temp = $context.temp
-
     mut suite = create-suite $temp "multi-test"
     let suite = "assert equal 1 1" | append-test $temp $suite "test1"
     let suite = "assert equal 1 2" | append-test $temp $suite "test2"
 
-    let result = run-suite $suite.name $suite.path $suite.tests
+    let result = run-suites [ $suite ]
 
     assert equal ($result | reject failure) [
         {

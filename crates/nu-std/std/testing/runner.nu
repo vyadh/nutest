@@ -39,14 +39,20 @@ use std/assert
 
 #suites: table<name: string, path: string, tests: table<name: string, type: string>>
 export def run-suites [suites: list] -> table<name: string, results: table<name: string, result: bool, output: string, error: string, failure: record<msg: string, debug: string>> {
-    let results = $suites | par-each { |suite|
+    db-create
+
+    $suites | par-each { |suite|
         run-suite $suite.name $suite.path $suite.tests
-     } | flatten
+    }
+
+    let results = db-query
+
+    db-delete
 
     $results
 }
 
-export def run-suite [name: string, path: string, tests: table<name: string, type: string>] -> record<name: string, results: table<name: string, result: bool, output: string, error: string, failure: record<msg: string, debug: string>> {
+def run-suite [name: string, path: string, tests: table<name: string, type: string>] {
     let plan_data = create-suite-plan-data $tests
 
     let result = (
@@ -62,9 +68,7 @@ export def run-suite [name: string, path: string, tests: table<name: string, typ
     # TODO error can carry good info here (see run-suite-with-broken-test)
     #print $result
 
-    let test_results = if $result.exit_code == 0 {
-        # TODO required to output `print -e` usage in tests
-        #print -e $result.stderr
+    if $result.exit_code == 0 {
         $result.stdout
             | lines
             | each { $in | from nuon | process-event }
@@ -73,20 +77,21 @@ export def run-suite [name: string, path: string, tests: table<name: string, typ
         # Replicate this suite-level failure for every test
         $tests | each { |test|
             {
+                timestamp: (date now | format date "%+")
                 suite: $name
-                name: $test.name
-                success: false
-                output: ""
-                error: ""
-                failure: $result.stderr
-            }
+                test: $test.name
+                type: "result"
+                payload: { success: false }
+            } | process-event
+            {
+                timestamp: (date now | format date "%+")
+                suite: $name
+                test: $test.name
+                type: "error"
+                payload: { lines: [$result.stderr] }
+            } | process-event
         }
     }
-
-    # Debug
-    #print -e $test_results
-
-    $test_results
 }
 
 export def create-suite-plan-data [tests: table<name: string, type: string>] -> string {
@@ -102,21 +107,81 @@ def create-test-plan-data [test: record<name: string, type: string>] -> string {
 }
 
 
-def process-event [] -> record {
+def process-event [] {
     let event = $in
+    let template = { suite: $event.suite, test: $event.test }
+
     match $event {
         { type: "result" } => {
-            {
-                suite: $event.suite
-                test: $event.test
-                success: $event.payload.success
-                output: ""
-                error: ""
-                failure: null
+            let row = $template | merge { success: $event.payload.success }
+            $row | stor insert --table-name nu_tests
+        }
+        { type: "output" } => {
+            $event.payload.lines | each { |line|
+                let row = $template | merge { type: output, line: $line }
+                $row | stor insert --table-name nu_test_output
             }
         }
         { type: "error" } => {
-            print -e $event.payload.lines
+            $event.payload.lines | each { |line|
+                let row = $template | merge { type: error, line: $line }
+                $row | stor insert --table-name nu_test_output
+            }
         }
     }
+}
+
+def db-create [] {
+    stor create --table-name nu_tests --columns {
+        suite: str
+        test: str
+        success: bool
+    }
+    stor create --table-name nu_test_output --columns {
+        suite: str
+        test: str
+        type: str
+        line: str
+    }
+}
+
+# We close the db so tests of this do not open the db multiple times
+def db-delete [] {
+    stor delete --table-name nu_tests
+    stor delete --table-name nu_test_output
+}
+
+def db-query [] -> record {
+    (
+        stor open
+            | query db $"
+                SELECT suite, test, success
+                FROM nu_tests
+                ORDER BY suite, test
+            "
+            | each { |row|
+                {
+                    suite: $row.suite
+                    test: $row.test
+                    success: (if $row.success == 1 { true } else { false })
+                    output: (db-query-output $row.suite $row.test "output")
+                    error: ""
+                    failure: (db-query-output $row.suite $row.test "error")
+                }
+            }
+    )
+}
+
+# TODO use subquery instead
+def db-query-output [suite: string, test: string, type: string] -> string {
+    (
+        stor open
+            | query db $"
+                SELECT line
+                FROM nu_test_output
+                WHERE suite = :suite AND test = :test AND type = :type
+            " --params { suite: $suite, test: $test, type: $type }
+            | get line
+            | str join "\n"
+    )
 }
