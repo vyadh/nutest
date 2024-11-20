@@ -8,76 +8,78 @@ use ../../std/testing/discover.nu [
 #  cd crates/nu-std
 #  nu -c 'use std/testing; testing list-files .'
 
-# [test]
-def discover-specific-test-file [] {
-  let temp = mktemp --directory
-  let file = $temp | path join "test_foo.nu"
-  touch ($file)
-
-  let result = list-files $file
-
-  assert equal $result [
-    ($temp | path join "test_foo.nu")
-  ]
-
-  # todo remove in #[after-each]
-  rm --recursive $temp
-}
-
-# [test]
-def discover-test-files [] {
-  let temp = mktemp --directory
-  mkdir ($temp | path join "subdir")
-
-  touch ($temp | path join "test_foo.nu")
-  touch ($temp | path join "bar_test.nu")
-  touch ($temp | path join "subdir" "test_baz.nu")
-
-  let result = list-files $temp | sort
-
-  assert equal $result [
-    ($temp | path join "bar_test.nu")
-    ($temp | path join "subdir" "test_baz.nu")
-    ($temp | path join "test_foo.nu")
-  ]
-
-  # todo remove in #[after-each]
-  rm --recursive $temp
-}
-
-# [test]
-def discover-any-files [] {
-  let temp = mktemp --directory
-
-  touch ($temp | path join "test_foo.nu")
-  touch ($temp | path join "any.nu")
-
-  let result = list-files $temp "**/*.nu" | sort
-
-  assert equal $result [
-    ($temp | path join "any.nu")
-    ($temp | path join "test_foo.nu")
-  ]
-
-  # todo remove in #[after-each]
-  rm --recursive $temp
-}
-
-# [test]
-def discover-no-files [] {
-  let temp = mktemp --directory
-
-  let result = list-files $temp
-
-  assert equal $result []
-
-  # todo remove in #[after-each]
-  rm --recursive $temp
-}
-
-# [test]
-def discover-test-suites [] {
+#[before-each]
+def setup [] {
     let temp = mktemp --directory
+    {
+        temp: $temp
+    }
+}
+
+#[after-each]
+def cleanup [] {
+    let context = $in
+    rm --recursive $context.temp
+}
+
+#[test]
+def discover-specific-test-file [] {
+    let temp = $in.temp
+    let file = $temp | path join "test_foo.nu"
+    touch ($file)
+
+    let result = list-files $file
+
+    assert equal $result [
+      ($temp | path join "test_foo.nu")
+    ]
+}
+
+#[test]
+def discover-test-files [] {
+    let temp = $in.temp
+    mkdir ($temp | path join "subdir")
+
+    touch ($temp | path join "test_foo.nu")
+    touch ($temp | path join "bar_test.nu")
+    touch ($temp | path join "subdir" "test_baz.nu")
+
+    let result = list-files $temp | sort
+
+    assert equal $result [
+      ($temp | path join "bar_test.nu")
+      ($temp | path join "subdir" "test_baz.nu")
+      ($temp | path join "test_foo.nu")
+    ]
+}
+
+#[test]
+def discover-any-files [] {
+    let temp = $in.temp
+
+    touch ($temp | path join "test_foo.nu")
+    touch ($temp | path join "any.nu")
+
+    let result = list-files $temp "**/*.nu" | sort
+
+    assert equal $result [
+      ($temp | path join "any.nu")
+      ($temp | path join "test_foo.nu")
+    ]
+}
+
+#[test]
+def discover-no-files [] {
+    let temp = $in.temp
+
+    let result = list-files $temp
+
+    assert equal $result []
+}
+
+#[test]
+def discover-test-suites [] {
+    let temp = $in.temp
     let test_file_1 = $temp | path join "test_1.nu"
     let test_file_2 = $temp | path join "test_2.nu"
 
@@ -116,7 +118,4 @@ def discover-test-suites [] {
             ]
         }
     ]
-
-    # todo remove in #[after-each]
-    rm --recursive $temp
 }
