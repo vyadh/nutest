@@ -11,6 +11,7 @@ export def main [
     use discover
     use orchestrator
 
+    # todo error messages are bad when these are misconfgured
     let path = $path | default $env.PWD
     let suite = $suite | default ".*"
     let test = $test | default ".*"

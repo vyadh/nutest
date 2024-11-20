@@ -62,7 +62,7 @@ def run-suite [name: string, path: string, tests: table<name: string, type: stri
             "
     ) | complete # TODO need a streaming version
 
-    # TODO error can carry good info here (see run-suite-with-broken-test)
+    # Useful for understanding event stream
     #print $result
 
     if $result.exit_code == 0 {
@@ -102,7 +102,6 @@ export def create-suite-plan-data [tests: table<name: string, type: string>] -> 
 def create-test-plan-data [test: record<name: string, type: string>] -> string {
     $'{ name: "($test.name)", type: "($test.type)", execute: { ($test.name) } }'
 }
-
 
 def process-event [] {
     let event = $in

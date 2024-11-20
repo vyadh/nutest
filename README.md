@@ -29,11 +29,6 @@ Allows before-each and after-each commands that can generate context for each te
 Captures test output.
 
 
-## Needed Improvements
-
-There are some instances around error handling that don't quite do as I expect. Should improve delegated nu commands and exit codes and visibility of what went wrong incl syntax errors.
-
-
 ## Expected Features (todo list)
 
 - Before all and after all
@@ -53,10 +48,10 @@ There are some instances around error handling that don't quite do as I expect. 
 
 ## May Implement
 
-- Combine output and error but with a marker.
+- Combine output and error, but perhaps add error markup.
 - Optionally allow running ignored tests.
 - Don't output the output by default unless tests fail.
-- Colourise output such as stderror only when supporting terminal detected
+- Colourise output such as stderr only when supporting terminal detected
 
 
 ## Alternatives

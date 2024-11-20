@@ -4,14 +4,6 @@ const success_message = "I'd much rather be happy than right any day"
 const warning_message = "Don't Panic"
 const failure_message = "No tea"
 
-def main [] {
-  execute-plan-empty
-  execute-plan-test
-  execute-plan-tests
-  execute-before-test
-  execute-after-test
-}
-
 def test-run [suite: string, plan: list<record>] -> table<suite, test, type, payload> {
     let result = (
         ^$nu.current-exe
@@ -127,10 +119,75 @@ def execute-after-test [] {
         [suite test type payload];
         [ "after-suite", "test", "start", {} ]
         [ "after-suite", "test", "output", { lines: ["What do you get if you multiply six by nine?", 42] } ]
-        [ "after-suite", "test", "result", { success: true } ]
         [ "after-suite", "test", "output", { lines: ["What do you get if you multiply six by nine?", 42] } ]
+        [ "after-suite", "test", "result", { success: true } ]
         [ "after-suite", "test", "finish", {} ]
     ]
+}
+
+#[test]
+def execute-before-and-after-captures-output [] {
+    let plan = [
+        { name: "before-each", type: "before-each", execute: "{ success; get-context }" }
+        { name: "test1", type: "test", execute: "{ noop }" }
+        { name: "test2", type: "test", execute: "{ noop }" }
+        { name: "after-each", type: "after-each", execute: "{ warning }" }
+    ]
+
+    let results = test-run "suite" $plan
+
+    assert equal $results [
+        [suite test type payload];
+        [ "suite", "test1", "start", {} ]
+        [ "suite", "test1", "output", { lines: [$success_message] } ]
+        [ "suite", "test1", "error", { lines: [$warning_message] } ]
+        [ "suite", "test1", "result", { success: true } ]
+        [ "suite", "test1", "finish", {} ]
+        [ "suite", "test2", "start", {} ]
+        [ "suite", "test2", "output", { lines: [$success_message] } ]
+        [ "suite", "test2", "error", { lines: [$warning_message] } ]
+        [ "suite", "test2", "result", { success: true } ]
+        [ "suite", "test2", "finish", {} ]
+    ]
+}
+
+#[test]
+def execute-before-error-handling [] {
+    let plan = [
+        { name: "test", type: "test", execute: "{ noop }" }
+        { name: "before-each", type: "before-each", execute: "{ failure }" }
+    ]
+
+    let results = test-run "suite" $plan
+
+    assert equal $results [
+        [suite test type payload];
+        [ "suite", "test", "start", {} ]
+        [ "suite", "test", "result", { success: false } ]
+        [ "suite", "test", "error", { lines: [$failure_message] } ]
+        [ "suite", "test", "finish", {} ]
+    ]
+}
+
+#[test]
+def execute-after-error-handling [] {
+    let plan = [
+        { name: "test", type: "test", execute: "{ noop }" }
+        { name: "after-each", type: "before-each", execute: "{ failure }" }
+    ]
+
+    let results = test-run "suite" $plan
+
+    assert equal $results [
+        [suite test type payload];
+        [ "suite", "test", "start", {} ]
+        [ "suite", "test", "result", { success: false } ]
+        [ "suite", "test", "error", { lines: [$failure_message] } ]
+        [ "suite", "test", "finish", {} ]
+    ]
+}
+
+def noop [] {
 }
 
 def success [] {

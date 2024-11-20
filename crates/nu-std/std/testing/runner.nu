@@ -20,17 +20,6 @@
 
 # TODO prefix commands with something unusual to avoid conflicts
 
-def main [] {
-    const failure_message = "No tea"
-    def failure [] {
-        error make { msg: $failure_message }
-    }
-    let plan = [
-        { name: "test_failure", type: "test", execute: { failure } }
-    ]
-    let results = plan-execute-suite-emit "suite" $plan
-}
-
 export def plan-execute-suite-emit [$suite: string, suite_data: list] {
     with-env { NU_TEST_SUITE_NAME: $suite } {
         plan-execute-suite $suite_data
@@ -47,52 +36,34 @@ def plan-execute-suite [suite_data: list] {
     let results = $tests | each { |test|
         # Allow print output to be associated with specific tests by adding name to the environment
         with-env { NU_TEST_NAME: $test.name } {
-            # TODO put try here?
             emit "start" { }
-            let context = execute-before $before_each
-            let result = execute-test $context $test.name $test.execute
-            $context | execute-after $after_each
+            try {
+                let context = execute-before $before_each
+                let result = $context | do $test.execute
+                $context | execute-after $after_each
+                emit "result" { success: true }
+            } catch { |error|
+                emit "result" { success: false }
+                print -e (format_error $error)
+            }
             emit "finish" { }
-            $result
         }
     }
 }
 
-#  TODO capture out/err
+# TODO better message on incompatible signature
 def execute-before [items: list] -> record {
-    # TODO test failure handling
-    try {
-        $items | reduce --fold {} { |item, acc|
-            $acc | merge (do $item.execute)
-        }
-    } catch { |error|
-        print -e $error
-        {}
+    $items | reduce --fold {} { |item, acc|
+        $acc | merge (do $item.execute)
     }
 }
 
-#  TODO capture out/err
+# TODO better message on incompatible signature
 def execute-after [items: list] {
-    # TODO test failure handling
-    try {
-        let context = $in
-        $items | each { |item|
-            let execute = $item.execute
-            $context | do $execute
-        }
-    } catch { |error|
-        print -e $error
-    }
-}
-
-def execute-test [context: record, name: string, execute: closure] -> record {
-    try {
+    let context = $in
+    $items | each { |item|
+        let execute = $item.execute
         $context | do $execute
-        emit "result" { success: true }
-    } catch { |error|
-        emit "result" { success: false }
-        print -e (format_error $error)
-        # TODO - Capture error output?
     }
 }
 
@@ -143,5 +114,6 @@ def emit [type: string, payload: record] {
         type: $type
         payload: $payload
     }
-    print-internal $"($event | to nuon)"
+    let packet = $event | to nuon
+    print-internal $packet
 }
