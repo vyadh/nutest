@@ -29,10 +29,42 @@
 #   `execute` is the closure function of `type`
 #
 
-# TODO - Add support for: before-all, after-all
-export def plan-execute-suite [suite_data: list] -> table<name, success, output, error, failure> {
-    nu-test-db-create
+# TODO - Rename runner?
 
+def main2 [] {
+    const success_message = "I'd much rather be happy than right any day"
+    const warning_message = "Don't Panic"
+    const failure_message = "No tea"
+
+    def success [] {
+        print $success_message
+    }
+    def warning [] { print -e $warning_message }
+    def failure [] { error make { msg: $failure_message } }
+
+    let plan = [
+        { name: "test_success", type: "test", execute: { success } }
+        { name: "test_warning", type: "test", execute: { warning } }
+        { name: "test_failure", type: "test", execute: { failure } }
+    ]
+
+    emit "testing" {name: 'escape "}'}
+    print "foo" "bar"
+    plan-execute-suite-emit "some-suite" $plan
+}
+
+# TODO prefix commands with something unusual to avoid conflicts
+
+export def plan-execute-suite-emit [$suite: string, suite_data: list] {
+    with-env { NU_TEST_SUITE_NAME: $suite } {
+        emit "suite-start" { }
+        plan-execute-suite $suite_data
+        emit "suite-end" {}
+    }
+}
+
+# TODO - Add support for: before-all, after-all
+def plan-execute-suite [suite_data: list] {
     let plan = $suite_data | group-by type
     let before_each = $plan | get --ignore-errors "before-each" | default []
     let after_each = $plan | get --ignore-errors "after-each" | default []
@@ -41,14 +73,15 @@ export def plan-execute-suite [suite_data: list] -> table<name, success, output,
     let results = $tests | each { |test|
         # Allow print output to be associated with specific tests by adding name to the environment
         with-env { NU_TEST_NAME: $test.name } {
+            # TODO put try here?
+            emit "test-begin" { }
             let context = execute-before $before_each
             let result = execute-test $context $test.name $test.execute
             $context | execute-after $after_each
+            emit "test-end" { }
             $result
         }
     }
-
-    $results
 }
 
 #  TODO capture out/err
@@ -80,23 +113,12 @@ def execute-after [items: list] {
 
 def execute-test [context: record, name: string, execute: closure] -> record {
     try {
-        # TODO what to do with result of this?
         $context | do $execute
-        {
-            name: $name
-            success: true
-            output: (nu-test-db-query $name "output")
-            error: (nu-test-db-query $name "error")
-            failure: null
-        }
+        emit "result" { success: true }
     } catch { |error|
-        {
-            name: $name
-            success: false
-            output: (nu-test-db-query $name "output")
-            error: (nu-test-db-query $name "error")
-            failure: (format_error $error)
-        }
+        emit "result" { success: false }
+        print -e (format_error $error)
+        # TODO - Capture error output?
     }
 }
 
@@ -130,38 +152,22 @@ def format_error [error: record] -> string {
     }
 }
 
-# Overriding the print command to capture and return test output
-# TODO test sql injection
+# Keep a reference to the internal print command
+alias print-internal = print
+
+# Override the print command to provide context for output
 def print [--stderr (-e), --raw (-r), --no-newline (-n), ...rest: string] {
-    let test = $env.NU_TEST_NAME
     let type = if $stderr { "error" } else { "output" }
-    let message = $rest | str join '\n'
-    let row = { test: $test, type: $type, message: $message }
-    $row | stor insert --table-name nu_test_prints
+    emit $type { lines: $rest }
 }
 
-def nu-test-db-create [] {
-    stor create --table-name nu_test_prints --columns {
-        test : str
-        type : str
-        message : str
+def emit [type: string, payload: record] {
+    let event = {
+        timestamp: (date now | format date "%+")
+        suite: $env.NU_TEST_SUITE_NAME?
+        test: $env.NU_TEST_NAME?
+        type: $type
+        payload: $payload
     }
-}
-
-# We close the db so tests of this do not open the db multiple times
-def nu-test-db-close [] {
-    stor delete --table-name nu_test_prints
-}
-
-def nu-test-db-query [test: string, type: string] -> string {
-    (
-        stor open
-            | query db $"
-                SELECT message
-                FROM nu_test_prints
-                WHERE test = :test AND type = :type
-            " --params { test: $test, type: $type }
-            | get message
-            | str join "\n"
-    )
+    print-internal $"($event | to nuon)"
 }

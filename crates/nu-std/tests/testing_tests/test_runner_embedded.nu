@@ -1,111 +1,146 @@
 use std/assert
-use ../../std/testing/runner_embedded.nu [
-    plan-execute-suite
-]
 
 const success_message = "I'd much rather be happy than right any day"
 const warning_message = "Don't Panic"
 const failure_message = "No tea"
 
-# [before-each]
-def create-db [] -> record {
-    # Given the in-process calls to the full test method, the database needs ot be closed for test
-    try { nu-test-db-close }
-    {}
+def main [] {
+  execute-plan-empty
+  execute-plan-test
+  execute-plan-tests
+  execute-before-test
+  execute-after-test
 }
 
-# [test]
+def test-run [suite: string, plan: list<record>] -> table<suite, test, type, payload> {
+    let result = (
+        ^$nu.current-exe
+            --no-config-file
+            --commands $"
+                source std/testing/runner_embedded.nu
+                source ($env.CURRENT_FILE)
+                plan-execute-suite-emit ($suite) ($plan)
+            "
+    ) | complete
+
+    if $result.exit_code != 0 {
+        error make { msg: $result.stderr }
+    }
+
+    (
+        $result.stdout
+            | lines
+            | each { $in | from nuon | reject timestamp }
+    )
+}
+
+#[test]
 def execute-plan-empty [] {
     let plan = []
-    let results = plan-execute-suite $plan
+    let results = test-run "empty-suite" $plan
 
-    assert equal $results []
+    assert equal $results [
+        [suite test type payload];
+        [ "empty-suite", null, "suite-start", {} ]
+        [ "empty-suite", null, "suite-end", {} ]
+    ]
 }
 
-# [test]
+#[test]
 def execute-plan-test [] {
     let plan = [
-        { name: "test_success", type: "test", execute: { success } }
+        { name: "testing", type: "test", execute: "{ success }" }
     ]
 
-    let results = plan-execute-suite $plan
+    let results = test-run "suite" $plan
 
     assert equal $results [
-        {
-            name: "test_success"
-            success: true
-            output: $success_message
-            error: ""
-            failure: null
-        }
+        [suite test type payload];
+        [ "suite", null, "suite-start", {} ]
+        [ "suite", "testing", "test-begin", {} ]
+        [ "suite", "testing", "output", { lines: [$success_message] } ]
+        [ "suite", "testing", "result", { success: true } ]
+        [ "suite", "testing", "test-end", {} ]
+        [ "suite", null, "suite-end", {} ]
     ]
 }
 
-# [test]
+#[test]
 def execute-plan-tests [] {
     let plan = [
-        { name: "test_success", type: "test", execute: { success } }
-        { name: "test_success_warning", type: "test", execute: { warning; success } }
-        { name: "test_failure", type: "test", execute: { failure } }
-        { name: "test_half_failure", type: "test", execute: { success; warning; failure } }
+        { name: "test_success", type: "test", execute: "{ success }" }
+        { name: "test_success_warning", type: "test", execute: "{ warning; success }" }
+        { name: "test_failure", type: "test", execute: "{ failure }" }
+        { name: "test_half_failure", type: "test", execute: "{ success; warning; failure }" }
     ]
 
-    let results = plan-execute-suite $plan
+    let results = test-run "suite" $plan
 
     assert equal $results [
-        { name: "test_success", success: true, output: $success_message, error: "", failure: null }
-        { name: "test_success_warning", success: true, output: $success_message, error: $warning_message, failure: null }
-        { name: "test_failure", success: false, output: "", error: "", failure: $failure_message }
-        { name: "test_half_failure", success: false, output: $success_message, error: $warning_message, failure: $failure_message }
+        [suite test type payload];
+        [ "suite", null, "suite-start", {} ]
+        [ "suite", "test_success", "test-begin", {} ]
+        [ "suite", "test_success", "output", { lines: [$success_message] } ]
+        [ "suite", "test_success", "result", { success: true } ]
+        [ "suite", "test_success", "test-end", {} ]
+        [ "suite", "test_success_warning", "test-begin", {} ]
+        [ "suite", "test_success_warning", "error", { lines: [$warning_message] } ]
+        [ "suite", "test_success_warning", "output", { lines: [$success_message] } ]
+        [ "suite", "test_success_warning", "result", { success: true } ]
+        [ "suite", "test_success_warning", "test-end", {} ]
+        [ "suite", "test_failure", "test-begin", {} ]
+        [ "suite", "test_failure", "result", { success: false } ]
+        [ "suite", "test_failure", "error", { lines: [$failure_message] } ]
+        [ "suite", "test_failure", "test-end", {} ]
+        [ "suite", "test_half_failure", "test-begin", {} ]
+        [ "suite", "test_half_failure", "output", { lines: [$success_message] } ]
+        [ "suite", "test_half_failure", "error", { lines: [$warning_message] } ]
+        [ "suite", "test_half_failure", "result", { success: false } ]
+        [ "suite", "test_half_failure", "error", { lines: [$failure_message] } ]
+        [ "suite", "test_half_failure", "test-end", {} ]
+        [ "suite", null, "suite-end", {} ]
     ]
 }
 
-# [test]
+#[test]
 def execute-before-test [] {
-    def get-context [] {
-        {
-            question: "What do you get if you multiply six by nine?"
-            answer: 42
-        }
-    }
-    def assert-context-received [] {
-        assert equal $in (get-context)
-    }
-
     let plan = [
-        { name: "test-before-each", type: "test", execute: { assert-context-received } }
-        { name: "before-each", type: "before-each", execute: { get-context } }
+        { name: "test", type: "test", execute: "{ assert-context-received }" }
+        { name: "before-each", type: "before-each", execute: "{ get-context }" }
     ]
 
-    let results = plan-execute-suite $plan
+    let results = test-run "before-suite" $plan
 
     assert equal $results [
-        { name: "test-before-each", success: true, output: "", error: "", failure: null }
+        [suite test type payload];
+        [ "before-suite", null, "suite-start", {} ]
+        [ "before-suite", "test", "test-begin", {} ]
+        [ "before-suite", "test", "output", { lines: ["What do you get if you multiply six by nine?", 42] } ]
+        [ "before-suite", "test", "result", { success: true } ]
+        [ "before-suite", "test", "test-end", {} ]
+        [ "before-suite", null, "suite-end", {} ]
     ]
 }
 
-# [test]
+#[test]
 def execute-after-test [] {
-    def get-context [] {
-        {
-            question: "What do you get if you multiply six by nine?"
-            answer: 42
-        }
-    }
-    def assert-context-received [] {
-        assert equal $in (get-context)
-    }
-
     let plan = [
-        { name: "test-each", type: "test", execute: { assert-context-received } }
-        { name: "setup", type: "before-each", execute: { get-context } }
-        { name: "cleanup", type: "after-each", execute: { assert-context-received } }
+        { name: "test", type: "test", execute: "{ assert-context-received }" }
+        { name: "setup", type: "before-each", execute: "{ get-context }" }
+        { name: "cleanup", type: "after-each", execute: "{ assert-context-received }" }
     ]
 
-    let results = plan-execute-suite $plan
+    let results = test-run "after-suite" $plan
 
     assert equal $results [
-        { name: "test-each", success: true, output: "", error: "", failure: null }
+        [suite test type payload];
+        [ "after-suite", null, "suite-start", {} ]
+        [ "after-suite", "test", "test-begin", {} ]
+        [ "after-suite", "test", "output", { lines: ["What do you get if you multiply six by nine?", 42] } ]
+        [ "after-suite", "test", "result", { success: true } ]
+        [ "after-suite", "test", "output", { lines: ["What do you get if you multiply six by nine?", 42] } ]
+        [ "after-suite", "test", "test-end", {} ]
+        [ "after-suite", null, "suite-end", {} ]
     ]
 }
 
@@ -119,4 +154,17 @@ def warning [] {
 
 def failure [] {
     error make { msg: $failure_message }
+}
+
+def get-context [] {
+    {
+        question: "What do you get if you multiply six by nine?"
+        answer: 42
+    }
+}
+
+def assert-context-received [] {
+    let context = $in
+    print ($context | get question) ($context | get answer)
+    assert equal $context (get-context)
 }
