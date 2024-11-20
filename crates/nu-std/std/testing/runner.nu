@@ -1,186 +1,148 @@
-use std/assert
-
-# This script generates the test suite data and embeds a runner into a nushell sub-process to execute.
-
+#
+# This script is used by the runner to directly invoke tests from the plan data.
+#
+#
 # INPUT DATA STRUCTURES
 #
-# test:
-# {
-#     name: string
-#     type: string
-# }
+# suite_data:
+# [
+#     {
+#         name: string
+#         type: string
+#         execute: closure
+#     }
+# ]
 #
-# suite:
-# {
-#     name: string
-#     path: string
-#     tests: list<test>
-# }
+# Where:
+#   `type` can be "test", "before-all", etc.
+#   `execute` is the closure function of `type`
 #
-# OUTPUT DATA STRUCTURES
-#
-# test-result:
-# {
-#     suite: string
-#     test: string
-#     result: bool
-#     output: string
-#     error: string
-# }
-#
-# suite-result:
-# {
-#     name: string
-#     results: list<test-result>
-# }
 
-# TODO - Move all tests to main test dir
-# TODO - Rename orchestrator?
+# TODO prefix commands with something unusual to avoid conflicts
 
-#suites: table<name: string, path: string, tests: table<name: string, type: string>>
-export def run-suites [suites: list] -> table<name: string, results: table<name: string, result: bool, output: string, error: string> {
-    db-create
-
-    $suites | par-each { |suite|
-        run-suite $suite.name $suite.path $suite.tests
+def main [] {
+    const failure_message = "No tea"
+    def failure [] {
+        error make { msg: $failure_message }
     }
-
-    let results = db-query
-
-    db-delete
-
-    $results
+    let plan = [
+        { name: "test_failure", type: "test", execute: { failure } }
+    ]
+    let results = plan-execute-suite-emit "suite" $plan
 }
 
-def run-suite [name: string, path: string, tests: table<name: string, type: string>] {
-    let plan_data = create-suite-plan-data $tests
+export def plan-execute-suite-emit [$suite: string, suite_data: list] {
+    with-env { NU_TEST_SUITE_NAME: $suite } {
+        plan-execute-suite $suite_data
+    }
+}
 
-    let result = (
-        ^$nu.current-exe
-            --no-config-file
-            --commands $"
-                source std/testing/runner_embedded.nu
-                source ($path)
-                plan-execute-suite-emit ($name) ($plan_data)
-            "
-    ) | complete # TODO need streaming version
+# TODO - Add support for: before-all, after-all
+def plan-execute-suite [suite_data: list] {
+    let plan = $suite_data | group-by type
+    let before_each = $plan | get --ignore-errors "before-each" | default []
+    let after_each = $plan | get --ignore-errors "after-each" | default []
+    let tests = $plan | get --ignore-errors "test" | default []
 
-    # TODO error can carry good info here (see run-suite-with-broken-test)
-    #print $result
+    let results = $tests | each { |test|
+        # Allow print output to be associated with specific tests by adding name to the environment
+        with-env { NU_TEST_NAME: $test.name } {
+            # TODO put try here?
+            emit "start" { }
+            let context = execute-before $before_each
+            let result = execute-test $context $test.name $test.execute
+            $context | execute-after $after_each
+            emit "finish" { }
+            $result
+        }
+    }
+}
 
-    if $result.exit_code == 0 {
-        $result.stdout
-            | lines
-            | each { $in | from nuon | process-event }
+#  TODO capture out/err
+def execute-before [items: list] -> record {
+    # TODO test failure handling
+    try {
+        $items | reduce --fold {} { |item, acc|
+            $acc | merge (do $item.execute)
+        }
+    } catch { |error|
+        print -e $error
+        {}
+    }
+}
+
+#  TODO capture out/err
+def execute-after [items: list] {
+    # TODO test failure handling
+    try {
+        let context = $in
+        $items | each { |item|
+            let execute = $item.execute
+            $context | do $execute
+        }
+    } catch { |error|
+        print -e $error
+    }
+}
+
+def execute-test [context: record, name: string, execute: closure] -> record {
+    try {
+        $context | do $execute
+        emit "result" { success: true }
+    } catch { |error|
+        emit "result" { success: false }
+        print -e (format_error $error)
+        # TODO - Capture error output?
+    }
+}
+
+def format_error [error: record] -> list<string> {
+    let json = $error.json | from json
+    let message = $json.msg
+    let help = $json | get help?
+    let labels = $json | get labels?
+
+    if $help != null {
+        [$message, $help]
+    } else if ($labels != null) {
+        let detail = $labels | each { |label|
+            | get text
+            # Not sure why this is in the middle of the error json...
+            | str replace --all "originates from here" ''
+        } | str join "\n"
+
+        if ($message | str contains "Assertion failed") {
+            let formatted = ($detail
+                | str replace --all --regex '\n[ ]+Left' "\n|>Left"
+                | str replace --all --regex '\n[ ]+Right' "\n|>Right"
+                | str replace --all --regex '[\n\r]+' ''
+                | str replace --all "|>" "\n|>") | str join ""
+            [$"(ansi red)($message)(ansi reset)", ...($formatted | lines)]
+         } else {
+            # TODO why not as an array?
+            [$message, ...($detail | lines)]
+         }
     } else {
-        # This is only triggered on a suite-level failure not caught by the embedded runner
-        # Replicate this suite-level failure for every test
-        $tests | each { |test|
-            {
-                timestamp: (date now | format date "%+")
-                suite: $name
-                test: $test.name
-                type: "result"
-                payload: { success: false }
-            } | process-event
-            {
-                timestamp: (date now | format date "%+")
-                suite: $name
-                test: $test.name
-                type: "error"
-                payload: { lines: [$result.stderr] }
-            } | process-event
-        }
+        [$message]
     }
 }
 
-export def create-suite-plan-data [tests: table<name: string, type: string>] -> string {
-    let plan_data = $tests
-            | each { |test| create-test-plan-data $test }
-            | str join ", "
+# Keep a reference to the internal print command
+alias print-internal = print
 
-    $"[ ($plan_data) ]"
+# Override the print command to provide context for output
+def print [--stderr (-e), --raw (-r), --no-newline (-n), ...rest: string] {
+    let type = if $stderr { "error" } else { "output" }
+    emit $type { lines: ($rest | flatten) }
 }
 
-def create-test-plan-data [test: record<name: string, type: string>] -> string {
-    $'{ name: "($test.name)", type: "($test.type)", execute: { ($test.name) } }'
-}
-
-
-def process-event [] {
-    let event = $in
-    let template = { suite: $event.suite, test: $event.test }
-
-    match $event {
-        { type: "result" } => {
-            let row = $template | merge { success: $event.payload.success }
-            $row | stor insert --table-name nu_tests
-        }
-        { type: "output" } => {
-            $event.payload.lines | each { |line|
-                let row = $template | merge { type: output, line: $line }
-                $row | stor insert --table-name nu_test_output
-            }
-        }
-        { type: "error" } => {
-            $event.payload.lines | each { |line|
-                let row = $template | merge { type: error, line: $line }
-                $row | stor insert --table-name nu_test_output
-            }
-        }
+def emit [type: string, payload: record] {
+    let event = {
+        timestamp: (date now | format date "%+")
+        suite: $env.NU_TEST_SUITE_NAME?
+        test: $env.NU_TEST_NAME?
+        type: $type
+        payload: $payload
     }
-}
-
-def db-create [] {
-    stor create --table-name nu_tests --columns {
-        suite: str
-        test: str
-        success: bool
-    }
-    stor create --table-name nu_test_output --columns {
-        suite: str
-        test: str
-        type: str
-        line: str
-    }
-}
-
-# We close the db so tests of this do not open the db multiple times
-def db-delete [] {
-    stor delete --table-name nu_tests
-    stor delete --table-name nu_test_output
-}
-
-def db-query [] -> record {
-    (
-        stor open
-            | query db $"
-                SELECT suite, test, success
-                FROM nu_tests
-                ORDER BY suite, test
-            "
-            | each { |row|
-                {
-                    suite: $row.suite
-                    test: $row.test
-                    success: (if $row.success == 1 { true } else { false })
-                    output: (db-query-output $row.suite $row.test "output")
-                    error: (db-query-output $row.suite $row.test "error")
-                }
-            }
-    )
-}
-
-# TODO use subquery instead
-def db-query-output [suite: string, test: string, type: string] -> string {
-    (
-        stor open
-            | query db $"
-                SELECT line
-                FROM nu_test_output
-                WHERE suite = :suite AND test = :test AND type = :type
-            " --params { suite: $suite, test: $test, type: $type }
-            | get line
-            | str join "\n"
-    )
+    print-internal $"($event | to nuon)"
 }

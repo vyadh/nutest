@@ -70,11 +70,9 @@ Discovers tests by scanning matching files in the path, sourcing that code and c
 
 For each file with tests (a suite), dispatch the suite to run on a single Nu subshell.
 
-Capture test success and failure as well as any output (by overriding print command) and return results via stdout.
+Capture test success and failure as well as any output (by overriding print command) and stream as test events on stdout.
 
-Collate each subprocess run and print the test results table.
-
-(The above mechanism will change with move to an event-based test report architecture.)
+Collate all events for all suites and tests being run print the test results table.
 
 
 ## Limitations

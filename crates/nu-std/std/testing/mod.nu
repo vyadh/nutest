@@ -1,15 +1,15 @@
 module discover.nu
-module runner.nu
+module orchestrator.nu
 
 # nu -c "use std/testing; (testing .)"
 
 export def main [path: string = "."] {
     use discover
-    use runner
+    use orchestrator
 
     #list<record<name: string, path: string, tests<table<name: string, type: string>>>
     let suites = discover list-test-suites $path
-    let results = runner run-suites $suites
+    let results = orchestrator run-suites $suites
     let tests = $results
 
     $tests
