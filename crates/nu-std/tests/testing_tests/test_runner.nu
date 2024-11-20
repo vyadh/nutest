@@ -76,7 +76,7 @@ def run-suite-with-passing-test [] {
 
     let result = run-suites [{ name: $suite.name, path: $suite.path, tests: $suite.tests }]
 
-    assert equal ($result | reject failure) [
+    assert equal ($result) [
         {
             suite: "passing-test"
             test: "passing-test"
@@ -97,17 +97,16 @@ def run-suite-with-broken-test [] {
 
     let result = run-suites [{ name: "suite", path: $test_file, tests: $tests }]
 
-    assert equal ($result | reject failure) [
+    assert equal ($result | reject error) [
         {
             suite: "suite"
             test: "broken-test"
             success: false
             output: ""
-            error: ""
         }
     ]
 
-    let error = $result | get failure | first
+    let error = $result | get error | first
     assert str contains $error "Missing required positional argument"
 }
 
@@ -121,17 +120,16 @@ def run-suite-with-missing-test [] {
 
     let result = run-suites [{ name: "test-suite", path: $test_file, tests: $tests }]
 
-    assert equal ($result | reject failure) [
+    assert equal ($result | reject error) [
         {
             suite: "test-suite"
             test: "missing-test"
             success: false
             output: ""
-            error: ""
         }
     ]
 
-    let error = $result | get failure | first
+    let error = $result | get error | first
     assert str contains $error "`missing-test` is neither a Nushell built-in or a known external command"
 }
 
@@ -143,17 +141,16 @@ def run-suite-with-failing-test [] {
 
     let result = run-suites [{ name: $suite.name, path: $suite.path, tests: $suite.tests }]
 
-    assert equal ($result | reject failure) [
+    assert equal ($result | reject error) [
         {
             suite: $suite.name
             test: "failing-test"
             success: false
             output: ""
-            error: ""
         }
     ]
 
-    let error = $result | get failure | first
+    let error = $result | get error | first
     assert str contains $error "Assertion failed."
     assert str contains $error "These are not equal."
 }
@@ -168,20 +165,18 @@ def run-suite-with-multiple-tests [] {
 
     let result = run-suites [ $suite ]
 
-    assert equal ($result | reject failure) [
+    assert equal ($result | reject error) [
         {
             suite: "multi-test"
             test: "test1"
             success: true
             output: ""
-            error: ""
         }
         {
             suite: "multi-test"
             test: "test2"
             success: false
             output: ""
-            error: ""
         }
     ]
 }
@@ -200,11 +195,11 @@ def run-multiple-suites [] {
 
     let result = run-suites [$suite1, $suite2]
 
-    assert equal ($result | reject failure) [
-        { suite: "suite1", test: "test1", success: true, output: "", error: "" }
-        { suite: "suite1", test: "test2", success: false, output: "", error: "" }
-        { suite: "suite2", test: "test3", success: true, output: "", error: "" }
-        { suite: "suite2", test: "test4", success: false, output: "", error: "" }
+    assert equal ($result | reject error) [
+        { suite: "suite1", test: "test1", success: true, output: "" }
+        { suite: "suite1", test: "test2", success: false, output: "" }
+        { suite: "suite2", test: "test3", success: true, output: "" }
+        { suite: "suite2", test: "test4", success: false, output: "" }
     ]
 }
 

@@ -38,7 +38,7 @@ use std/assert
 # TODO - Rename orchestrator?
 
 #suites: table<name: string, path: string, tests: table<name: string, type: string>>
-export def run-suites [suites: list] -> table<name: string, results: table<name: string, result: bool, output: string, error: string, failure: record<msg: string, debug: string>> {
+export def run-suites [suites: list] -> table<name: string, results: table<name: string, result: bool, output: string, error: string> {
     db-create
 
     $suites | par-each { |suite|
@@ -165,8 +165,7 @@ def db-query [] -> record {
                     test: $row.test
                     success: (if $row.success == 1 { true } else { false })
                     output: (db-query-output $row.suite $row.test "output")
-                    error: ""
-                    failure: (db-query-output $row.suite $row.test "error")
+                    error: (db-query-output $row.suite $row.test "error")
                 }
             }
     )
