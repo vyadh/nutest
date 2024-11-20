@@ -33,26 +33,22 @@
 export def plan-execute-suite [suite_data: list] -> table<name, success, output, error, failure> {
     nu-test-db-create
 
-    # TODO group by type
-    let before_each_items = $suite_data | items-with-type "before-each"
-    let after_each_items = $suite_data | items-with-type "after-each"
-    let tests = $suite_data | items-with-type "test"
+    let plan = $suite_data | group-by type
+    let before_each = $plan | get --ignore-errors "before-each" | default []
+    let after_each = $plan | get --ignore-errors "after-each" | default []
+    let tests = $plan | get --ignore-errors "test" | default []
 
     let results = $tests | each { |test|
         # Allow print output to be associated with specific tests by adding name to the environment
         with-env { NU_TEST_NAME: $test.name } {
-            let context = execute-before $before_each_items
+            let context = execute-before $before_each
             let result = execute-test $context $test.name $test.execute
-            $context | execute-after $after_each_items
+            $context | execute-after $after_each
             $result
         }
     }
 
     $results
-}
-
-def items-with-type [type: string] {
-    $in | where ($it.type == $type)
 }
 
 #  TODO capture out/err
