@@ -16,9 +16,10 @@ def test-run [suite: string, plan: list<record>] -> table<suite, test, type, pay
     let result = (
         ^$nu.current-exe
             --no-config-file
+            # TODO try to avoid explicit paths but $env.CURRENT_FILE doesn't work for our generated code
             --commands $"
                 source std/testing/runner_embedded.nu
-                source ($env.CURRENT_FILE)
+                source tests/testing_tests/test_runner_embedded.nu
                 plan-execute-suite-emit ($suite) ($plan)
             "
     ) | complete

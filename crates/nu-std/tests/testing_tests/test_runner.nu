@@ -6,7 +6,7 @@ use ../../std/testing/runner.nu [
 ]
 
 def main [] {
-    #validate-test-plan
+    validate-test-plan
 
     let context = setup
     $context | run-suite-with-no-tests

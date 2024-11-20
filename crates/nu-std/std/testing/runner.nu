@@ -115,5 +115,8 @@ def process-event [] -> record {
                 failure: null
             }
         }
+        { type: "error" } => {
+            print -e $event.payload.lines
+        }
     }
 }
