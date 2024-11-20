@@ -34,9 +34,6 @@ use std/assert
 #     results: list<test-result>
 # }
 
-# TODO - Move all tests to main test dir
-# TODO - Rename orchestrator?
-
 #suites: table<name: string, path: string, tests: table<name: string, type: string>>
 export def run-suites [suites: list] -> table<name: string, results: table<name: string, result: bool, output: string, error: string> {
     db-create
@@ -63,7 +60,7 @@ def run-suite [name: string, path: string, tests: table<name: string, type: stri
                 source ($path)
                 plan-execute-suite-emit ($name) ($plan_data)
             "
-    ) | complete # TODO need streaming version
+    ) | complete # TODO need a streaming version
 
     # TODO error can carry good info here (see run-suite-with-broken-test)
     #print $result

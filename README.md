@@ -29,15 +29,23 @@ Allows before-each and after-each commands that can generate context for each te
 Captures test output.
 
 
+## Needed Improvements
+
+There are some instances around error handling that don't quite do as I expect. Should improve delegated nu commands and exit codes and visibility of what went wrong incl syntax errors.
+
+
 ## Expected Features (todo list)
 
-- Emit non-zero exit code when a test fails to make this suitable for CI.
-- Filter tests by name or pattern.
-- Exclude files.
-- Customise default file stem pattern to allow running tests in any file not just test ones.
 - Before all and after all
+- Emit non-zero exit code when a test fails to make this suitable for CI.
+- Filter tests by:
+  - Name
+  - Pattern
+- Filter files by:
+  - File stem pattern to allow running tests in any file not just test ones
+  - Files exclusions
 - Customise thread count
-- Ensure the two levels is parallelism is core friendly by default given subprocesses, but also allow max to help with I/O bound tests.
+- Ensure the two levels of parallelism is core friendly by default given subprocesses, but also allow max to help with I/O bound tests.
 - Show ignored tests in output
 - Add test timing
 - Outputs:

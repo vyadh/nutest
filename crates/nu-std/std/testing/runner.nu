@@ -119,7 +119,6 @@ def format_error [error: record] -> list<string> {
                 | str replace --all "|>" "\n|>") | str join ""
             [$"(ansi red)($message)(ansi reset)", ...($formatted | lines)]
          } else {
-            # TODO why not as an array?
             [$message, ...($detail | lines)]
          }
     } else {

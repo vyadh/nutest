@@ -7,17 +7,6 @@ const default_pattern = "**/*.nu"
 #  cd crates/nu-std
 #  nu -c 'use std/testing; testing list-files .'
 
-# Test commands?
-# test all
-# test file <file>
-# test path <path>
-
-# Work todo
-# - Error handling of delegated nu commands and exit codes and visibility of what went wrong incl syntax errors
-# - filter unknown types before they hit runner
-# - Logging of process
-# - test searching of files that do not parse
-
 export def list-files [
     path: string
     pattern: string = $default_pattern
