@@ -11,10 +11,6 @@ export def main [path: string = "."] {
     let suites = discover list-test-suites $path
     let results = runner run-suites $suites
     let tests = $results
-        | where ($it.results != null)
-        | each { |result| $result.results | insert suite $result.name }
-        | flatten
-        | select suite name success output error failure
 
     $tests
 }
