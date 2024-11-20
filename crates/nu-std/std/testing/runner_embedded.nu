@@ -21,6 +21,17 @@
 # TODO - Rename runner?
 # TODO prefix commands with something unusual to avoid conflicts
 
+def main [] {
+    const failure_message = "No tea"
+    def failure [] {
+        error make { msg: $failure_message }
+    }
+    let plan = [
+        { name: "test_failure", type: "test", execute: { failure } }
+    ]
+    let results = plan-execute-suite-emit "suite" $plan
+}
+
 export def plan-execute-suite-emit [$suite: string, suite_data: list] {
     with-env { NU_TEST_SUITE_NAME: $suite } {
         plan-execute-suite $suite_data
@@ -110,7 +121,7 @@ def format_error [error: record] -> list<string> {
             [$"(ansi red)($message)(ansi reset)", ...($formatted | lines)]
          } else {
             # TODO why not as an array?
-            $"($message)($detail)"
+            [$message, ...($detail | lines)]
          }
     } else {
         [$message]
@@ -123,7 +134,7 @@ alias print-internal = print
 # Override the print command to provide context for output
 def print [--stderr (-e), --raw (-r), --no-newline (-n), ...rest: string] {
     let type = if $stderr { "error" } else { "output" }
-    emit $type { lines: $rest }
+    emit $type { lines: ($rest | flatten) }
 }
 
 def emit [type: string, payload: record] {
