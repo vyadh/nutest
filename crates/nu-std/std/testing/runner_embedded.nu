@@ -13,53 +13,17 @@
 #     }
 # ]
 #
-# suite_results:
-# [
-#      {
-#          name: string
-#          success: bool
-#          output: string
-#          error: string
-#          failure: record<msg: string, debug: string>
-#      }
-# ]
-#
 # Where:
 #   `type` can be "test", "before-all", etc.
 #   `execute` is the closure function of `type`
 #
 
 # TODO - Rename runner?
-
-def main2 [] {
-    const success_message = "I'd much rather be happy than right any day"
-    const warning_message = "Don't Panic"
-    const failure_message = "No tea"
-
-    def success [] {
-        print $success_message
-    }
-    def warning [] { print -e $warning_message }
-    def failure [] { error make { msg: $failure_message } }
-
-    let plan = [
-        { name: "test_success", type: "test", execute: { success } }
-        { name: "test_warning", type: "test", execute: { warning } }
-        { name: "test_failure", type: "test", execute: { failure } }
-    ]
-
-    emit "testing" {name: 'escape "}'}
-    print "foo" "bar"
-    plan-execute-suite-emit "some-suite" $plan
-}
-
 # TODO prefix commands with something unusual to avoid conflicts
 
 export def plan-execute-suite-emit [$suite: string, suite_data: list] {
     with-env { NU_TEST_SUITE_NAME: $suite } {
-        emit "suite-start" { }
         plan-execute-suite $suite_data
-        emit "suite-end" {}
     }
 }
 
@@ -74,11 +38,11 @@ def plan-execute-suite [suite_data: list] {
         # Allow print output to be associated with specific tests by adding name to the environment
         with-env { NU_TEST_NAME: $test.name } {
             # TODO put try here?
-            emit "test-begin" { }
+            emit "start" { }
             let context = execute-before $before_each
             let result = execute-test $context $test.name $test.execute
             $context | execute-after $after_each
-            emit "test-end" { }
+            emit "finish" { }
             $result
         }
     }

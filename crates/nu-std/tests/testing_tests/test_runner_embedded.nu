@@ -39,11 +39,7 @@ def execute-plan-empty [] {
     let plan = []
     let results = test-run "empty-suite" $plan
 
-    assert equal $results [
-        [suite test type payload];
-        [ "empty-suite", null, "suite-start", {} ]
-        [ "empty-suite", null, "suite-end", {} ]
-    ]
+    assert equal $results []
 }
 
 #[test]
@@ -56,12 +52,10 @@ def execute-plan-test [] {
 
     assert equal $results [
         [suite test type payload];
-        [ "suite", null, "suite-start", {} ]
-        [ "suite", "testing", "test-begin", {} ]
+        [ "suite", "testing", "start", {} ]
         [ "suite", "testing", "output", { lines: [$success_message] } ]
         [ "suite", "testing", "result", { success: true } ]
-        [ "suite", "testing", "test-end", {} ]
-        [ "suite", null, "suite-end", {} ]
+        [ "suite", "testing", "finish", {} ]
     ]
 }
 
@@ -78,27 +72,25 @@ def execute-plan-tests [] {
 
     assert equal $results [
         [suite test type payload];
-        [ "suite", null, "suite-start", {} ]
-        [ "suite", "test_success", "test-begin", {} ]
+        [ "suite", "test_success", "start", {} ]
         [ "suite", "test_success", "output", { lines: [$success_message] } ]
         [ "suite", "test_success", "result", { success: true } ]
-        [ "suite", "test_success", "test-end", {} ]
-        [ "suite", "test_success_warning", "test-begin", {} ]
+        [ "suite", "test_success", "finish", {} ]
+        [ "suite", "test_success_warning", "start", {} ]
         [ "suite", "test_success_warning", "error", { lines: [$warning_message] } ]
         [ "suite", "test_success_warning", "output", { lines: [$success_message] } ]
         [ "suite", "test_success_warning", "result", { success: true } ]
-        [ "suite", "test_success_warning", "test-end", {} ]
-        [ "suite", "test_failure", "test-begin", {} ]
+        [ "suite", "test_success_warning", "finish", {} ]
+        [ "suite", "test_failure", "start", {} ]
         [ "suite", "test_failure", "result", { success: false } ]
         [ "suite", "test_failure", "error", { lines: [$failure_message] } ]
-        [ "suite", "test_failure", "test-end", {} ]
-        [ "suite", "test_half_failure", "test-begin", {} ]
+        [ "suite", "test_failure", "finish", {} ]
+        [ "suite", "test_half_failure", "start", {} ]
         [ "suite", "test_half_failure", "output", { lines: [$success_message] } ]
         [ "suite", "test_half_failure", "error", { lines: [$warning_message] } ]
         [ "suite", "test_half_failure", "result", { success: false } ]
         [ "suite", "test_half_failure", "error", { lines: [$failure_message] } ]
-        [ "suite", "test_half_failure", "test-end", {} ]
-        [ "suite", null, "suite-end", {} ]
+        [ "suite", "test_half_failure", "finish", {} ]
     ]
 }
 
@@ -113,12 +105,10 @@ def execute-before-test [] {
 
     assert equal $results [
         [suite test type payload];
-        [ "before-suite", null, "suite-start", {} ]
-        [ "before-suite", "test", "test-begin", {} ]
+        [ "before-suite", "test", "start", {} ]
         [ "before-suite", "test", "output", { lines: ["What do you get if you multiply six by nine?", 42] } ]
         [ "before-suite", "test", "result", { success: true } ]
-        [ "before-suite", "test", "test-end", {} ]
-        [ "before-suite", null, "suite-end", {} ]
+        [ "before-suite", "test", "finish", {} ]
     ]
 }
 
@@ -134,13 +124,11 @@ def execute-after-test [] {
 
     assert equal $results [
         [suite test type payload];
-        [ "after-suite", null, "suite-start", {} ]
-        [ "after-suite", "test", "test-begin", {} ]
+        [ "after-suite", "test", "start", {} ]
         [ "after-suite", "test", "output", { lines: ["What do you get if you multiply six by nine?", 42] } ]
         [ "after-suite", "test", "result", { success: true } ]
         [ "after-suite", "test", "output", { lines: ["What do you get if you multiply six by nine?", 42] } ]
-        [ "after-suite", "test", "test-end", {} ]
-        [ "after-suite", null, "suite-end", {} ]
+        [ "after-suite", "test", "finish", {} ]
     ]
 }
 
