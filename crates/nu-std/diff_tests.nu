@@ -1,7 +1,7 @@
 def main [] {
 
     use std/testing
-    let new = (testing .) | select suite name success
+    let new = testing | select suite name success
 
     let old = ^$nu.current-exe -c "source testing.nu; run-tests" | complete
 

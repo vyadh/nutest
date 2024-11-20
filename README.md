@@ -38,12 +38,8 @@ There are some instances around error handling that don't quite do as I expect. 
 
 - Before all and after all
 - Emit non-zero exit code when a test fails to make this suitable for CI.
-- Filter tests by:
-  - Name
-  - Pattern
-- Filter files by:
-  - File stem pattern to allow running tests in any file not just test ones
-  - Files exclusions
+- Suite/test exclusions
+- File stem pattern for gobbing to allow running tests in any file not just test ones
 - Customise thread count
 - Ensure the two levels of parallelism is core friendly by default given subprocesses, but also allow max to help with I/O bound tests.
 - Show ignored tests in output
