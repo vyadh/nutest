@@ -70,23 +70,12 @@ def run-suite [name: string, path: string, tests: table<name: string, type: stri
             | lines
             | each { $in | from nuon | process-event }
     } else {
-        # This is only triggered on a suite-level failure not caught by the embedded runner
-        # Replicate this suite-level failure for every test
+        # This is only triggered on a suite-level failure so not caught by the embedded runner
+        # This replicates this suite-level failure down to each test
         $tests | each { |test|
-            {
-                timestamp: (date now | format date "%+")
-                suite: $name
-                test: $test.name
-                type: "result"
-                payload: { success: false }
-            } | process-event
-            {
-                timestamp: (date now | format date "%+")
-                suite: $name
-                test: $test.name
-                type: "error"
-                payload: { lines: [$result.stderr] }
-            } | process-event
+            let template = { timestamp: (date now | format date "%+"), suite: $name, test: $test.name }
+            $template | merge { type: "result", payload: { success: false } } | process-event
+            $template | merge { type: "error", payload: { lines: [$result.stderr] } } | process-event
         }
     }
 }
