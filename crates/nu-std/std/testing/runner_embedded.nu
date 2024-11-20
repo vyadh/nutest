@@ -86,14 +86,14 @@ def execute-test [context: record, name: string, execute: closure] -> record {
     }
 }
 
-def format_error [error: record] -> string {
+def format_error [error: record] -> list<string> {
     let json = $error.json | from json
     let message = $json.msg
     let help = $json | get help?
     let labels = $json | get labels?
 
     if $help != null {
-        $"($message)\n($help)"
+        [$message, $help]
     } else if ($labels != null) {
         let detail = $labels | each { |label|
             | get text
@@ -107,12 +107,13 @@ def format_error [error: record] -> string {
                 | str replace --all --regex '\n[ ]+Right' "\n|>Right"
                 | str replace --all --regex '[\n\r]+' ''
                 | str replace --all "|>" "\n|>") | str join ""
-            $"(ansi red)($message)(ansi reset)\n($formatted)"
+            [$"(ansi red)($message)(ansi reset)", ...($formatted | lines)]
          } else {
+            # TODO why not as an array?
             $"($message)($detail)"
          }
     } else {
-        $message
+        [$message]
     }
 }
 

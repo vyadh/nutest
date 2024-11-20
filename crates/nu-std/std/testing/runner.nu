@@ -21,10 +21,11 @@ use std/assert
 #
 # test-result:
 # {
-#     name: string
+#     suite: string
+#     test: string
 #     result: bool
 #     output: string
-#     error: record<msg: string, debug: string>
+#     error: string
 # }
 #
 # suite-result:
@@ -34,10 +35,15 @@ use std/assert
 # }
 
 # TODO - Move all tests to main test dir
+# TODO - Rename orchestrator?
 
 #suites: table<name: string, path: string, tests: table<name: string, type: string>>
 export def run-suites [suites: list] -> table<name: string, results: table<name: string, result: bool, output: string, error: string, failure: record<msg: string, debug: string>> {
-    $suites | par-each { |suite| run-suite $suite.name $suite.path $suite.tests }
+    let results = $suites | par-each { |suite|
+        run-suite $suite.name $suite.path $suite.tests
+     } | flatten
+
+    $results
 }
 
 export def run-suite [name: string, path: string, tests: table<name: string, type: string>] -> record<name: string, results: table<name: string, result: bool, output: string, error: string, failure: record<msg: string, debug: string>> {
@@ -46,18 +52,28 @@ export def run-suite [name: string, path: string, tests: table<name: string, typ
     let result = (
         ^$nu.current-exe
             --no-config-file
-            --commands $"source std/testing/runner_embedded.nu; source ($path); plan-execute-suite ($plan_data) | to nuon"
-    ) | complete
+            --commands $"
+                source std/testing/runner_embedded.nu
+                source ($path)
+                plan-execute-suite-emit ($name) ($plan_data)
+            "
+    ) | complete # TODO need streaming version
+
+    # TODO error can carry good info here (see run-suite-with-broken-test)
+    #print $result
 
     let test_results = if $result.exit_code == 0 {
         # TODO required to output `print -e` usage in tests
         #print -e $result.stderr
-        $result.stdout | from nuon
+        $result.stdout
+            | lines
+            | each { $in | from nuon | process-event }
     } else {
         # This is only triggered on a suite-level failure not caught by the embedded runner
         # Replicate this suite-level failure for every test
         $tests | each { |test|
             {
+                suite: $name
                 name: $test.name
                 success: false
                 output: ""
@@ -67,10 +83,10 @@ export def run-suite [name: string, path: string, tests: table<name: string, typ
         }
     }
 
-    {
-        name: $name
-        results: $test_results
-    }
+    # Debug
+    #print -e $test_results
+
+    $test_results
 }
 
 export def create-suite-plan-data [tests: table<name: string, type: string>] -> string {
@@ -83,4 +99,21 @@ export def create-suite-plan-data [tests: table<name: string, type: string>] -> 
 
 def create-test-plan-data [test: record<name: string, type: string>] -> string {
     $'{ name: "($test.name)", type: "($test.type)", execute: { ($test.name) } }'
+}
+
+
+def process-event [] -> record {
+    let event = $in
+    match $event {
+        { type: "result" } => {
+            {
+                suite: $event.suite
+                test: $event.test
+                success: $event.payload.success
+                output: ""
+                error: ""
+                failure: null
+            }
+        }
+    }
 }
