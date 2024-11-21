@@ -48,7 +48,7 @@ Captures test output.
 
 ## May Implement
 
-- Combine output and error, but perhaps add error markup.
+- Combine output and error, but perhaps add error markup (by default).
 - Optionally allow running ignored tests.
 - Don't output the output by default unless tests fail.
 - Colourise output such as stderr only when supporting terminal detected

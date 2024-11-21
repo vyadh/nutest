@@ -94,3 +94,26 @@ def test-with-specific-suite [] {
         { suite: test_1, test: test_foo, success: true, output: "oof", error: "" }
     ]
 }
+
+#[ignore] not sure how to best accomplish this yet
+#[test]
+def tests-should-have-appropriate-exit-code [] {
+    let temp = $in.temp
+    let test_file_3 = $temp | path join "test_3.nu"
+    "
+    #[test]
+    def test_quux [] { error make { msg: 'Ouch' } }
+    " | save $test_file_3
+
+    let results = testing --path $temp --suite test_1
+    assert equal $env.LAST_EXIT_CODE "0"
+
+    let results = testing --path $temp
+    assert equal $env.LAST_EXIT_CODE "1"
+    assert equal $results [
+        { suite: test_1, test: test_bar, success: true, output: "", error: "rab" }
+        { suite: test_1, test: test_foo, success: true, output: "oof", error: "" }
+        { suite: test_2, test: test_baz, success: true, output: "zab", error: "" }
+        { suite: test_3, test: test_quux, success: false, output: "", error: "Ouch" }
+    ]
+}
