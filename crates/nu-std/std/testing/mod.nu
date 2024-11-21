@@ -27,7 +27,9 @@ export def main [
     $tests
 }
 
-def filter-tests [suite: string, test: string] -> table {
+def filter-tests [
+    suite: string, test: string
+]: table<name: string, path: string, tests<table<name: string, type: string>>> -> table<name: string, path: string, tests<table<name: string, type: string>>> {
     ($in
         | where name =~ $suite
         | each { |suite|

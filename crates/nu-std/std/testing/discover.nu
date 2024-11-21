@@ -5,12 +5,12 @@ const default_pattern = "**/*.nu"
 
 # Usage:
 #  cd crates/nu-std
-#  nu -c 'use std/testing; testing list-files .'
+#  nu -c 'use std/testing; testing list-files '
 
 export def list-files [
     path: string
     pattern: string = $default_pattern
-] -> list<string> {
+]: nothing -> list<string> {
 
     if ($path | path type) == file {
         [$path]
@@ -20,12 +20,12 @@ export def list-files [
     }
 }
 
-export def list-test-suites [path: string] -> table<name: string, path: string, tests<table<name: string, type: string>> {
+export def list-test-suites [path: string]: nothing -> table<name: string, path: string, tests<table<name: string, type: string>>> {
     list-files $path $default_pattern
         | par-each { discover-suite $in }
 }
 
-def discover-suite [test_file: string] -> record<name: string, path: string, tests: table<name: string, type: string>> {
+def discover-suite [test_file: string]: nothing -> record<name: string, path: string, tests: table<name: string, type: string>> {
     let query = test-query $test_file
     let result = (^$nu.current-exe --no-config-file --commands $query)
         | complete
@@ -37,7 +37,7 @@ def discover-suite [test_file: string] -> record<name: string, path: string, tes
     }
 }
 
-def parse-suite [test_file: string, tests: list<record<name: string, description: string>>] -> record<name: string, path: string, tests: table<name: string, type: string>> {
+def parse-suite [test_file: string, tests: list<record<name: string, description: string>>]: nothing -> record<name: string, path: string, tests: table<name: string, type: string>> {
     {
         name: ($test_file | path parse | get stem)
         path: $test_file
@@ -45,7 +45,7 @@ def parse-suite [test_file: string, tests: list<record<name: string, description
     }
 }
 
-def parse-test [test: record<name: string, description: string>] -> record<name: string, type: string> {
+def parse-test [test: record<name: string, description: string>]: nothing -> record<name: string, type: string> {
     let type = $test.description
         | parse --regex '.*\[([a-z-]+)\].*'
         | get capture0
@@ -58,7 +58,7 @@ def parse-test [test: record<name: string, description: string>] -> record<name:
 }
 
 # Query any method with a specific tag in the description
-def test-query [file: string] -> string {
+def test-query [file: string]: nothing -> string {
     let query = "
         scope commands
             | where ( $it.type == 'custom' and $it.description =~ '\\[[a-z-]+\\]' )

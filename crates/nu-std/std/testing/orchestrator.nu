@@ -16,26 +16,7 @@ use std/assert
 #     path: string
 #     tests: list<test>
 # }
-#
-# OUTPUT DATA STRUCTURES
-#
-# test-result:
-# {
-#     suite: string
-#     test: string
-#     result: bool
-#     output: string
-#     error: string
-# }
-#
-# suite-result:
-# {
-#     name: string
-#     results: list<test-result>
-# }
-
-#suites: table<name: string, path: string, tests: table<name: string, type: string>>
-export def run-suites [suites: list] -> table<name: string, results: table<name: string, result: bool, output: string, error: string> {
+export def run-suites [suites: list]: nothing -> table<suite: string, test: string, success: bool, output: string, error: string> {
     db-create
 
     $suites | par-each { |suite|
@@ -80,7 +61,7 @@ def run-suite [name: string, path: string, tests: table<name: string, type: stri
     }
 }
 
-export def create-suite-plan-data [tests: table<name: string, type: string>] -> string {
+export def create-suite-plan-data [tests: table<name: string, type: string>]: nothing -> string {
     let plan_data = $tests
             | each { |test| create-test-plan-data $test }
             | str join ", "
@@ -88,7 +69,7 @@ export def create-suite-plan-data [tests: table<name: string, type: string>] -> 
     $"[ ($plan_data) ]"
 }
 
-def create-test-plan-data [test: record<name: string, type: string>] -> string {
+def create-test-plan-data [test: record<name: string, type: string>]: nothing -> string {
     $'{ name: "($test.name)", type: "($test.type)", execute: { ($test.name) } }'
 }
 
@@ -136,7 +117,7 @@ def db-delete [] {
     stor delete --table-name nu_test_output
 }
 
-def db-query [] -> record {
+def db-query []: nothing -> table<suite: string, test: string, success: bool, output: string, error: string> {
     (
         stor open
             | query db $"
@@ -157,7 +138,7 @@ def db-query [] -> record {
 }
 
 # TODO use subquery instead
-def db-query-output [suite: string, test: string, type: string] -> string {
+def db-query-output [suite: string, test: string, type: string]: nothing -> string {
     (
         stor open
             | query db $"

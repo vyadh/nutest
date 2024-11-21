@@ -4,7 +4,7 @@ const success_message = "I'd much rather be happy than right any day"
 const warning_message = "Don't Panic"
 const failure_message = "No tea"
 
-def test-run [suite: string, plan: list<record>] -> table<suite, test, type, payload> {
+def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, type, payload> {
     let result = (
         ^$nu.current-exe
             --no-config-file

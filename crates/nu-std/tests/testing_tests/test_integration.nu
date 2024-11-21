@@ -2,7 +2,7 @@ use std/assert
 use ../../std/testing
 
 #[before-each]
-def setup [] -> record {
+def setup []: nothing -> record {
     let temp = mktemp --tmpdir --directory
 
     setup-tests $temp

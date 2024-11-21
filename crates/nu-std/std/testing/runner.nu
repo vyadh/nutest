@@ -44,7 +44,7 @@ def plan-execute-suite [suite_data: list] {
                 emit "result" { success: true }
             } catch { |error|
                 emit "result" { success: false }
-                print -e (format_error $error)
+                print -e ...(format_error $error)
             }
             emit "finish" { }
         }
@@ -52,7 +52,7 @@ def plan-execute-suite [suite_data: list] {
 }
 
 # TODO better message on incompatible signature
-def execute-before [items: list] -> record {
+def execute-before [items: list]: nothing -> record {
     $items | reduce --fold {} { |item, acc|
         $acc | merge (do $item.execute)
     }
@@ -67,7 +67,7 @@ def execute-after [items: list] {
     }
 }
 
-def format_error [error: record] -> list<string> {
+def format_error [error: record]: nothing -> list<string> {
     let json = $error.json | from json
     let message = $json.msg
     let help = $json | get help?

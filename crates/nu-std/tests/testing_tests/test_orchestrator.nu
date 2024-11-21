@@ -42,7 +42,7 @@ def trim []: string -> string {
 }
 
 #[before-each]
-def setup [] -> record {
+def setup []: nothing -> record {
     let temp = mktemp --tmpdir --directory
     {
         temp: $temp
@@ -208,7 +208,7 @@ def create-single-test-suite [temp: string, test: string]: string -> record {
     $in | append-test $temp $suite $test
 }
 
-def create-suite [temp: string, suite: string] -> record {
+def create-suite [temp: string, suite: string]: nothing -> record {
     let path = $temp | path join $"($suite).nu"
 
     $"
