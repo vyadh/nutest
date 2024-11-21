@@ -16,7 +16,7 @@ use std/assert
 #     path: string
 #     tests: list<test>
 # }
-export def run-suites [suites: list]: nothing -> table<suite: string, test: string, success: bool, output: string, error: string> {
+export def run-suites [suites: list]: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
     db-create
 
     $suites | par-each { |suite|
@@ -55,7 +55,7 @@ def run-suite [name: string, path: string, tests: table<name: string, type: stri
         # This replicates this suite-level failure down to each test
         $tests | each { |test|
             let template = { timestamp: (date now | format date "%+"), suite: $name, test: $test.name }
-            $template | merge { type: "result", payload: { success: false } } | process-event
+            $template | merge { type: "result", payload: { status: "FAIL" } } | process-event
             $template | merge { type: "error", payload: { lines: [$result.stderr] } } | process-event
         }
     }
@@ -79,7 +79,7 @@ def process-event [] {
 
     match $event {
         { type: "result" } => {
-            let row = $template | merge { success: $event.payload.success }
+            let row = $template | merge { result: $event.payload.status }
             $row | stor insert --table-name nu_tests
         }
         { type: "output" } => {
@@ -101,7 +101,7 @@ def db-create [] {
     stor create --table-name nu_tests --columns {
         suite: str
         test: str
-        success: bool
+        result: str
     }
     stor create --table-name nu_test_output --columns {
         suite: str
@@ -117,11 +117,11 @@ def db-delete [] {
     stor delete --table-name nu_test_output
 }
 
-def db-query []: nothing -> table<suite: string, test: string, success: bool, output: string, error: string> {
+def db-query []: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
     (
         stor open
             | query db $"
-                SELECT suite, test, success
+                SELECT suite, test, result
                 FROM nu_tests
                 ORDER BY suite, test
             "
@@ -129,7 +129,7 @@ def db-query []: nothing -> table<suite: string, test: string, success: bool, ou
                 {
                     suite: $row.suite
                     test: $row.test
-                    success: (if $row.success == 1 { true } else { false })
+                    result: $row.result
                     output: (db-query-output $row.suite $row.test "output")
                     error: (db-query-output $row.suite $row.test "error")
                 }

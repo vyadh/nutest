@@ -80,7 +80,27 @@ def run-suite-with-passing-test [] {
         {
             suite: "passing-test"
             test: "passing-test"
-            success: true
+            result: "PASS"
+            output: ""
+            error: ""
+        }
+    ]
+}
+
+#[test]
+def run-suite-with-ignored-test [] {
+    let context = $in
+    let $temp = $context.temp
+    mut suite = create-suite $temp "suite"
+    let suite = "assert equal 1 2" | append-test $temp $suite "ignored-test" --type "ignore"
+
+    let result = run-suites [ $suite ]
+
+    assert equal ($result) [
+        {
+            suite: "suite"
+            test: "ignored-test"
+            result: "SKIP"
             output: ""
             error: ""
         }
@@ -101,7 +121,7 @@ def run-suite-with-broken-test [] {
         {
             suite: "suite"
             test: "broken-test"
-            success: false
+            result: "FAIL"
             output: ""
         }
     ]
@@ -124,7 +144,7 @@ def run-suite-with-missing-test [] {
         {
             suite: "test-suite"
             test: "missing-test"
-            success: false
+            result: "FAIL"
             output: ""
         }
     ]
@@ -145,7 +165,7 @@ def run-suite-with-failing-test [] {
         {
             suite: $suite.name
             test: "failing-test"
-            success: false
+            result: "FAIL"
             output: ""
         }
     ]
@@ -169,13 +189,13 @@ def run-suite-with-multiple-tests [] {
         {
             suite: "multi-test"
             test: "test1"
-            success: true
+            result: "PASS"
             output: ""
         }
         {
             suite: "multi-test"
             test: "test2"
-            success: false
+            result: "FAIL"
             output: ""
         }
     ]
@@ -196,10 +216,10 @@ def run-multiple-suites [] {
     let result = run-suites [$suite1, $suite2]
 
     assert equal ($result | reject error) [
-        { suite: "suite1", test: "test1", success: true, output: "" }
-        { suite: "suite1", test: "test2", success: false, output: "" }
-        { suite: "suite2", test: "test3", success: true, output: "" }
-        { suite: "suite2", test: "test4", success: false, output: "" }
+        { suite: "suite1", test: "test1", result: "PASS", output: "" }
+        { suite: "suite1", test: "test2", result: "FAIL", output: "" }
+        { suite: "suite2", test: "test3", result: "PASS", output: "" }
+        { suite: "suite2", test: "test4", result: "FAIL", output: "" }
     ]
 }
 
@@ -222,7 +242,7 @@ def create-suite [temp: string, suite: string]: nothing -> record {
     }
 }
 
-def append-test [temp: string, suite: record, test: string]: string -> record {
+def append-test [temp: string, suite: record, test: string, --type: string = "test"]: string -> record {
     let path = $temp | path join $"($suite.name).nu"
 
     $"
@@ -232,6 +252,6 @@ def append-test [temp: string, suite: record, test: string]: string -> record {
     " | save --append $path
 
     $suite | merge {
-        tests: ($suite.tests | append { name: $test, type: "test" })
+        tests: ($suite.tests | append { name: $test, type: $type })
     }
 }

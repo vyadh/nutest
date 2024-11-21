@@ -24,6 +24,9 @@ export def plan-execute-suite-emit [$suite: string, suite_data: list] {
     with-env { NU_TEST_SUITE_NAME: $suite } {
         plan-execute-suite $suite_data
     }
+
+    # Don't output any result
+    null
 }
 
 # TODO - Add support for: before-all, after-all
@@ -33,7 +36,7 @@ def plan-execute-suite [suite_data: list] {
     let after_each = $plan | get --ignore-errors "after-each" | default []
     let tests = $plan | get --ignore-errors "test" | default []
 
-    let results = $tests | each { |test|
+    $tests | each { |test|
         # Allow print output to be associated with specific tests by adding name to the environment
         with-env { NU_TEST_NAME: $test.name } {
             emit "start" { }
@@ -41,11 +44,20 @@ def plan-execute-suite [suite_data: list] {
                 let context = execute-before $before_each
                 let result = $context | do $test.execute
                 $context | execute-after $after_each
-                emit "result" { success: true }
+                emit "result" { status: "PASS" }
             } catch { |error|
-                emit "result" { success: false }
+                emit "result" { status: "FAIL" }
                 print -e ...(format_error $error)
             }
+            emit "finish" { }
+        }
+    }
+
+    let ignored = $plan | get --ignore-errors "ignore" | default []
+    $ignored | each { |test|
+        with-env { NU_TEST_NAME: $test.name } {
+            emit "start" { }
+            emit "result" { status: "SKIP" }
             emit "finish" { }
         }
     }

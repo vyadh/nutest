@@ -26,7 +26,9 @@ Emits tests as a table of results that can be processed like normal Nu data.
 
 Allows before-each and after-each commands that can generate context for each test.
 
-Captures test output.
+Captures test output for debugging and display.
+
+Filtering of tests to run.
 
 
 ## Expected Features (todo list)
@@ -37,7 +39,6 @@ Captures test output.
 - File stem pattern for gobbing to allow running tests in any file not just test ones
 - Customise thread count
 - Ensure the two levels of parallelism is core friendly by default given subprocesses, but also allow max to help with I/O bound tests.
-- Show ignored tests in output
 - Add test timing
 - Outputs:
   - Funky dynamic UI by default

@@ -30,6 +30,7 @@ def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, 
 #[test]
 def execute-plan-empty [] {
     let plan = []
+
     let results = test-run "empty-suite" $plan
 
     assert equal $results []
@@ -47,7 +48,7 @@ def execute-plan-test [] {
         [suite test type payload];
         [ "suite", "testing", "start", {} ]
         [ "suite", "testing", "output", { lines: [$success_message] } ]
-        [ "suite", "testing", "result", { success: true } ]
+        [ "suite", "testing", "result", { status: "PASS" } ]
         [ "suite", "testing", "finish", {} ]
     ]
 }
@@ -67,21 +68,21 @@ def execute-plan-tests [] {
         [suite test type payload];
         [ "suite", "test_success", "start", {} ]
         [ "suite", "test_success", "output", { lines: [$success_message] } ]
-        [ "suite", "test_success", "result", { success: true } ]
+        [ "suite", "test_success", "result", { status: "PASS" } ]
         [ "suite", "test_success", "finish", {} ]
         [ "suite", "test_success_warning", "start", {} ]
         [ "suite", "test_success_warning", "error", { lines: [$warning_message] } ]
         [ "suite", "test_success_warning", "output", { lines: [$success_message] } ]
-        [ "suite", "test_success_warning", "result", { success: true } ]
+        [ "suite", "test_success_warning", "result", { status: "PASS" } ]
         [ "suite", "test_success_warning", "finish", {} ]
         [ "suite", "test_failure", "start", {} ]
-        [ "suite", "test_failure", "result", { success: false } ]
+        [ "suite", "test_failure", "result", { status: "FAIL" } ]
         [ "suite", "test_failure", "error", { lines: [$failure_message] } ]
         [ "suite", "test_failure", "finish", {} ]
         [ "suite", "test_half_failure", "start", {} ]
         [ "suite", "test_half_failure", "output", { lines: [$success_message] } ]
         [ "suite", "test_half_failure", "error", { lines: [$warning_message] } ]
-        [ "suite", "test_half_failure", "result", { success: false } ]
+        [ "suite", "test_half_failure", "result", { status: "FAIL" } ]
         [ "suite", "test_half_failure", "error", { lines: [$failure_message] } ]
         [ "suite", "test_half_failure", "finish", {} ]
     ]
@@ -100,7 +101,7 @@ def execute-before-test [] {
         [suite test type payload];
         [ "before-suite", "test", "start", {} ]
         [ "before-suite", "test", "output", { lines: ["What do you get if you multiply six by nine?", 42] } ]
-        [ "before-suite", "test", "result", { success: true } ]
+        [ "before-suite", "test", "result", { status: "PASS" } ]
         [ "before-suite", "test", "finish", {} ]
     ]
 }
@@ -120,7 +121,7 @@ def execute-after-test [] {
         [ "after-suite", "test", "start", {} ]
         [ "after-suite", "test", "output", { lines: ["What do you get if you multiply six by nine?", 42] } ]
         [ "after-suite", "test", "output", { lines: ["What do you get if you multiply six by nine?", 42] } ]
-        [ "after-suite", "test", "result", { success: true } ]
+        [ "after-suite", "test", "result", { status: "PASS" } ]
         [ "after-suite", "test", "finish", {} ]
     ]
 }
@@ -141,12 +142,12 @@ def execute-before-and-after-captures-output [] {
         [ "suite", "test1", "start", {} ]
         [ "suite", "test1", "output", { lines: [$success_message] } ]
         [ "suite", "test1", "error", { lines: [$warning_message] } ]
-        [ "suite", "test1", "result", { success: true } ]
+        [ "suite", "test1", "result", { status: "PASS" } ]
         [ "suite", "test1", "finish", {} ]
         [ "suite", "test2", "start", {} ]
         [ "suite", "test2", "output", { lines: [$success_message] } ]
         [ "suite", "test2", "error", { lines: [$warning_message] } ]
-        [ "suite", "test2", "result", { success: true } ]
+        [ "suite", "test2", "result", { status: "PASS" } ]
         [ "suite", "test2", "finish", {} ]
     ]
 }
@@ -163,7 +164,7 @@ def execute-before-error-handling [] {
     assert equal $results [
         [suite test type payload];
         [ "suite", "test", "start", {} ]
-        [ "suite", "test", "result", { success: false } ]
+        [ "suite", "test", "result", { status: "FAIL" } ]
         [ "suite", "test", "error", { lines: [$failure_message] } ]
         [ "suite", "test", "finish", {} ]
     ]
@@ -181,7 +182,7 @@ def execute-after-error-handling [] {
     assert equal $results [
         [suite test type payload];
         [ "suite", "test", "start", {} ]
-        [ "suite", "test", "result", { success: false } ]
+        [ "suite", "test", "result", { status: "FAIL" } ]
         [ "suite", "test", "error", { lines: [$failure_message] } ]
         [ "suite", "test", "finish", {} ]
     ]
