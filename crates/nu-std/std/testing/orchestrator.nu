@@ -1,7 +1,5 @@
 use std/assert
-
-module db.nu
-use db
+use db.nu
 
 # This script generates the test suite data and embeds a runner into a nushell sub-process to execute.
 
@@ -19,14 +17,13 @@ use db
 #     path: string
 #     tests: list<test>
 # }
-export def run-suites [suites: list]: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
-    $suites | par-each { |suite|
-        run-suite $suite.name $suite.path $suite.tests
+export def run-suites [reporter: record]: list -> nothing {
+    $in | par-each { |suite|
+        run-suite $reporter $suite.name $suite.path $suite.tests
     }
-    db query
 }
 
-def run-suite [name: string, path: string, tests: table<name: string, type: string>] {
+def run-suite [reporter: record, name: string, path: string, tests: table<name: string, type: string>] {
     let plan_data = create-suite-plan-data $tests
 
     let result = (
@@ -40,19 +37,19 @@ def run-suite [name: string, path: string, tests: table<name: string, type: stri
     ) | complete # TODO need a streaming version
 
     # Useful for understanding event stream
-    #print $result
+    #print $"($result)"
 
     if $result.exit_code == 0 {
         $result.stdout
             | lines
-            | each { $in | from nuon | process-event }
+            | each { $in | from nuon | process-event $reporter }
     } else {
         # This is only triggered on a suite-level failure so not caught by the embedded runner
         # This replicates this suite-level failure down to each test
         $tests | each { |test|
             let template = { timestamp: (date now | format date "%+"), suite: $name, test: $test.name }
-            $template | merge { type: "result", payload: { status: "FAIL" } } | process-event
-            $template | merge { type: "error", payload: { lines: [$result.stderr] } } | process-event
+            $template | merge { type: "result", payload: { status: "FAIL" } } | process-event $reporter
+            $template | merge { type: "error", payload: { lines: [$result.stderr] } } | process-event $reporter
         }
     }
 }
@@ -69,22 +66,22 @@ def create-test-plan-data [test: record<name: string, type: string>]: nothing ->
     $'{ name: "($test.name)", type: "($test.type)", execute: { ($test.name) } }'
 }
 
-def process-event [] {
+def process-event [reporter: record] {
     let event = $in
     let template = { suite: $event.suite, test: $event.test }
 
     match $event {
         { type: "result" } => {
-            db insert-result ($template | merge { result: $event.payload.status })
+            do $reporter.fire-result ($template | merge { result: $event.payload.status })
         }
         { type: "output" } => {
             $event.payload.lines | each { |line|
-                db insert-output ($template | merge { type: output, line: $line })
+                do $reporter.fire-output ($template | merge { type: output, line: $line })
             }
         }
         { type: "error" } => {
             $event.payload.lines | each { |line|
-                db insert-output ($template | merge { type: error, line: $line })
+                do $reporter.fire-output ($template | merge { type: error, line: $line })
             }
         }
     }

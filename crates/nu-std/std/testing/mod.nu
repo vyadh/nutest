@@ -1,6 +1,7 @@
 use discover.nu
 use orchestrator.nu
 use db.nu
+use reporter_table.nu
 
 # nu -c "use std/testing; (testing .)"
 
@@ -19,13 +20,17 @@ export def main [
 
     let suites = discover list-test-suites $path
     let filtered = $suites | filter-tests $suite $test
-    db create
-    let results = orchestrator run-suites $filtered
-    db delete
+
+    let reporter = reporter_table create
+    do $reporter.start
+    $filtered | orchestrator run-suites $reporter
+    let results = do $reporter.results
+    do $reporter.complete
 
     $results
 }
 
+# TODO also filter ignored
 def filter-tests [
     suite: string, test: string
 ]: table<name: string, path: string, tests<table<name: string, type: string>>> -> table<name: string, path: string, tests<table<name: string, type: string>>> {
