@@ -3,20 +3,7 @@ use ../../std/testing/orchestrator.nu [
     create-suite-plan-data
     run-suites
 ]
-
-def main [] {
-    validate-test-plan
-
-    let context = setup
-    $context | run-suite-with-no-tests
-    $context | run-suite-with-passing-test
-    $context | run-suite-with-broken-test
-    $context | run-suite-with-missing-test
-    $context | run-suite-with-failing-test
-    $context | run-suite-with-multiple-tests
-    $context | run-multiple-suites
-    $context | cleanup
-}
+use ../../std/testing/db.nu
 
 #[test]
 def validate-test-plan [] {
@@ -43,6 +30,8 @@ def trim []: string -> string {
 
 #[before-each]
 def setup []: nothing -> record {
+    db create
+
     let temp = mktemp --tmpdir --directory
     {
         temp: $temp
@@ -51,6 +40,8 @@ def setup []: nothing -> record {
 
 #[after-each]
 def cleanup [] {
+    db delete
+
     let context = $in
     rm --recursive $context.temp
 }

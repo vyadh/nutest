@@ -1,3 +1,4 @@
+
 export def create [] {
     stor create --table-name nu_tests --columns {
         suite: str

@@ -1,5 +1,6 @@
-module discover.nu
-module orchestrator.nu
+use discover.nu
+use orchestrator.nu
+use db.nu
 
 # nu -c "use std/testing; (testing .)"
 
@@ -8,9 +9,6 @@ export def main [
     --suite: string
     --test: string
 ] {
-    use discover
-    use orchestrator
-
     # todo error messages are bad when these are misconfgured
     let path = $path | default $env.PWD
     let suite = $suite | default ".*"
@@ -21,10 +19,11 @@ export def main [
 
     let suites = discover list-test-suites $path
     let filtered = $suites | filter-tests $suite $test
+    db create
     let results = orchestrator run-suites $filtered
-    let tests = $results
+    db delete
 
-    $tests
+    $results
 }
 
 def filter-tests [

@@ -20,17 +20,10 @@ use db
 #     tests: list<test>
 # }
 export def run-suites [suites: list]: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
-    db create
-
     $suites | par-each { |suite|
         run-suite $suite.name $suite.path $suite.tests
     }
-
-    let results = db query
-
-    db delete
-
-    $results
+    db query
 }
 
 def run-suite [name: string, path: string, tests: table<name: string, type: string>] {
