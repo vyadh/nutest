@@ -1,5 +1,8 @@
 use std/assert
 
+module db.nu
+use db
+
 # This script generates the test suite data and embeds a runner into a nushell sub-process to execute.
 
 # INPUT DATA STRUCTURES
@@ -17,15 +20,15 @@ use std/assert
 #     tests: list<test>
 # }
 export def run-suites [suites: list]: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
-    db-create
+    db create
 
     $suites | par-each { |suite|
         run-suite $suite.name $suite.path $suite.tests
     }
 
-    let results = db-query
+    let results = db query
 
-    db-delete
+    db delete
 
     $results
 }
@@ -79,74 +82,17 @@ def process-event [] {
 
     match $event {
         { type: "result" } => {
-            let row = $template | merge { result: $event.payload.status }
-            $row | stor insert --table-name nu_tests
+            db insert-result ($template | merge { result: $event.payload.status })
         }
         { type: "output" } => {
             $event.payload.lines | each { |line|
-                let row = $template | merge { type: output, line: $line }
-                $row | stor insert --table-name nu_test_output
+                db insert-output ($template | merge { type: output, line: $line })
             }
         }
         { type: "error" } => {
             $event.payload.lines | each { |line|
-                let row = $template | merge { type: error, line: $line }
-                $row | stor insert --table-name nu_test_output
+                db insert-output ($template | merge { type: error, line: $line })
             }
         }
     }
-}
-
-def db-create [] {
-    stor create --table-name nu_tests --columns {
-        suite: str
-        test: str
-        result: str
-    }
-    stor create --table-name nu_test_output --columns {
-        suite: str
-        test: str
-        type: str
-        line: str
-    }
-}
-
-# We close the db so tests of this do not open the db multiple times
-def db-delete [] {
-    stor delete --table-name nu_tests
-    stor delete --table-name nu_test_output
-}
-
-def db-query []: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
-    (
-        stor open
-            | query db $"
-                SELECT suite, test, result
-                FROM nu_tests
-                ORDER BY suite, test
-            "
-            | each { |row|
-                {
-                    suite: $row.suite
-                    test: $row.test
-                    result: $row.result
-                    output: (db-query-output $row.suite $row.test "output")
-                    error: (db-query-output $row.suite $row.test "error")
-                }
-            }
-    )
-}
-
-# TODO use subquery instead
-def db-query-output [suite: string, test: string, type: string]: nothing -> string {
-    (
-        stor open
-            | query db $"
-                SELECT line
-                FROM nu_test_output
-                WHERE suite = :suite AND test = :test AND type = :type
-            " --params { suite: $suite, test: $test, type: $type }
-            | get line
-            | str join "\n"
-    )
 }
