@@ -27,7 +27,7 @@ export def insert-output [ row: record<suite: string, test: string, type: string
     $row | stor insert --table-name nu_test_output
 }
 
-export def query []: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
+export def query []: nothing -> table<suite: string, test: string, result: string, output?: string, error?: string> {
     (
         stor open
             | query db "
@@ -49,14 +49,5 @@ export def query []: nothing -> table<suite: string, test: string, result: strin
                 GROUP BY r.suite, r.test
                 ORDER BY r.suite, r.test
             "
-            | each { |row|
-                {
-                    suite: $row.suite
-                    test: $row.test
-                    result: $row.result
-                    output: ($row.output | default "")
-                    error: ($row.error | default "")
-                }
-            }
     )
 }

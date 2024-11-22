@@ -13,7 +13,15 @@ export def create []: nothing -> record {
 }
 
 def query-results []: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
-    db query
+    db query | each { |row|
+        {
+            suite: $row.suite
+            test: $row.test
+            result: $row.result
+            output: ($row.output | default "")
+            error: ($row.error | default "")
+        }
+    }
 }
 
 def insert-result [row: record<suite: string, test: string, result: string>] {
