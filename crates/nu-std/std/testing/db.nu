@@ -31,22 +31,39 @@ export def query []: nothing -> table<suite: string, test: string, result: strin
     (
         stor open
             | query db "
+                WITH aggregated_output AS (
+                    SELECT
+                        suite,
+                        test,
+                        GROUP_CONCAT(line, '\n') AS output
+                    FROM nu_test_output
+                    WHERE type = 'output'
+                    GROUP BY suite, test
+                ),
+                aggregated_error AS (
+                    SELECT
+                        suite,
+                        test,
+                        GROUP_CONCAT(line, '\n') AS error
+                    FROM nu_test_output
+                    WHERE type = 'error'
+                    GROUP BY suite, test
+                )
+
                 SELECT
                     r.suite,
                     r.test,
                     r.result,
-                    COALESCE(GROUP_CONCAT(o.line, '\n'), '') AS output,
-                    COALESCE(GROUP_CONCAT(e.line, '\n'), '') AS error
-
+                    COALESCE(o.output, '') AS output,
+                    COALESCE(e.error, '') AS error
                 FROM nu_tests AS r
 
-                LEFT JOIN nu_test_output AS o
-                ON r.suite = o.suite AND r.test = o.test AND o.type = 'output'
+                LEFT JOIN aggregated_output AS o
+                ON r.suite = o.suite AND r.test = o.test
 
-                LEFT JOIN nu_test_output AS e
-                ON r.suite = e.suite AND r.test = e.test AND e.type = 'error'
+                LEFT JOIN aggregated_error AS e
+                ON r.suite = e.suite AND r.test = e.test
 
-                GROUP BY r.suite, r.test
                 ORDER BY r.suite, r.test
             "
     )

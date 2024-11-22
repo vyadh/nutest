@@ -230,6 +230,27 @@ def run-multiple-suites [] {
     ]
 }
 
+#[test]
+def run-test-with-output-and-error-lines [] {
+    let context = $in
+    let reporter = $context.reporter
+    let temp = $context.temp
+
+    mut suite = create-suite $temp "output-suite"
+    let suite = "print 1 2; print -e 3 4" | append-test $temp $suite "test"
+    [ $suite ] | run-suites $reporter
+
+    assert equal (do $reporter.results) [
+        {
+            suite: "output-suite"
+            test: "test"
+            result: "PASS"
+            output: "1\n2"
+            error: "3\n4"
+        }
+    ]
+}
+
 def create-single-test-suite [temp: string, test: string]: string -> record {
     let suite = create-suite $temp $test
     $in | append-test $temp $suite $test

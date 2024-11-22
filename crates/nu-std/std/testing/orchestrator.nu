@@ -23,6 +23,8 @@ export def run-suites [reporter: record]: list -> nothing {
     }
 }
 
+# TODO one failure seems to cause tests to fail
+
 def run-suite [reporter: record, name: string, path: string, tests: table<name: string, type: string>] {
     let plan_data = create-suite-plan-data $tests
 
