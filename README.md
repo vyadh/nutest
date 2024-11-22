@@ -44,7 +44,6 @@ Filtering of tests to run.
   - Funky dynamic UI by default
   - Existing table behind flag
   - Test results in standard format (cargo test JSON or nextest / JUnit XML)
-  - Event based reporting (enable funky UI)
 
 
 ## May Implement

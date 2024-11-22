@@ -40,7 +40,7 @@ def setup-tests [temp: string] {
 def test-with-default-options [] {
     let temp = $in.temp
 
-    let results = testing --path $temp
+    let results = testing --no-color --path $temp
 
     assert equal $results [
         { suite: test_1, test: test_bar, result: "PASS", output: "", error: "rab" }
@@ -53,7 +53,7 @@ def test-with-default-options [] {
 def test-with-specific-file [] {
     let temp = $in.temp
 
-    let results = testing --path ($temp | path join "test_2.nu")
+    let results  = testing --no-color --path ($temp | path join "test_2.nu")
 
     assert equal $results [
         { suite: test_2, test: test_baz, result: "PASS", output: "zab", error: "" }
@@ -64,7 +64,7 @@ def test-with-specific-file [] {
 def test-with-specific-test [] {
     let temp = $in.temp
 
-    let results = testing --path $temp --test test_foo
+    let results  = testing --no-color --path $temp --test test_foo
 
     assert equal $results [
         { suite: test_1, test: test_foo, result: "PASS", output: "oof", error: "" }
@@ -75,7 +75,7 @@ def test-with-specific-test [] {
 def test-with-test-pattern [] {
     let temp = $in.temp
 
-    let results = testing --path $temp --test 'test_ba[rz]'
+    let results  = testing --no-color --path $temp --test 'test_ba[rz]'
 
     assert equal $results [
         { suite: test_1, test: test_bar, result: "PASS", output: "", error: "rab" }
@@ -87,7 +87,7 @@ def test-with-test-pattern [] {
 def test-with-specific-suite [] {
     let temp = $in.temp
 
-    let results = testing --path $temp --suite test_1
+    let results = testing --no-color --path $temp --suite test_1
 
     assert equal $results [
         { suite: test_1, test: test_bar, result: "PASS", output: "", error: "rab" }
@@ -105,10 +105,10 @@ def tests-should-have-appropriate-exit-code [] {
     def test_quux [] { error make { msg: 'Ouch' } }
     " | save $test_file_3
 
-    let results = testing --path $temp --suite test_1
+    let results = testing --no-color --path $temp --suite test_1
     assert equal $env.LAST_EXIT_CODE "0"
 
-    let results = testing --path $temp
+    let results = testing --no-color --path $temp
     assert equal $env.LAST_EXIT_CODE "1"
     assert equal $results [
         { suite: test_1, test: test_bar, result: "PASS", output: "", error: "rab" }
