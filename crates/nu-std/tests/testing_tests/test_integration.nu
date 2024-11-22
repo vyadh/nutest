@@ -32,7 +32,9 @@ def setup-tests [temp: string] {
     "
     #[test]
     def test_baz [] { print zab }
+    #[ignore]
     def test_qux [] { print xuq }
+    def test_quux [] { print xuuq }
     " | save $test_file_2
 }
 
@@ -45,6 +47,7 @@ def test-with-default-options [] {
         { suite: test_1, test: test_bar, result: "PASS", output: "", error: "rab" }
         { suite: test_1, test: test_foo, result: "PASS", output: "oof", error: "" }
         { suite: test_2, test: test_baz, result: "PASS", output: "zab", error: "" }
+        { suite: test_2, test: test_qux, result: "SKIP", output: "", error: "" }
     ]
 }
 
@@ -56,6 +59,7 @@ def test-with-specific-file [] {
 
     assert equal $results [
         { suite: test_2, test: test_baz, result: "PASS", output: "zab", error: "" }
+        { suite: test_2, test: test_qux, result: "SKIP", output: "", error: "" }
     ]
 }
 

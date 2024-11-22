@@ -32,17 +32,19 @@ export def main [
     $results
 }
 
-# TODO also filter ignored
 def filter-tests [
-    suite: string, test: string
+    suite_pattern: string, test_pattern: string
 ]: table<name: string, path: string, tests<table<name: string, type: string>>> -> table<name: string, path: string, tests<table<name: string, type: string>>> {
     ($in
-        | where name =~ $suite
+        | where name =~ $suite_pattern
         | each { |suite|
             {
                 name: $suite.name
                 path: $suite.path
-                tests: ($suite.tests | where type != test or name =~ $test)
+                tests: ($suite.tests | where
+                    # Filter only 'test' and 'ignore' by pattern
+                    ($it.type != test and $it.type != ignore) or $it.name =~ $test_pattern
+                )
             }
         }
         | where ($it.tests | is-not-empty)

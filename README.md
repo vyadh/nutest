@@ -35,19 +35,17 @@ Filtering of tests to run.
 
 - Before all and after all
 - Emit non-zero exit code when a test fails to make this suitable for CI.
-- Suite/test exclusions
-- File stem pattern for gobbing to allow running tests in any file not just test ones
 - Customise thread count
-- Ensure the two levels of parallelism is core friendly by default given subprocesses, but also allow max to help with I/O bound tests.
-- Add test timing
-- Outputs:
-  - Funky dynamic UI by default
-  - Existing table behind flag
-  - Test results in standard format (cargo test JSON or nextest / JUnit XML)
+- Test report in standard format (cargo test JSON or nextest / JUnit XML)
 
 
 ## May Implement
 
+- Test timing
+- Funky dynamic terminal UI
+- Suite/test exclusions
+- Ensure the two levels of parallelism is core friendly by default given subprocesses, but also allow max to help with I/O bound tests.
+- File stem pattern for gobbing to allow running tests in any file not just test ones
 - Combine output and error, but perhaps add error markup (by default).
 - Optionally allow running ignored tests.
 - Don't output the output by default unless tests fail.
