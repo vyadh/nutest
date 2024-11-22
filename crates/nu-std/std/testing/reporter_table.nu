@@ -18,8 +18,8 @@ def query-results [color: bool]: nothing -> table<suite: string, test: string, r
             suite: $row.suite
             test: $row.test
             result: (format-result $row.result $color)
-            output: ($row.output | default "")
-            error: ($row.error | default "")
+            output: $row.output
+            error: $row.error
         }
     }
 }

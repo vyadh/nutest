@@ -39,7 +39,8 @@ def setup-tests [temp: string] {
 #[test]
 def test-with-default-options [] {
     let temp = $in.temp
-
+print 1 2
+print -e 3 4
     let results = testing --no-color --path $temp
 
     assert equal $results [

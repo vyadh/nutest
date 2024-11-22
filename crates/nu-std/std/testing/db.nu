@@ -27,7 +27,7 @@ export def insert-output [ row: record<suite: string, test: string, type: string
     $row | stor insert --table-name nu_test_output
 }
 
-export def query []: nothing -> table<suite: string, test: string, result: string, output?: string, error?: string> {
+export def query []: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
     (
         stor open
             | query db "
@@ -35,8 +35,8 @@ export def query []: nothing -> table<suite: string, test: string, result: strin
                     r.suite,
                     r.test,
                     r.result,
-                    GROUP_CONCAT(o.line, '\n') AS output,
-                    GROUP_CONCAT(e.line, '\n') AS error
+                    COALESCE(GROUP_CONCAT(o.line, '\n'), '') AS output,
+                    COALESCE(GROUP_CONCAT(e.line, '\n'), '') AS error
 
                 FROM nu_tests AS r
 
