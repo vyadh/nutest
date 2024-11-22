@@ -24,7 +24,7 @@ def query-results [color: bool]: nothing -> table<suite: string, test: string, r
     }
 }
 
-def format-result [result: string, $color]: nothing -> string {
+def format-result [result: string, color: bool]: nothing -> string {
     if $color {
         match $result {
             "PASS" => $"(ansi green)($result)(ansi reset)"
@@ -37,10 +37,10 @@ def format-result [result: string, $color]: nothing -> string {
     }
 }
 
-def insert-result [row: record<suite: string, test: string, result: string>] {
+def insert-result [row: record<timestamp: datetime, suite: string, test: string, result: string>] {
     db insert-result $row
 }
 
-def insert-output [row: record<suite: string, test: string, type: string, line: string>] {
+def insert-output [row: record<timestamp: datetime, suite: string, test: string, type: string, line: string>] {
     db insert-output $row
 }

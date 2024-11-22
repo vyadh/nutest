@@ -70,21 +70,32 @@ def create-test-plan-data [test: record<name: string, type: string>]: nothing ->
 
 def process-event [reporter: record] {
     let event = $in
-    let template = { suite: $event.suite, test: $event.test }
 
-    match $event {
-        { type: "result" } => {
-            do $reporter.fire-result ($template | merge { result: $event.payload.status })
-        }
-        { type: "output" } => {
-            $event.payload.lines | each { |line|
-                do $reporter.fire-output ($template | merge { type: output, line: $line })
+    let template = {
+        timestamp: ($event.timestamp | into datetime)
+        suite: $event.suite
+        test: $event.test
+    }
+
+    try {
+        match $event {
+            { type: "result" } => {
+                do $reporter.fire-result ($template | merge { result: $event.payload.status })
+            }
+            { type: "output" } => {
+                $event.payload.lines | each { |line|
+                    do $reporter.fire-output ($template | merge { type: output, line: $line })
+                }
+            }
+            { type: "error" } => {
+                $event.payload.lines | each { |line|
+                    do $reporter.fire-output ($template | merge { type: error, line: $line })
+                }
             }
         }
-        { type: "error" } => {
-            $event.payload.lines | each { |line|
-                do $reporter.fire-output ($template | merge { type: error, line: $line })
-            }
-        }
+    } catch { |error|
+        # Catches errors in the reporter, though we can't seem to print nicely
+        print -e $error.debug
+        exit 1
     }
 }

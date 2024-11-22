@@ -1,11 +1,13 @@
 
 export def create [] {
     stor create --table-name nu_tests --columns {
+        timestamp: datetime
         suite: str
         test: str
         result: str
     }
     stor create --table-name nu_test_output --columns {
+        timestamp: datetime
         suite: str
         test: str
         type: str
@@ -19,11 +21,11 @@ export def delete [] {
     stor delete --table-name nu_test_output
 }
 
-export def insert-result [ row: record<suite: string, test: string, result: string> ] {
+export def insert-result [ row: record<timestamp: datetime, suite: string, test: string, result: string> ] {
     $row | stor insert --table-name nu_tests
 }
 
-export def insert-output [ row: record<suite: string, test: string, type: string, line: string> ] {
+export def insert-output [ row: record<timestamp: datetime, suite: string, test: string, type: string, line: string> ] {
     $row | stor insert --table-name nu_test_output
 }
 
