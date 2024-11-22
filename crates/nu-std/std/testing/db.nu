@@ -30,33 +30,33 @@ export def insert-output [ row: record<suite: string, test: string, type: string
 export def query []: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
     (
         stor open
-            | query db $"
-                SELECT suite, test, result
-                FROM nu_tests
-                ORDER BY suite, test
+            | query db "
+                SELECT
+                    r.suite,
+                    r.test,
+                    r.result,
+                    GROUP_CONCAT(o.line, '\n') AS output,
+                    GROUP_CONCAT(e.line, '\n') AS error
+
+                FROM nu_tests AS r
+
+                LEFT JOIN nu_test_output AS o
+                ON r.suite = o.suite AND r.test = o.test AND o.type = 'output'
+
+                LEFT JOIN nu_test_output AS e
+                ON r.suite = e.suite AND r.test = e.test AND e.type = 'error'
+
+                GROUP BY r.suite, r.test
+                ORDER BY r.suite, r.test
             "
             | each { |row|
                 {
                     suite: $row.suite
                     test: $row.test
                     result: $row.result
-                    output: (query-output $row.suite $row.test "output")
-                    error: (query-output $row.suite $row.test "error")
+                    output: ($row.output | default "")
+                    error: ($row.error | default "")
                 }
             }
-    )
-}
-
-# TODO use subquery instead
-def query-output [suite: string, test: string, type: string]: nothing -> string {
-    (
-        stor open
-            | query db $"
-                SELECT line
-                FROM nu_test_output
-                WHERE suite = :suite AND test = :test AND type = :type
-            " --params { suite: $suite, test: $test, type: $type }
-            | get line
-            | str join "\n"
     )
 }
