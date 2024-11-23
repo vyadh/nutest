@@ -14,10 +14,11 @@ Hopefully this project has been archived by the time you read this!
 
 ## Current Features
 
-Supports tests scripts in flexible configurations format:
+Supports tests scripts in flexible configurations:
 - Single file with both implementation and tests
 - Separate implementation and test files
-- Test files only. This would commonly be the case when using Nushell to test other things, such as for testing bash scripts, APIs, infrastructure. All the things Nushell is great at.
+- Just test files only
+  - This would commonly be the case when using Nushell to test other things, such as for testing bash scripts, APIs, infrastructure. All the things Nushell is great at.
 - Nushell modules.
 
 Fast. Runs test suites (a file of tests) and each test in parallel with minimal Nu subshells.
@@ -28,27 +29,31 @@ Allows before/after each and before/after all to generate context for each test.
 
 Captures test output for debugging and display.
 
-Filtering of tests to run.
+Filtering of suites and tests to run via a pattern.
 
 
-## Expected Features (todo list)
+## Expected Features 
 
-- Emit non-zero exit code when a test fails to make this suitable for CI.
 - Customise thread count
+- Combine output and error, but perhaps add error markup (by default).
+  - Colourise error output unless `--no-colour` flag is set.
+- Emit non-zero exit code when a test fails to make this suitable for CI.
+- Resolve TODOs or move to below roadmap/enhancements.
+
+## Roadmap
+
 - Test report in standard format (cargo test JSON or nextest / JUnit XML)
+- Generate test coverage
 
 
-## May Implement
+## Possible Enhancements
 
 - Test timing
 - Funky dynamic terminal UI
 - Suite/test exclusions
 - Ensure the two levels of parallelism is core friendly by default given subprocesses, but also allow max to help with I/O bound tests.
 - File stem pattern for gobbing to allow running tests in any file not just test ones
-- Combine output and error, but perhaps add error markup (by default).
 - Optionally allow running ignored tests.
-- Don't output the output by default unless tests fail.
-- Colourise output such as stderr only when supporting terminal detected
 
 
 ## Alternatives
@@ -62,7 +67,7 @@ Both of these runners work on modules and are not suitable for testing single sc
 
 ## How Does It Work?
 
-Discovers tests by scanning matching files in the path, sourcing that code and collecting test annotations on methods via `scope commands`.
+Discovers tests by scanning matching files in the path, sourcing that code and collecting test annotations on methods via `scope commands`. The file patterns currently detected are `test_*.nu` and `*_test.nu` for performance of the test discovery. The latter pattern is useful when you're using Nushell to test other things and want the file ordered close to the one being tested.
 
 For each file with tests (a suite), dispatch the suite to run on a single Nu subshell.
 
