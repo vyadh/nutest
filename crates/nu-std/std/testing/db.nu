@@ -31,24 +31,25 @@ export def query []: nothing -> table<suite: string, test: string, result: strin
     (
         stor open
             | query db "
-                WITH aggregated_output AS (
-                    SELECT
-                        suite,
-                        test,
-                        GROUP_CONCAT(line, '\n') AS output
-                    FROM nu_test_output
-                    WHERE type = 'output'
-                    GROUP BY suite, test
-                ),
-                aggregated_error AS (
-                    SELECT
-                        suite,
-                        test,
-                        GROUP_CONCAT(line, '\n') AS error
-                    FROM nu_test_output
-                    WHERE type = 'error'
-                    GROUP BY suite, test
-                )
+                WITH
+                    aggregated_output AS (
+                        SELECT
+                            suite,
+                            test,
+                            GROUP_CONCAT(line, '\n') AS output
+                        FROM nu_test_output
+                        WHERE type = 'output'
+                        GROUP BY suite, test
+                    ),
+                    aggregated_error AS (
+                        SELECT
+                            suite,
+                            test,
+                            GROUP_CONCAT(line, '\n') AS error
+                        FROM nu_test_output
+                        WHERE type = 'error'
+                        GROUP BY suite, test
+                    )
 
                 SELECT
                     r.suite,
@@ -56,6 +57,7 @@ export def query []: nothing -> table<suite: string, test: string, result: strin
                     r.result,
                     COALESCE(o.output, '') AS output,
                     COALESCE(e.error, '') AS error
+
                 FROM nu_tests AS r
 
                 LEFT JOIN aggregated_output AS o

@@ -32,17 +32,23 @@ export def plan-execute-suite-emit [$suite: string, suite_data: list] {
 # TODO - Add support for: before-all, after-all
 def plan-execute-suite [suite_data: list] {
     let plan = $suite_data | group-by type
+    # TODO partition-by type?
+    let before_all = $plan | get --ignore-errors "before-all" | default []
     let before_each = $plan | get --ignore-errors "before-each" | default []
     let after_each = $plan | get --ignore-errors "after-each" | default []
+    let after_all = $plan | get --ignore-errors "after-all" | default []
     let tests = $plan | get --ignore-errors "test" | default []
+
+    # TODO test exception handling
+    let context_all = { } | execute-before $before_all
 
     $tests | each { |test|
         # Allow print output to be associated with specific tests by adding name to the environment
         with-env { NU_TEST_NAME: $test.name } {
             emit "start" { }
             try {
-                let context = execute-before $before_each
-                let result = $context | do $test.execute
+                let context = $context_all | execute-before $before_each
+                $context | do $test.execute
                 $context | execute-after $after_each
                 emit "result" { status: "PASS" }
             } catch { |error|
@@ -61,21 +67,25 @@ def plan-execute-suite [suite_data: list] {
             emit "finish" { }
         }
     }
+
+    # TODO test exception handling
+    $context_all | execute-after $after_all
 }
 
 # TODO better message on incompatible signature
-def execute-before [items: list]: nothing -> record {
-    $items | reduce --fold {} { |item, acc|
-        $acc | merge (do $item.execute)
+def execute-before [items: list]: record -> record {
+    let initial_context = $in
+    $items | reduce --fold $initial_context { |it, acc|
+        let next = (do $it.execute)
+        $acc | merge $next
     }
 }
 
 # TODO better message on incompatible signature
-def execute-after [items: list] {
+def execute-after [items: list]: record -> nothing {
     let context = $in
     $items | each { |item|
-        let execute = $item.execute
-        $context | do $execute
+        $context | do $item.execute
     }
 }
 

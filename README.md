@@ -24,7 +24,7 @@ Fast. Runs test suites (a file of tests) and each test in parallel with minimal 
 
 Emits tests as a table of results that can be processed like normal Nu data.
 
-Allows before-each and after-each commands that can generate context for each test.
+Allows before/after each and before/after all to generate context for each test.
 
 Captures test output for debugging and display.
 
@@ -33,7 +33,6 @@ Filtering of tests to run.
 
 ## Expected Features (todo list)
 
-- Before all and after all
 - Emit non-zero exit code when a test fails to make this suitable for CI.
 - Customise thread count
 - Test report in standard format (cargo test JSON or nextest / JUnit XML)

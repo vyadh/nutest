@@ -215,3 +215,73 @@ def assert-context-received [] {
     print ($context | get question) ($context | get answer)
     assert equal $context (get-context)
 }
+
+#[test]
+def full-cycle-context [] {
+    let plan = [
+        { name: "before-all", type: "before-all", execute: "{ fc-before-all }" }
+        { name: "before-each", type: "before-each", execute: "{ fc-before-each }" }
+        { name: "test1", type: "test", execute: "{ fc-test }" }
+        { name: "test2", type: "test", execute: "{ fc-test }" }
+        { name: "after-each", type: "after-each", execute: "{ fc-after-each }" }
+        { name: "after-all", type: "after-all", execute: "{ fc-after-all }" }
+    ]
+
+    let results = test-run "full-cycle" $plan
+
+    assert equal $results [
+        [suite test type payload];
+        # Before all is only executed once at the beginning
+        [ "full-cycle", "full-cycle-context", "output", { lines: ["ba"] } ]
+
+        [ "full-cycle", "test1", "start", {} ]
+        [ "full-cycle", "test1", "output", { lines: [ "b" ] } ]
+        [ "full-cycle", "test1", "output", { lines: [ "t" ] } ]
+        [ "full-cycle", "test1", "output", { lines: [ "a" ] } ]
+        [ "full-cycle", "test1", "result", { status: "PASS" } ]
+        [ "full-cycle", "test1", "finish", {} ]
+
+        [ "full-cycle", "test2", "start", {} ]
+        [ "full-cycle", "test2", "output", { lines: [ "b" ] } ]
+        [ "full-cycle", "test2", "output", { lines: [ "t" ] } ]
+        [ "full-cycle", "test2", "output", { lines: [ "a" ] } ]
+        [ "full-cycle", "test2", "result", { status: "PASS" } ]
+        [ "full-cycle", "test2", "finish", {} ]
+
+        # After all is only executed once at the end
+        [ "full-cycle", "full-cycle-context", "output", { lines: ["aa"] } ]
+    ]
+}
+
+def fc-before-all []: record -> record {
+    print "ba"
+    { before-all: true }
+}
+
+def fc-before-each []: record -> record {
+    print "b"
+    #print $"OOOOOO ($in) OOOOOO"
+    #print $"=========----------($in | merge { before: true })"
+
+    $in | merge { before: true }
+}
+
+def fc-test []: record -> nothing {
+    print "t"
+    #print $"==TEST== ($in) ($in == { before-all: true, before: true})"
+    assert equal $in {
+        before-all: true
+        before: true
+    }
+    #print $"==AFTER-TEST"
+}
+
+def fc-after-each []: record -> nothing {
+    print "a"
+    #assert equal $in.events [ "ba", "b" ]
+}
+
+def fc-after-all []: record -> nothing {
+    print "aa"
+    #assert equal $in.events [ "ba", "b" ]
+}
