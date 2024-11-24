@@ -1,21 +1,16 @@
 use std/assert
 use ../../std/testing
 
+# To avoid collisions with multiple tests creating databases, we run in a subshell.
+
 #[before-each]
 def setup []: nothing -> record {
     let temp = mktemp --tmpdir --directory
-
     setup-tests $temp
 
     {
         temp: $temp
     }
-}
-
-#[after-each]
-def cleanup [] {
-    let context = $in
-    rm --recursive $context.temp
 }
 
 def setup-tests [temp: string] {
@@ -38,10 +33,34 @@ def setup-tests [temp: string] {
     " | save $test_file_2
 }
 
+#[after-each]
+def cleanup [] {
+    let context = $in
+    rm --recursive $context.temp
+}
+
+def test-run [command: string] {
+    let result = (
+        ^$nu.current-exe
+            --no-config-file
+            --commands $"
+                use std/testing
+                ($command) | to nuon
+            "
+    ) | complete
+
+    if $result.exit_code != 0 {
+        $"[sub-process failed: ($result.stderr)]"
+    } else {
+        $result.stdout | from nuon
+    }
+}
+
 #[test]
 def test-with-default-options [] {
     let temp = $in.temp
-    let results = testing --no-color --path $temp
+
+    let results = test-run $"testing --no-color --path '($temp)'"
 
     assert equal $results [
         { suite: test_1, test: test_bar, result: "PASS", output: "", error: "rab" }
@@ -54,8 +73,9 @@ def test-with-default-options [] {
 #[test]
 def test-with-specific-file [] {
     let temp = $in.temp
+    let path = $temp | path join "test_2.nu"
 
-    let results  = testing --no-color --path ($temp | path join "test_2.nu")
+    let results = test-run $"testing --no-color --path ($path)"
 
     assert equal $results [
         { suite: test_2, test: test_baz, result: "PASS", output: "zab", error: "" }
@@ -67,7 +87,7 @@ def test-with-specific-file [] {
 def test-with-specific-test [] {
     let temp = $in.temp
 
-    let results  = testing --no-color --path $temp --test test_foo
+    let results = test-run $"testing --no-color --path ($temp) --test test_foo"
 
     assert equal $results [
         { suite: test_1, test: test_foo, result: "PASS", output: "oof", error: "" }
@@ -78,7 +98,7 @@ def test-with-specific-test [] {
 def test-with-test-pattern [] {
     let temp = $in.temp
 
-    let results  = testing --no-color --path $temp --test 'test_ba[rz]'
+    let results = test-run $"testing --no-color --path ($temp) --test 'test_ba[rz]'"
 
     assert equal $results [
         { suite: test_1, test: test_bar, result: "PASS", output: "", error: "rab" }
@@ -90,7 +110,7 @@ def test-with-test-pattern [] {
 def test-with-specific-suite [] {
     let temp = $in.temp
 
-    let results = testing --no-color --path $temp --suite test_1
+    let results = test-run $"testing --no-color --path ($temp) --suite test_1"
 
     assert equal $results [
         { suite: test_1, test: test_bar, result: "PASS", output: "", error: "rab" }
@@ -108,7 +128,7 @@ def tests-should-have-appropriate-exit-code [] {
     def test_quux [] { error make { msg: 'Ouch' } }
     " | save $test_file_3
 
-    let results = testing --no-color --path $temp --suite test_1
+    let results = test-run $"testing --no-color --path ($temp) --suite test_1"
     assert equal $env.LAST_EXIT_CODE "0"
 
     let results = testing --no-color --path $temp

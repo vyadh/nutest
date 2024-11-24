@@ -17,7 +17,7 @@ use db.nu
 #     path: string
 #     tests: list<test>
 # }
-export def run-suites [reporter: record]: list -> nothing {
+export def run-suites [reporter: record]: list<record> -> nothing {
     $in | par-each { |suite|
         run-suite $reporter $suite.name $suite.path $suite.tests
     }

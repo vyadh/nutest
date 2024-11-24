@@ -23,7 +23,9 @@ def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, 
     (
         $result.stdout
             | lines
-            | each { $in | from nuon | reject timestamp }
+            | each { $in | from nuon }
+            | sort-by suite test
+            | reject timestamp
     )
 }
 
@@ -64,7 +66,7 @@ def execute-plan-tests [] {
 
     let results = test-run "suite" $plan
 
-    assert equal $results [
+    assert equal $results ([
         [suite test type payload];
         [ "suite", "test_success", "start", {} ]
         [ "suite", "test_success", "output", { lines: [$success_message] } ]
@@ -85,7 +87,7 @@ def execute-plan-tests [] {
         [ "suite", "test_half_failure", "result", { status: "FAIL" } ]
         [ "suite", "test_half_failure", "error", { lines: [$failure_message] } ]
         [ "suite", "test_half_failure", "finish", {} ]
-    ]
+    ] | sort-by suite test)
 }
 
 #[test]
@@ -229,7 +231,7 @@ def full-cycle-context [] {
 
     let results = test-run "full-cycle" $plan
 
-    assert equal $results [
+    assert equal $results ([
         [suite test type payload];
         # Before all is only executed once at the beginning
         [ "full-cycle", "full-cycle-context", "output", { lines: ["ba"] } ]
@@ -250,7 +252,7 @@ def full-cycle-context [] {
 
         # After all is only executed once at the end
         [ "full-cycle", "full-cycle-context", "output", { lines: ["aa"] } ]
-    ]
+    ] | sort-by suite test)
 }
 
 def fc-before-all []: record -> record {

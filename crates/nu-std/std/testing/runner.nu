@@ -42,19 +42,33 @@ def plan-execute-suite [suite_data: list] {
     # TODO test exception handling
     let context_all = { } | execute-before $before_all
 
-    $tests | each { |test|
+    $tests | par-each { |test|
         # Allow print output to be associated with specific tests by adding name to the environment
         with-env { NU_TEST_NAME: $test.name } {
             emit "start" { }
+
+            # TODO clean this up a bit
             try {
                 let context = $context_all | execute-before $before_each
-                $context | do $test.execute
-                $context | execute-after $after_each
-                emit "result" { status: "PASS" }
+
+                try {
+                    $context | do $test.execute
+                    $context | execute-after $after_each
+                    emit "result" { status: "PASS" }
+                } catch { |error|
+                    emit "result" { status: "FAIL" }
+                    print -e ...(format_error $error)
+                    # TODO test exception handling, since this should still run
+                    $context | execute-after $after_each
+                }
+
             } catch { |error|
                 emit "result" { status: "FAIL" }
                 print -e ...(format_error $error)
+                # TODO test exception handling, since this should still run
+                $context_all | execute-after $after_each
             }
+
             emit "finish" { }
         }
     }
