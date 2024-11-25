@@ -15,28 +15,24 @@ export def create [] {
 
 # We close the db so tests of this do not open the db multiple times
 export def delete [] {
-    #stor export --file-name $"(date now | format date "%+" | str replace --all ':' '-').sqlite"
-    stor export --file-name $"(random chars --length 8).sqlite"
     # TODO inconsistent naming
     stor delete --table-name nu_tests
     stor delete --table-name nu_test_output
 }
 
 export def insert-result [ row: record<suite: string, test: string, result: string> ] {
-    $"\n  ($row.suite) ($row.test) insert-result: ($row)" | save -a $"z.test"
     retry-on-lock "nu_tests" {
         $row | stor insert --table-name nu_tests
     }
 }
 
 export def insert-output [ row: record<suite: string, test: string, type: string, line: string> ] {
-    $"\n   ($row.suite) ($row.test) insert-output: ($row)" | save -a $"z.test"
     retry-on-lock "nu_test_output" {
         $row | stor insert --table-name nu_test_output
     }
 }
 
-# Parallel execution of tests causes contention on the SQLite database
+# Parallel execution of tests causes contention on the SQLite database,
 # which leads to failed inserts or missing data.
 def retry-on-lock [table: string, operation: closure] {
     # We should eventually give up as an error flagging a bug is better than an infinite loop
@@ -44,24 +40,21 @@ def retry-on-lock [table: string, operation: closure] {
     let max_attempts = 20
     mut attempt = $max_attempts
     while $attempt > 0 {
-        #print $"Attempt: ($attempts)"
         $attempt -= 1
         try {
             do $operation
             if $attempt < ($max_attempts - 1) {
-                #print "success!"
             }
             break
         } catch { |e|
             let reason = ($e.json | from json).labels?.0?.text?
             if $reason == $"database table is locked: ($table)" {
-                #print "retrying"
                 continue
             }
         }
     }
     if $attempt == 0 {
-        print $"Given up: ($attempt)"
+        error make { msg: $"Failed to insert into ($table) after ($max_attempts) attempts" }
     }
 }
 

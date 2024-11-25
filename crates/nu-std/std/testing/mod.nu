@@ -12,10 +12,6 @@ export def main [
     --threads: int
     --no-color
 ] {
-    rm --force "z.test"
-
-    $"\n\n\n\nmain: suite ($suite) test ($test)" | save $"z.test"
-
     # todo error messages are bad when these are misconfgured
     let path = $path | default $env.PWD
     let suite = $suite | default ".*"

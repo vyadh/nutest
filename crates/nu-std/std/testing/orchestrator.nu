@@ -18,9 +18,7 @@ use db.nu
 #     tests: list<test>
 # }
 export def run-suites [reporter: record, threads: int]: list<record> -> nothing {
-    "\nrun-suites" | save -a $"z.test"
     $in | par-each { |suite|
-        $"\n ($suite) null run-suites" | save -a $"z.test"
         run-suite $reporter $suite.name $suite.path $suite.tests
     }
 }
@@ -29,7 +27,6 @@ export def run-suites [reporter: record, threads: int]: list<record> -> nothing 
 
 def run-suite [reporter: record, name: string, path: string, tests: table<name: string, type: string>] {
     let plan_data = create-suite-plan-data $tests
-    $"\n  ($name) run-suite: ($plan_data)" | save -a $"z.test"
 
     let result = (
         ^$nu.current-exe
@@ -45,14 +42,11 @@ def run-suite [reporter: record, name: string, path: string, tests: table<name: 
     #print $'($plan_data)'
     #print $"($result)"
 
-
     if $result.exit_code == 0 {
-        $"\n   ($name) null run-suite/stdout:\n====----($result.stdout)----====" | save -a $"z.test"
         $result.stdout
             | lines
             | each { $in | from nuon | process-event $reporter }
     } else {
-        $"\n   ($name) null run-suite/stdout: [error]" | save -a $"z.test"
         # This is only triggered on a suite-level failure so not caught by the embedded runner
         # This replicates this suite-level failure down to each test
         $tests | each { |test|
@@ -78,7 +72,6 @@ def create-test-plan-data [test: record<name: string, type: string>]: nothing ->
 def process-event [reporter: record] {
     let event = $in
     let template = { suite: $event.suite, test: $event.test }
-    $"\n   ($event.suite) ($event.test) process-event: ($event.payload)" | save -a $"z.test"
 
     match $event {
         { type: "result" } => {

@@ -15,7 +15,6 @@ export def create [color: bool = false]: nothing -> record {
 def query-results [color: bool]: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
     let rand = random chars --length 8
     let res = db query | each { |row|
-        $"\n   ($row.suite) ($row.test) query1 [($rand)]: ($row)" | save -a $"z.test"
         {
             suite: $row.suite
             test: $row.test
@@ -24,9 +23,6 @@ def query-results [color: bool]: nothing -> table<suite: string, test: string, r
             error: $row.error
         }
     }
-    #db query-out | each { |row|
-    #    $"\n   ($row.suite) ($row.test) query2 [($rand)]: ($row)" | save -a $"z.test"
-    #}
     $res
 }
 

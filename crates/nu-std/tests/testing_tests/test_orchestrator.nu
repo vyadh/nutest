@@ -33,8 +33,6 @@ def trim []: string -> string {
 # Since we only have one database it needs to be created once before all tests.
 # We also need to ensure we narrow down results to the unique ones used in each test.
 def setup-db []: nothing -> record {
-    "\nsetup-db" | save -a $"z.test"
-
     let reporter = reporter_table create
     do $reporter.start
 
@@ -62,18 +60,8 @@ def cleanup [] {
 
 #[after-all]
 def delete-db [] {
-    #print $"(date now | format date '%+')"
-    #print $"exporting (date now | format date '%+')"
-    #"test" | save -a $"z-(date now | format date '%+' | str replace --all ':' '-')-(random chars --length 1)-2.test"
-    #stor export --file-name $"(date now | format date '%+' | str replace --all ':' '-')(random chars --length 4)-.sqlite"
-    stor export --file-name $"C:/dev/nu-test/crates/nu-std/zdb-(date now | format date '%+' | str replace --all ':' '-')-(random chars --length 4).sqlite"
-    #print $"exported"
-
     let reporter = $in.reporter
     do $reporter.complete
-    print $"exported2"
-
-    "\ndelete-db" | save -a $"z.test"
 }
 
 #[test]
@@ -92,8 +80,6 @@ def run-suite-with-no-tests [] {
 
 #[test]
 def run-suite-with-passing-test [] {
-    "\n   run-suite-with-passing-test" | save -a $"z.test"
-
     let context = $in
     let temp = $context.temp
 
@@ -275,7 +261,6 @@ def test-run [context: record] list<record> -> list<record> {
     let suites = $in
     let reporter = $context.reporter
 
-    $"\ntest-run" | save -a $"z.test"
     $suites | run-suites $reporter 1
 
     let results = do $reporter.results
