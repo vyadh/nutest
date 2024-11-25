@@ -23,7 +23,7 @@ export def run-suites [reporter: record, threads: int]: list<record> -> nothing 
     }
 }
 
-# TODO one failure seems to cause tests to fail
+# TODO one failure seems to cause (all?) tests to fail
 
 def run-suite [reporter: record, threads: int, suite: string, path: string, tests: table<name: string, type: string>] {
     let plan_data = create-suite-plan-data $tests
@@ -36,7 +36,7 @@ def run-suite [reporter: record, threads: int, suite: string, path: string, test
                 source ($path)
                 plan-execute-suite-emit ($suite) ($threads) ($plan_data)
             "
-    ) | complete # TODO need a streaming version
+    ) | complete
 
     # Useful for understanding event stream
     #print $'($plan_data)'

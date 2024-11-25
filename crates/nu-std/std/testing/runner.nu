@@ -29,17 +29,15 @@ export def plan-execute-suite-emit [$suite: string, threads: int, suite_data: li
     null
 }
 
-# TODO - Add support for: before-all, after-all
 def plan-execute-suite [threads: int, suite_data: list] {
     let plan = $suite_data | group-by type
 
-    # TODO partition-by type?
-    let before_all = $plan | get --ignore-errors "before-all" | default []
-    let before_each = $plan | get --ignore-errors "before-each" | default []
-    let after_each = $plan | get --ignore-errors "after-each" | default []
-    let after_all = $plan | get --ignore-errors "after-all" | default []
-    let tests = $plan | get --ignore-errors "test" | default []
-    let ignored = $plan | get --ignore-errors "ignore" | default []
+    let before_all = $plan | get-or-empty "before-all"
+    let before_each = $plan | get-or-empty "before-each"
+    let after_each = $plan | get-or-empty "after-each"
+    let after_all = $plan | get-or-empty "after-all"
+    let tests = $plan | get-or-empty "test"
+    let ignored = $plan | get-or-empty "ignore"
 
     # TODO test exception handling
     let context_all = { } | execute-before $before_all
@@ -85,6 +83,10 @@ def plan-execute-suite [threads: int, suite_data: list] {
 
     # TODO test exception handling
     $context_all | execute-after $after_all
+}
+
+def get-or-empty [key: string]: list -> list {
+    $in | get --ignore-errors $key | default []
 }
 
 # TODO better message on incompatible signature where we don't supply the context

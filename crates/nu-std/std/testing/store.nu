@@ -1,6 +1,6 @@
 
 export def create [] {
-    stor create --table-name nu_tests --columns {
+    stor create --table-name nu_test_results --columns {
         suite: str
         test: str
         result: str
@@ -15,16 +15,15 @@ export def create [] {
 
 # We close the store so tests of this do not open the store multiple times
 export def delete [] {
-    # TODO inconsistent naming
-    stor delete --table-name nu_tests
+    stor delete --table-name nu_test_results
     stor delete --table-name nu_test_output
 }
 
 export def insert-result [ row: record<suite: string, test: string, result: string> ] {
-    retry-on-lock "nu_tests" {
+    retry-on-lock "nu_test_results" {
         # TODO errors here are swallowed
         #error make { msg: "test" }
-        $row | stor insert --table-name nu_tests
+        $row | stor insert --table-name nu_test_results
     }
 }
 
@@ -92,7 +91,7 @@ export def query [color_scheme: closure]: nothing -> table<suite: string, test: 
                     r.result,
                     COALESCE(s.output, '') AS output
 
-                FROM nu_tests AS r
+                FROM nu_test_results AS r
 
                 LEFT JOIN stream AS s
                 ON r.suite = s.suite AND r.test = s.test

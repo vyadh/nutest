@@ -8,7 +8,6 @@ def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, 
     let result = (
         ^$nu.current-exe
             --no-config-file
-            # TODO try to avoid explicit paths but $env.CURRENT_FILE doesn't work for our generated code
             --commands $"
                 source std/testing/runner.nu
                 source tests/testing_tests/test_runner.nu
@@ -276,13 +275,8 @@ def fc-test []: record -> nothing {
 
 def fc-after-each []: record -> nothing {
     print "a"
-    # TODO ?
-    #assert equal $in.events [ "ba", "b" ]
 }
 
 def fc-after-all []: record -> nothing {
     print "aa"
-    # TODO ?
-    #print $"$in.events"
-    #assert equal $in.events [ "ba", "b" ]
 }
