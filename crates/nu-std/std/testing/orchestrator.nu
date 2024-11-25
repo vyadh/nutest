@@ -18,14 +18,14 @@ use db.nu
 #     tests: list<test>
 # }
 export def run-suites [reporter: record, threads: int]: list<record> -> nothing {
-    $in | par-each { |suite|
-        run-suite $reporter $suite.name $suite.path $suite.tests
+    $in | par-each --threads $threads { |suite|
+        run-suite $reporter $threads $suite.name $suite.path $suite.tests
     }
 }
 
 # TODO one failure seems to cause tests to fail
 
-def run-suite [reporter: record, name: string, path: string, tests: table<name: string, type: string>] {
+def run-suite [reporter: record, threads: int, suite: string, path: string, tests: table<name: string, type: string>] {
     let plan_data = create-suite-plan-data $tests
 
     let result = (
@@ -34,7 +34,7 @@ def run-suite [reporter: record, name: string, path: string, tests: table<name: 
             --commands $"
                 source std/testing/runner.nu
                 source ($path)
-                plan-execute-suite-emit ($name) ($plan_data)
+                plan-execute-suite-emit ($suite) ($threads) ($plan_data)
             "
     ) | complete # TODO need a streaming version
 
@@ -50,7 +50,7 @@ def run-suite [reporter: record, name: string, path: string, tests: table<name: 
         # This is only triggered on a suite-level failure so not caught by the embedded runner
         # This replicates this suite-level failure down to each test
         $tests | each { |test|
-            let template = { timestamp: (date now | format date "%+"), suite: $name, test: $test.name }
+            let template = { timestamp: (date now | format date "%+"), suite: $suite, test: $test.name }
             $template | merge { type: "result", payload: { status: "FAIL" } } | process-event $reporter
             $template | merge { type: "error", payload: { lines: [$result.stderr] } } | process-event $reporter
         }

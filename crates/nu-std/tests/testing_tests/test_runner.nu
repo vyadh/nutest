@@ -12,7 +12,7 @@ def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, 
             --commands $"
                 source std/testing/runner.nu
                 source tests/testing_tests/test_runner.nu
-                plan-execute-suite-emit ($suite) ($plan)
+                plan-execute-suite-emit ($suite) 0 ($plan)
             "
     ) | complete
 
@@ -276,11 +276,13 @@ def fc-test []: record -> nothing {
 
 def fc-after-each []: record -> nothing {
     print "a"
+    # TODO ?
     #assert equal $in.events [ "ba", "b" ]
 }
 
 def fc-after-all []: record -> nothing {
     print "aa"
+    # TODO ?
     #print $"$in.events"
     #assert equal $in.events [ "ba", "b" ]
 }

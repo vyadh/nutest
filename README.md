@@ -28,7 +28,7 @@ Emits tests as a table of results that can be processed like normal Nu data. For
 testing --no-color | where result == FAIL
 ```
 
-Allows before/after each and before/after all to generate context for each test.
+Allows before/after each/all to generate context for each test.
 
 Captures test output for debugging and display.
 
@@ -37,9 +37,7 @@ Filtering of suites and tests to run via a pattern.
 
 ## Expected Features 
 
-- Customise thread count
-  - Need to get funky on the default here as (sys cpu | length) has significant overhead.
-  - NUMBER_OF_PROCESSORS available in Linux and Mac?
+- Insert multiple lines at once to reduce pressure on SQLite concurrency.
 - Combine output and error, but perhaps add error markup (by default).
   - Colourise error output unless `--no-colour` flag is set.
 - Emit non-zero exit code when a test fails to make this suitable for CI.
@@ -96,3 +94,7 @@ This means that an 8-core CPU would run 8 suites concurrently and within each su
 Additionally, given the kinds of use-cases Nushell is used for, many tests are likely to be I/O bound.
 
 Feedback on how well this works in practice is very welcome.
+
+#### SQLite
+
+Given Nutest runs as much as possible concurrently, this puts an unusual level of pressure on SQLite that collects test results and the output. For this reason, INSERTs sometimes fail and a retry mechanism has been added to attempt to insert the data again up to a particular maximum tries at which point Nutest may give up and throw an error. The retries have had some stress testing to come to a pragmatic value, but please let us know if you're seeing issues.

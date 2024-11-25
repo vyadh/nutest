@@ -20,9 +20,9 @@
 
 # TODO prefix commands with something unusual to avoid conflicts
 
-export def plan-execute-suite-emit [$suite: string, suite_data: list] {
+export def plan-execute-suite-emit [$suite: string, threads: int, suite_data: list] {
     with-env { NU_TEST_SUITE_NAME: $suite } {
-        plan-execute-suite $suite_data
+        plan-execute-suite $threads $suite_data
     }
 
     # Don't output any result
@@ -30,7 +30,7 @@ export def plan-execute-suite-emit [$suite: string, suite_data: list] {
 }
 
 # TODO - Add support for: before-all, after-all
-def plan-execute-suite [suite_data: list] {
+def plan-execute-suite [threads: int, suite_data: list] {
     let plan = $suite_data | group-by type
 
     # TODO partition-by type?
@@ -44,7 +44,7 @@ def plan-execute-suite [suite_data: list] {
     # TODO test exception handling
     let context_all = { } | execute-before $before_all
 
-    $tests | par-each { |test|
+    $tests | par-each --threads $threads { |test|
         # Allow print output to be associated with specific tests by adding name to the environment
         with-env { NU_TEST_NAME: $test.name } {
             emit "start" { }
