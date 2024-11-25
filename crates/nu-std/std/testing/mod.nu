@@ -13,7 +13,7 @@ export def main [
     --partition-output # TODO remove
     --no-color
 ] {
-    # todo error messages are bad when these are misconfgured
+    # TODO error messages are bad when these are misconfigured
     let path = $path | default $env.PWD
     let suite = $suite | default ".*"
     let test = $test | default ".*"
@@ -75,20 +75,23 @@ def create-color-scheme [no_color: bool]: nothing -> closure {
     }
 }
 
-def color-none []: record<type: string, text: string> -> string {
+def color-none []: record -> string {
     match $in {
-        { $type, text: $text } => $text
+        { type: _, text: $text } => $text
         { prefix: string } => ''
         { suffix: string } => ''
     }
 }
 
-def color-standard []: record<type: string, text: string> -> string {
+def color-standard []: record -> string {
     match $in {
-        { type: "good", text: $text } => $"(ansi green)($text)(ansi reset)"
-        { type: "warn", text: $text } => $"(ansi yellow)($in.text)(ansi reset)"
-        { type: "bad", text: $text }  => $"(ansi red)($in.text)(ansi reset)"
-        { prefix: "warn" } => (ansi yellow)
-        { suffix: "warn" } => (ansi reset)
+        { type: "pass", text: $text } => $"(ansi green)($text)(ansi reset)"
+        { type: "skip", text: $text } => $"(ansi yellow)($in.text)(ansi reset)"
+        { type: "fail", text: $text }  => $"(ansi red)($in.text)(ansi reset)"
+        { type: "warning", text: $text } => $"(ansi yellow)($in.text)(ansi reset)"
+        { type: "error", text: $text }  => $"(ansi red)($in.text)(ansi reset)"
+        # Below is mainly database queries where we can't wrap text, but can specify manually
+        { prefix: "stderr" } => '' # (ansi yellow)
+        { suffix: "stderr" } => '' #(ansi reset)
     }
 }

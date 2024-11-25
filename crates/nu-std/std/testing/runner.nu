@@ -87,7 +87,8 @@ def plan-execute-suite [threads: int, suite_data: list] {
     $context_all | execute-after $after_all
 }
 
-# TODO better message on incompatible signature
+# TODO better message on incompatible signature where we don't supply the context
+#   not: expected: input, and argument, to be both record or both
 def execute-before [items: list]: record -> record {
     let initial_context = $in
     $items | reduce --fold $initial_context { |it, acc|
@@ -96,7 +97,7 @@ def execute-before [items: list]: record -> record {
     }
 }
 
-# TODO better message on incompatible signature
+# TODO better message on incompatible signature (see above)
 def execute-after [items: list]: record -> nothing {
     let context = $in
     $items | each { |item|

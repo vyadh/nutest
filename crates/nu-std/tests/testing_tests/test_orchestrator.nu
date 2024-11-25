@@ -32,18 +32,21 @@ def trim []: string -> string {
 #[before-all]
 # Since we only have one database it needs to be created once before all tests.
 # We also need to ensure we narrow down results to the unique ones used in each test.
-def setup-db []: nothing -> record {
-    let no_colors = {
-        match $in {
-            { $type, text: $text } => $text
-            _ => ''
-        }
-    }
-    let reporter = reporter_table create $no_colors
+def reporter-setup []: nothing -> record {
+    let reporter = reporter_table create (nop-color-scheme)
     do $reporter.start
 
     {
         reporter: $reporter
+    }
+}
+
+def nop-color-scheme []: nothing -> closure {
+    {
+        match $in {
+            { type: _, text: $text } => $text
+            { prefix: _ } => ''
+        }
     }
 }
 
@@ -58,14 +61,12 @@ def setup-temp-dir []: nothing -> record {
 
 #[after-each]
 def cleanup [] {
-    #print $"exporting (date now | format date '%+')"
-    #print $"(pwd)"
     let context = $in
     rm --recursive $context.temp
 }
 
 #[after-all]
-def delete-db [] {
+def reporter-complete [] {
     let reporter = $in.reporter
     do $reporter.complete
 }

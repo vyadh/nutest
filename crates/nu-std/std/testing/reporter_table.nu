@@ -26,7 +26,7 @@ def query-results-all [color_scheme: closure]: nothing -> table<suite: string, t
             # TODO rename stder, stdout, output
             output: $row.output
             error: $row.error
-            stream: $row.stream # TODO colour record
+            stream: $row.stream
         }
     }
     $res
@@ -34,9 +34,9 @@ def query-results-all [color_scheme: closure]: nothing -> table<suite: string, t
 
 def format-result [result: string, color_scheme: closure]: nothing -> string {
     match $result {
-        "PASS" => ({ type: good, text: $result } | do $color_scheme)
-        "SKIP" => ({ type: warn, text: $result } | do $color_scheme)
-        "FAIL" => ({ type: bad, text: $result } | do $color_scheme)
+        "PASS" => ({ type: "pass", text: $result } | do $color_scheme)
+        "SKIP" => ({ type: "skip", text: $result } | do $color_scheme)
+        "FAIL" => ({ type: "fail", text: $result } | do $color_scheme)
         _ => $result
     }
 }

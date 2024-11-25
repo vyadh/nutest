@@ -125,8 +125,8 @@ export def query [color_scheme: closure]: nothing -> table<suite: string, test: 
 
                 ORDER BY r.suite, r.test
             " --params {
-                error_prefix: ({ prefix: warn } | do $color_scheme)
-                error_suffix: ({ suffix: warn } | do $color_scheme)
+                error_prefix: ({ prefix: "stderr" } | do $color_scheme)
+                error_suffix: ({ suffix: "stderr" } | do $color_scheme)
             }
     )
 }
