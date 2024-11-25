@@ -1,3 +1,62 @@
+use std/assert
+
+def main [] {
+    create
+    try {
+
+        # 1 suite
+        # 10 tests
+        # 1 result
+        # 5 outputs + 5 errors
+        # 1 query
+
+        let tests = 0..500
+        let outputs = 1..50
+
+        let data = $tests | each { |test|
+            {
+                suite: "s"
+                test: $"test-($test)"
+                result: "PASS"
+                output: ($outputs | each { |line| $"out-($line)" } | str join "\n")
+                error: ($outputs  | each { |line| $"err-($line)" } | str join "\n")
+            }
+        }
+
+        $data | par-each { |test|
+            let template = $test | reject result output error
+
+            let result = $template | merge { result: "PASS" }
+            insert-result $result
+
+            $test.output | lines | each { |line|
+                let out = $template | merge { type: "output", line: $line }
+                insert-output $out
+            }
+
+            $test.error | lines | each { |line|
+                let out = $template | merge { type: "error", line: $line }
+                insert-output $out
+            }
+
+            let this = $data | where suite == $test.suite and test == $test.test
+            let that = query | where suite == $test.suite and test == $test.test
+
+            if ($this != $that) {
+                print ($this)
+                print ($that)
+            }
+            assert equal ($this) ($that)
+        }
+
+        #print ($data)
+        #(query)
+
+    } catch { |e|
+        delete
+        $e.raw
+    }
+}
 
 export def create [] {
     stor create --table-name nu_tests --columns {
@@ -15,22 +74,37 @@ export def create [] {
 
 # We close the db so tests of this do not open the db multiple times
 export def delete [] {
-    #stor export --file-name $"(date now | format date "%+" | str replace --all ':' '-').sqlite"
-    stor export --file-name $"(random chars --length 8).sqlite"
-    # TODO inconsistent naming
     stor delete --table-name nu_tests
     stor delete --table-name nu_test_output
 }
 
 export def insert-result [ row: record<suite: string, test: string, result: string> ] {
-    $"\n  ($row.suite) ($row.test) insert-result: ($row)" | save -a $"z.test"
+    #stor open | query db $"
+    #    --BEGIN TRANSACTION;
+    #    INSERT INTO nu_tests \(suite, test, result\)
+    #      VALUES \('($row.suite)', '($row.test)', '($row.result)'\);
+    #    --COMMIT TRANSACTION;
+    #"
+    # --params $row
     retry-on-lock "nu_tests" {
         $row | stor insert --table-name nu_tests
     }
 }
 
 export def insert-output [ row: record<suite: string, test: string, type: string, line: string> ] {
-    $"\n   ($row.suite) ($row.test) insert-output: ($row)" | save -a $"z.test"
+    #stor open | query db $"
+    #    BEGIN TRANSACTION;
+    #    INSERT INTO nu_test_output \(suite, test, type, line\)
+    #      VALUES \('($row.suite)', '($row.test)', '($row.type)', '($row.line)'\);
+    #    COMMIT TRANSACTION;
+    #"
+    #stor open | query db "
+    #    BEGIN TRANSACTION;
+    #    INSERT INTO nu_test_output (suite, test, type, line)
+    #      VALUES (:suite, :test, :type, :line);
+    #    END TRANSACTION
+    #" --params $row
+
     retry-on-lock "nu_test_output" {
         $row | stor insert --table-name nu_test_output
     }
@@ -65,10 +139,13 @@ def retry-on-lock [table: string, operation: closure] {
     }
 }
 
+
 export def query []: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
     (
         stor open
             | query db "
+                --BEGIN TRANSACTION;
+
                 WITH
                     aggregated_output AS (
                         SELECT
@@ -104,7 +181,9 @@ export def query []: nothing -> table<suite: string, test: string, result: strin
                 LEFT JOIN aggregated_error AS e
                 ON r.suite = e.suite AND r.test = e.test
 
-                ORDER BY r.suite, r.test
+                ORDER BY r.suite, r.test;
+
+                --COMMIT TRANSACTION
             "
     )
 }

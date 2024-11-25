@@ -23,7 +23,10 @@ Supports tests scripts in flexible configurations:
 
 Fast. Runs test suites (a file of tests) and each test in parallel with minimal Nu subshells.
 
-Emits tests as a table of results that can be processed like normal Nu data.
+Emits tests as a table of results that can be processed like normal Nu data. For example, you can filter the results to show only failed tests using:
+```nu
+testing --no-color | where result == FAIL
+```
 
 Allows before/after each and before/after all to generate context for each test.
 
@@ -35,6 +38,8 @@ Filtering of suites and tests to run via a pattern.
 ## Expected Features 
 
 - Customise thread count
+  - Need to get funky on the default here as (sys cpu | length) has significant overhead.
+  - NUMBER_OF_PROCESSORS available in Linux and Mac?
 - Combine output and error, but perhaps add error markup (by default).
   - Colourise error output unless `--no-colour` flag is set.
 - Emit non-zero exit code when a test fails to make this suitable for CI.
@@ -42,18 +47,21 @@ Filtering of suites and tests to run via a pattern.
 
 ## Roadmap
 
-- Test report in standard format (cargo test JSON or nextest / JUnit XML)
-- Generate test coverage
+- Test report in standard format (cargo test JSON or nextest / JUnit XML).
+- Generate test coverage.
+- Custom reporters. Explain use of store to translate from eventing to collected data.
 
 
 ## Possible Enhancements
 
-- Test timing
-- Funky dynamic terminal UI
-- Suite/test exclusions
-- Ensure the two levels of parallelism is core friendly by default given subprocesses, but also allow max to help with I/O bound tests.
+- Test timing.
+- Funky dynamic terminal UI.
+- Suite/test exclusions.
 - File stem pattern for gobbing to allow running tests in any file not just test ones
 - Optionally allow running ignored tests.
+- Streaming test results. Each suite is run in a separate nu process via `complete` and therefore each suite's results are not reported until the whole suite completed. There are some limitations here due to Nushell not being able to run processes concurrently. However, we may be able to stream the events and avoid the `complete` command to resolve this.
+- Per-suite concurrency control (e.g. `#[sequential]` or `#[disable-concurrency]` annotation).
+- Reporter that provides a diff of expected and actual output.
 
 
 ## Alternatives
@@ -67,7 +75,7 @@ Both of these runners work on modules and are not suitable for testing single sc
 
 ## How Does It Work?
 
-Discovers tests by scanning matching files in the path, sourcing that code and collecting test annotations on methods via `scope commands`. The file patterns currently detected are `test_*.nu` and `*_test.nu` for performance of the test discovery. The latter pattern is useful when you're using Nushell to test other things and want the file ordered close to the one being tested.
+Nutest discovers tests by scanning matching files in the path, sourcing that code and collecting test annotations on methods via `scope commands`. The file patterns currently detected are only `test_*.nu` and `*_test.nu` for performance of the test discovery. The latter pattern is useful when you're using Nushell to test other things so the file is alphabetically ordered close to the files being tested.
 
 For each file with tests (a suite), dispatch the suite to run on a single Nu subshell.
 
@@ -75,7 +83,16 @@ Capture test success and failure as well as any output (by overriding print comm
 
 Collate all events for all suites and tests being run print the test results table.
 
+### Concurrency
 
-## Limitations
+Tests written in Nutest are run concurrently by default. Assuming your tests need to run in parallel is a good design constraint for self-contained tests that run efficiently. However, if this is not practical, this can be disabled by specifying the `--threads=1` option to the `testing` command.
 
-Since this is written in Nushell, it cannot currently run processes in the background where we're processing the steamed output. That means that for now, test results for each suite cannot be reported until that Nu subshell completes. 
+There are two levels of concurrency used in Nutest, leveraging `par-each`, where the following are run concurrently:
+- Suites (file of tests).
+- Tests within a suite.
+
+This means that an 8-core CPU would run 8 suites concurrently and within each suite, it would run 8 tests in concurrently. This might suggest Nutest potentially causing excessive CPU context switching, and the run taking longer than is strictly needed. However, this is not necessarily the case as Nushell leverages [Rayon](https://github.com/rayon-rs/rayon) for `par-test`, which purports to be efficient at managing the number of threads and of scheduling work across available CPU cores. For more on this, see Rayon's notion of [potential concurrency](https://smallcultfollowing.com/babysteps/blog/2015/12/18/rayon-data-parallelism-in-rust/), the dynamic nature of it's [parallel iterators](https://github.com/rayon-rs/rayon?tab=readme-ov-file#parallel-iterators-and-more) and the underlying use of Rust's [available parallelism](https://doc.rust-lang.org/stable/std/thread/fn.available_parallelism.html). However, it#s still not clear how well this works across multiple processes.
+
+Additionally, given the kinds of use-cases Nushell is used for, many tests are likely to be I/O bound.
+
+Feedback on how well this works in practice is very welcome.

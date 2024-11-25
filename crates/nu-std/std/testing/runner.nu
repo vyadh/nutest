@@ -32,17 +32,21 @@ export def plan-execute-suite-emit [$suite: string, suite_data: list] {
 # TODO - Add support for: before-all, after-all
 def plan-execute-suite [suite_data: list] {
     let plan = $suite_data | group-by type
+    $"\n  ($env.NU_TEST_SUITE_NAME?) ($env.NU_TEST_NAME?) pes: ($plan)" | save -a $"z.test"
+
     # TODO partition-by type?
     let before_all = $plan | get --ignore-errors "before-all" | default []
     let before_each = $plan | get --ignore-errors "before-each" | default []
     let after_each = $plan | get --ignore-errors "after-each" | default []
     let after_all = $plan | get --ignore-errors "after-all" | default []
     let tests = $plan | get --ignore-errors "test" | default []
+    let ignored = $plan | get --ignore-errors "ignore" | default []
 
     # TODO test exception handling
     let context_all = { } | execute-before $before_all
 
     $tests | par-each { |test|
+        $"\n   ($env.NU_TEST_SUITE_NAME?) ($env.NU_TEST_NAME?) pes/test: ($test)" | save -a $"z.test"
         # Allow print output to be associated with specific tests by adding name to the environment
         with-env { NU_TEST_NAME: $test.name } {
             emit "start" { }
@@ -53,7 +57,7 @@ def plan-execute-suite [suite_data: list] {
 
                 try {
                     $context | do $test.execute
-                    $context | execute-after $after_each
+                    $context | execute-after $after_each # TODO if throws, will exec again
                     emit "result" { status: "PASS" }
                 } catch { |error|
                     emit "result" { status: "FAIL" }
@@ -73,7 +77,6 @@ def plan-execute-suite [suite_data: list] {
         }
     }
 
-    let ignored = $plan | get --ignore-errors "ignore" | default []
     $ignored | each { |test|
         with-env { NU_TEST_NAME: $test.name } {
             emit "start" { }
@@ -83,7 +86,10 @@ def plan-execute-suite [suite_data: list] {
     }
 
     # TODO test exception handling
+    #"test" | save -a $"z-(date now | format date '%+' | str replace --all ':' '-')-(random chars --length 4)-1.test"
+    with-env { NU_TEST_NAME: "validate-test-plan" } {
     $context_all | execute-after $after_all
+    }
 }
 
 # TODO better message on incompatible signature
@@ -151,5 +157,6 @@ def emit [type: string, payload: record] {
         payload: $payload
     }
     let packet = $event | to nuon
+    $"\n   ($env.NU_TEST_SUITE_NAME?) ($env.NU_TEST_NAME?) emit: ($packet)" | save -a $"z.test"
     print-internal $packet
 }

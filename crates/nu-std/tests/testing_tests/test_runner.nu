@@ -262,20 +262,16 @@ def fc-before-all []: record -> record {
 
 def fc-before-each []: record -> record {
     print "b"
-    #print $"OOOOOO ($in) OOOOOO"
-    #print $"=========----------($in | merge { before: true })"
 
     $in | merge { before: true }
 }
 
 def fc-test []: record -> nothing {
     print "t"
-    #print $"==TEST== ($in) ($in == { before-all: true, before: true})"
     assert equal $in {
         before-all: true
         before: true
     }
-    #print $"==AFTER-TEST"
 }
 
 def fc-after-each []: record -> nothing {
@@ -285,5 +281,6 @@ def fc-after-each []: record -> nothing {
 
 def fc-after-all []: record -> nothing {
     print "aa"
+    #print $"$in.events"
     #assert equal $in.events [ "ba", "b" ]
 }

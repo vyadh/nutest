@@ -9,12 +9,18 @@ export def main [
     --path: path
     --suite: string
     --test: string
+    --threads: int
     --no-color
 ] {
+    rm --force "z.test"
+
+    $"\n\n\n\nmain: suite ($suite) test ($test)" | save $"z.test"
+
     # todo error messages are bad when these are misconfgured
     let path = $path | default $env.PWD
     let suite = $suite | default ".*"
     let test = $test | default ".*"
+    let threads = $threads | default (default-threads)
     let color = not $no_color
 
     # Discovered suites are of the type:
@@ -25,11 +31,20 @@ export def main [
 
     let reporter = reporter_table create $color
     do $reporter.start
-    $filtered | orchestrator run-suites $reporter
+    $filtered | orchestrator run-suites $reporter $threads
     let results = do $reporter.results
     do $reporter.complete
 
     $results
+}
+
+def default-threads []: nothing -> int {
+    # Rather than using `sys cpu` (an expensive operation), platform-specific
+    # mechanisms, or complicating the code with different invocations of par-each,
+    # we can leverage that Rayon's default behaviour can be activated by setting
+    # the number of threads to 0. See [ThreadPoolBuilder.num_threads](https://docs.rs/rayon/latest/rayon/struct.ThreadPoolBuilder.html#method.num_threads).
+    # This is also what the par-each implementation does.
+    0
 }
 
 def filter-tests [

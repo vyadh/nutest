@@ -14,6 +14,7 @@ def setup []: nothing -> record {
 }
 
 def setup-tests [temp: string] {
+    $"\nsetup" | save -a $"z.test"
     let test_file_1 = $temp | path join "test_1.nu"
     let test_file_2 = $temp | path join "test_2.nu"
 
@@ -40,6 +41,7 @@ def cleanup [] {
 }
 
 def test-run [command: string] {
+    $"\ntest-run" | save -a $"z.test"
     let result = (
         ^$nu.current-exe
             --no-config-file
