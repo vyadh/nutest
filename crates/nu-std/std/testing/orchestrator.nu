@@ -75,19 +75,16 @@ def process-event [reporter: record] {
 
     match $event {
         { type: "result" } => {
-            do $reporter.fire-result ($template | merge { result: $event.payload.status })
+            let message = $template | merge { result: $event.payload.status }
+            do $reporter.fire-result $message
         }
         { type: "output" } => {
-            # TODO concat and fire
-            $event.payload.lines | each { |line|
-                do $reporter.fire-output ($template | merge { type: output, line: $line })
-            }
+            let message = $template | merge { type: output, lines: $event.payload.lines }
+            do $reporter.fire-output $message
         }
         { type: "error" } => {
-            # TODO concat and fire
-            $event.payload.lines | each { |line|
-                do $reporter.fire-output ($template | merge { type: error, line: $line })
-            }
+            let message = $template | merge { type: error, lines: $event.payload.lines }
+            do $reporter.fire-output $message
         }
     }
 }

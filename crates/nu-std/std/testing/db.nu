@@ -22,13 +22,20 @@ export def delete [] {
 
 export def insert-result [ row: record<suite: string, test: string, result: string> ] {
     retry-on-lock "nu_tests" {
+        # TODO errors here are swallowed
+        #error make { msg: "test" }
         $row | stor insert --table-name nu_tests
     }
 }
 
-export def insert-output [ row: record<suite: string, test: string, type: string, line: string> ] {
+export def insert-output [ row: record<suite: string, test: string, type: string, lines: list<string>> ] {
     retry-on-lock "nu_test_output" {
-        $row | stor insert --table-name nu_test_output
+        # TODO errors here are swallowed
+        #error make { msg: "test" }
+        $row
+            | reject lines
+            | merge { line: ($row.lines | str join "\n") }
+            | stor insert --table-name nu_test_output
     }
 }
 
@@ -59,6 +66,7 @@ def retry-on-lock [table: string, operation: closure] {
 }
 
 export def query []: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
+    # SQL doesn't have backslash escapes so we use `char(10)`, being newline (\n)
     (
         stor open
             | query db "
@@ -67,7 +75,7 @@ export def query []: nothing -> table<suite: string, test: string, result: strin
                         SELECT
                             suite,
                             test,
-                            GROUP_CONCAT(line, '\n') AS output
+                            GROUP_CONCAT(line, char(10)) AS output
                         FROM nu_test_output
                         WHERE type = 'output'
                         GROUP BY suite, test
@@ -76,7 +84,7 @@ export def query []: nothing -> table<suite: string, test: string, result: strin
                         SELECT
                             suite,
                             test,
-                            GROUP_CONCAT(line, '\n') AS error
+                            GROUP_CONCAT(line, char(10)) AS error
                         FROM nu_test_output
                         WHERE type = 'error'
                         GROUP BY suite, test

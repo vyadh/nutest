@@ -13,7 +13,6 @@ export def create [color: bool = false]: nothing -> record {
 }
 
 def query-results [color: bool]: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
-    let rand = random chars --length 8
     let res = db query | each { |row|
         {
             suite: $row.suite
@@ -43,6 +42,6 @@ def insert-result [row: record<suite: string, test: string, result: string>] {
     db insert-result $row
 }
 
-def insert-output [row: record<suite: string, test: string, type: string, line: string>] {
+def insert-output [row: record<suite: string, test: string, type: string, lines: list<string>>] {
     db insert-output $row
 }
