@@ -33,7 +33,13 @@ def trim []: string -> string {
 # Since we only have one database it needs to be created once before all tests.
 # We also need to ensure we narrow down results to the unique ones used in each test.
 def setup-db []: nothing -> record {
-    let reporter = reporter_table create
+    let no_colors = {
+        match $in {
+            { $type, text: $text } => $text
+            _ => ''
+        }
+    }
+    let reporter = reporter_table create $no_colors
     do $reporter.start
 
     {
@@ -71,6 +77,9 @@ def run-suite-with-no-tests [] {
     let temp = $context.temp
     let test_file = $temp | path join "test.nu"
     touch $test_file
+
+    # TODO an `error make { msg: "something" } doesn't show any output in a test
+    # TODO only errors with more details
 
     let suites = [{name: "none", path: $test_file, tests: []}]
     let results = $suites | test-run $context | reject error

@@ -45,7 +45,7 @@ def test-run [command: string] {
             --no-config-file
             --commands $"
                 use std/testing
-                ($command) | to nuon
+                ($command) --partition-output | to nuon
             "
     ) | complete
 

@@ -125,7 +125,7 @@ def format_error [error: record]: nothing -> list<string> {
                 | str replace --all --regex '\n[ ]+Right' "\n|>Right"
                 | str replace --all --regex '[\n\r]+' ''
                 | str replace --all "|>" "\n|>") | str join ""
-            [$"(ansi red)($message)(ansi reset)", ...($formatted | lines)]
+            [$message, ...($formatted | lines)]
          } else {
             [$message, ...($detail | lines)]
          }

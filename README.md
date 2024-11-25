@@ -37,8 +37,6 @@ Filtering of suites and tests to run via a pattern.
 
 ## Expected Features 
 
-- Combine output and error, but perhaps add error markup (by default).
-  - Colourise error output unless `--no-colour` flag is set.
 - Emit non-zero exit code when a test fails to make this suitable for CI.
 - Resolve TODOs or move to below roadmap/enhancements.
 

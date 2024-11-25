@@ -65,7 +65,7 @@ def retry-on-lock [table: string, operation: closure] {
     }
 }
 
-export def query []: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
+export def query [color_scheme: closure]: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
     # SQL doesn't have backslash escapes so we use `char(10)`, being newline (\n)
     (
         stor open
@@ -88,6 +88,20 @@ export def query []: nothing -> table<suite: string, test: string, result: strin
                         FROM nu_test_output
                         WHERE type = 'error'
                         GROUP BY suite, test
+                    ),
+                    stream AS (
+                        SELECT
+                            suite,
+                            test,
+                            GROUP_CONCAT(
+                                (CASE
+                                    WHEN type = 'error' THEN :error_prefix || line || :error_suffix
+                                    ELSE line
+                                END),
+                                char(10)
+                            ) AS output
+                        FROM nu_test_output
+                        GROUP BY suite, test
                     )
 
                 SELECT
@@ -95,7 +109,8 @@ export def query []: nothing -> table<suite: string, test: string, result: strin
                     r.test,
                     r.result,
                     COALESCE(o.output, '') AS output,
-                    COALESCE(e.error, '') AS error
+                    COALESCE(e.error, '') AS error,
+                    COALESCE(s.output, '') AS stream
 
                 FROM nu_tests AS r
 
@@ -105,7 +120,13 @@ export def query []: nothing -> table<suite: string, test: string, result: strin
                 LEFT JOIN aggregated_error AS e
                 ON r.suite = e.suite AND r.test = e.test
 
+                LEFT JOIN stream AS s
+                ON r.suite = s.suite AND r.test = s.test
+
                 ORDER BY r.suite, r.test
-            "
+            " --params {
+                error_prefix: ({ prefix: warn } | do $color_scheme)
+                error_suffix: ({ suffix: warn } | do $color_scheme)
+            }
     )
 }

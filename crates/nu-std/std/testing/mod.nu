@@ -10,6 +10,7 @@ export def main [
     --suite: string
     --test: string
     --threads: int
+    --partition-output # TODO remove
     --no-color
 ] {
     # todo error messages are bad when these are misconfgured
@@ -17,7 +18,7 @@ export def main [
     let suite = $suite | default ".*"
     let test = $test | default ".*"
     let threads = $threads | default (default-threads)
-    let color = not $no_color
+    let color_scheme = create-color-scheme $no_color
 
     # Discovered suites are of the type:
     # list<record<name: string, path: string, tests<table<name: string, type: string>>>
@@ -25,10 +26,14 @@ export def main [
     let suites = discover list-test-suites $path
     let filtered = $suites | filter-tests $suite $test
 
-    let reporter = reporter_table create $color
+    let reporter = reporter_table create $color_scheme
     do $reporter.start
     $filtered | orchestrator run-suites $reporter $threads
-    let results = do $reporter.results
+    let results = if $partition_output {
+        do $reporter.results
+    } else {
+        do $reporter.results-all | reject output error
+    }
     do $reporter.complete
 
     $results
@@ -60,4 +65,30 @@ def filter-tests [
         }
         | where ($it.tests | is-not-empty)
     )
+}
+
+def create-color-scheme [no_color: bool]: nothing -> closure {
+    if $no_color {
+        { color-none }
+    } else {
+        { color-standard }
+    }
+}
+
+def color-none []: record<type: string, text: string> -> string {
+    match $in {
+        { $type, text: $text } => $text
+        { prefix: string } => ''
+        { suffix: string } => ''
+    }
+}
+
+def color-standard []: record<type: string, text: string> -> string {
+    match $in {
+        { type: "good", text: $text } => $"(ansi green)($text)(ansi reset)"
+        { type: "warn", text: $text } => $"(ansi yellow)($in.text)(ansi reset)"
+        { type: "bad", text: $text }  => $"(ansi red)($in.text)(ansi reset)"
+        { prefix: "warn" } => (ansi yellow)
+        { suffix: "warn" } => (ansi reset)
+    }
 }

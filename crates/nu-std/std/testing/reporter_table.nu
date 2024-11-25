@@ -2,39 +2,42 @@
 
 use db.nu
 
-export def create [color: bool = false]: nothing -> record {
+export def create [color_scheme: closure]: nothing -> record {
     {
         start: { db create }
         complete: { db delete }
-        results: { query-results $color }
+        results: { query-results $color_scheme }
+        results-all: { query-results-all $color_scheme }
         fire-result: { |row| insert-result $row }
         fire-output: { |row| insert-output $row }
     }
 }
 
-def query-results [color: bool]: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
-    let res = db query | each { |row|
+def query-results [color_scheme: closure]: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
+    query-results-all $color_scheme | reject stream
+}
+
+def query-results-all [color_scheme: closure]: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
+    let res = db query $color_scheme | each { |row|
         {
             suite: $row.suite
             test: $row.test
-            result: (format-result $row.result $color)
+            result: (format-result $row.result $color_scheme)
+            # TODO rename stder, stdout, output
             output: $row.output
             error: $row.error
+            stream: $row.stream # TODO colour record
         }
     }
     $res
 }
 
-def format-result [result: string, $color]: nothing -> string {
-    if $color {
-        match $result {
-            "PASS" => $"(ansi green)($result)(ansi reset)"
-            "SKIP" => $"(ansi yellow)($result)(ansi reset)"
-            "FAIL" => $"(ansi red)($result)(ansi reset)"
-            _ => $result
-        }
-    } else {
-        $result
+def format-result [result: string, color_scheme: closure]: nothing -> string {
+    match $result {
+        "PASS" => ({ type: good, text: $result } | do $color_scheme)
+        "SKIP" => ({ type: warn, text: $result } | do $color_scheme)
+        "FAIL" => ({ type: bad, text: $result } | do $color_scheme)
+        _ => $result
     }
 }
 
