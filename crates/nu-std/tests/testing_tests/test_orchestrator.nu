@@ -3,7 +3,7 @@ use ../../std/testing/orchestrator.nu [
     create-suite-plan-data
     run-suites
 ]
-use ../../std/testing/db.nu
+use ../../std/testing/store.nu
 use ../../std/testing/reporter_table.nu
 
 #[test]

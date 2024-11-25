@@ -1,11 +1,11 @@
 # A reporter that collects results into a table
 
-use db.nu
+use store.nu
 
 export def create [color_scheme: closure]: nothing -> record {
     {
-        start: { db create }
-        complete: { db delete }
+        start: { store create }
+        complete: { store delete }
         results: { query-results $color_scheme }
         results-all: { query-results-all $color_scheme }
         fire-result: { |row| insert-result $row }
@@ -14,7 +14,7 @@ export def create [color_scheme: closure]: nothing -> record {
 }
 
 def query-results [color_scheme: closure]: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
-    let res = db query $color_scheme | each { |row|
+    let res = store query $color_scheme | each { |row|
         {
             suite: $row.suite
             test: $row.test
@@ -35,9 +35,9 @@ def format-result [result: string, color_scheme: closure]: nothing -> string {
 }
 
 def insert-result [row: record<suite: string, test: string, result: string>] {
-    db insert-result $row
+    store insert-result $row
 }
 
 def insert-output [row: record<suite: string, test: string, type: string, lines: list<string>>] {
-    db insert-output $row
+    store insert-output $row
 }

@@ -72,7 +72,7 @@ export def create [] {
     }
 }
 
-# We close the db so tests of this do not open the db multiple times
+# We close the store so tests of this do not open the store multiple times
 export def delete [] {
     stor delete --table-name nu_tests
     stor delete --table-name nu_test_output

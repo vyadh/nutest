@@ -1,5 +1,5 @@
 use std/assert
-use db.nu
+use store.nu
 
 # This script generates the test suite data and embeds a runner into a nushell sub-process to execute.
 

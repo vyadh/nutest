@@ -1,24 +1,24 @@
 use std/assert
-use ../../std/testing/db.nu
+use ../../std/testing/store.nu
 
 #[before-all]
-def create_db [] record -> record {
-    db create
+def create_store [] record -> record {
+    store create
     { }
 }
 
 #[after-all]
-def delete_db [] {
-    db delete
+def delete_store [] {
+    store delete
 }
 
 #[test]
 def colour-scheme-is-used-for-stderr [] {
-    db insert-result { suite: "suite", test: "test", result: "PASS" }
-    db insert-output { suite: "suite", test: "test", type: "output", lines: ["normal", "message"] }
-    db insert-output { suite: "suite", test: "test", type: "error", lines: ["error", "text"] }
+    store insert-result { suite: "suite", test: "test", result: "PASS" }
+    store insert-output { suite: "suite", test: "test", type: "output", lines: ["normal", "message"] }
+    store insert-output { suite: "suite", test: "test", type: "error", lines: ["error", "text"] }
 
-    let results = db query { stderr-prefixing-color-scheme }
+    let results = store query { stderr-prefixing-color-scheme }
 
     assert equal $results ([
         {

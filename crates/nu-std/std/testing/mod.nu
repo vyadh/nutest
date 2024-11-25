@@ -1,6 +1,6 @@
 use discover.nu
 use orchestrator.nu
-use db.nu
+use store.nu
 use reporter_table.nu
 
 # nu -c "use std/testing; (testing .)"
