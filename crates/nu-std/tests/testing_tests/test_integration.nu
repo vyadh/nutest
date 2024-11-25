@@ -45,7 +45,7 @@ def test-run [command: string] {
             --no-config-file
             --commands $"
                 use std/testing
-                ($command) --partition-output | to nuon
+                ($command) | to nuon
             "
     ) | complete
 
@@ -63,10 +63,10 @@ def test-with-default-options [] {
     let results = test-run $"testing --no-color --path '($temp)'"
 
     assert equal $results [
-        { suite: test_1, test: test_bar, result: "PASS", output: "", error: "rab" }
-        { suite: test_1, test: test_foo, result: "PASS", output: "oof", error: "" }
-        { suite: test_2, test: test_baz, result: "PASS", output: "zab", error: "" }
-        { suite: test_2, test: test_qux, result: "SKIP", output: "", error: "" }
+        { suite: test_1, test: test_bar, result: "PASS", output: "rab" }
+        { suite: test_1, test: test_foo, result: "PASS", output: "oof" }
+        { suite: test_2, test: test_baz, result: "PASS", output: "zab" }
+        { suite: test_2, test: test_qux, result: "SKIP", output: "" }
     ]
 }
 
@@ -78,8 +78,8 @@ def test-with-specific-file [] {
     let results = test-run $"testing --no-color --path ($path)"
 
     assert equal $results [
-        { suite: test_2, test: test_baz, result: "PASS", output: "zab", error: "" }
-        { suite: test_2, test: test_qux, result: "SKIP", output: "", error: "" }
+        { suite: test_2, test: test_baz, result: "PASS", output: "zab" }
+        { suite: test_2, test: test_qux, result: "SKIP", output: "" }
     ]
 }
 
@@ -90,7 +90,7 @@ def test-with-specific-test [] {
     let results = test-run $"testing --no-color --path ($temp) --test test_foo"
 
     assert equal $results [
-        { suite: test_1, test: test_foo, result: "PASS", output: "oof", error: "" }
+        { suite: test_1, test: test_foo, result: "PASS", output: "oof" }
     ]
 }
 
@@ -101,8 +101,8 @@ def test-with-test-pattern [] {
     let results = test-run $"testing --no-color --path ($temp) --test 'test_ba[rz]'"
 
     assert equal $results [
-        { suite: test_1, test: test_bar, result: "PASS", output: "", error: "rab" }
-        { suite: test_2, test: test_baz, result: "PASS", output: "zab", error: "" }
+        { suite: test_1, test: test_bar, result: "PASS", output: "rab" }
+        { suite: test_2, test: test_baz, result: "PASS", output: "zab" }
     ]
 }
 
@@ -113,8 +113,8 @@ def test-with-specific-suite [] {
     let results = test-run $"testing --no-color --path ($temp) --suite test_1"
 
     assert equal $results [
-        { suite: test_1, test: test_bar, result: "PASS", output: "", error: "rab" }
-        { suite: test_1, test: test_foo, result: "PASS", output: "oof", error: "" }
+        { suite: test_1, test: test_bar, result: "PASS", output: "rab" }
+        { suite: test_1, test: test_foo, result: "PASS", output: "oof" }
     ]
 }
 

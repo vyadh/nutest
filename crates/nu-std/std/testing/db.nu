@@ -71,33 +71,15 @@ export def query [color_scheme: closure]: nothing -> table<suite: string, test: 
         stor open
             | query db "
                 WITH
-                    aggregated_output AS (
-                        SELECT
-                            suite,
-                            test,
-                            GROUP_CONCAT(line, char(10)) AS output
-                        FROM nu_test_output
-                        WHERE type = 'output'
-                        GROUP BY suite, test
-                    ),
-                    aggregated_error AS (
-                        SELECT
-                            suite,
-                            test,
-                            GROUP_CONCAT(line, char(10)) AS error
-                        FROM nu_test_output
-                        WHERE type = 'error'
-                        GROUP BY suite, test
-                    ),
                     stream AS (
                         SELECT
                             suite,
                             test,
                             GROUP_CONCAT(
-                                (CASE
+                                CASE
                                     WHEN type = 'error' THEN :error_prefix || line || :error_suffix
                                     ELSE line
-                                END),
+                                END,
                                 char(10)
                             ) AS output
                         FROM nu_test_output
@@ -108,17 +90,9 @@ export def query [color_scheme: closure]: nothing -> table<suite: string, test: 
                     r.suite,
                     r.test,
                     r.result,
-                    COALESCE(o.output, '') AS output,
-                    COALESCE(e.error, '') AS error,
-                    COALESCE(s.output, '') AS stream
+                    COALESCE(s.output, '') AS output
 
                 FROM nu_tests AS r
-
-                LEFT JOIN aggregated_output AS o
-                ON r.suite = o.suite AND r.test = o.test
-
-                LEFT JOIN aggregated_error AS e
-                ON r.suite = e.suite AND r.test = e.test
 
                 LEFT JOIN stream AS s
                 ON r.suite = s.suite AND r.test = s.test

@@ -24,7 +24,7 @@ def main [] {
         }
 
         $data | par-each { |test|
-            let template = $test | reject result output error
+            let template = $test | reject result output
 
             let result = $template | merge { result: "PASS" }
             insert-result $result

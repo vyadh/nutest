@@ -37,7 +37,6 @@ Filtering of suites and tests to run via a pattern.
 
 ## Expected Features 
 
-- Remove legacy output/error columns
 - Emit non-zero exit code when a test fails to make this suitable for CI.
 - Resolve TODOs or move to below roadmap/enhancements.
 

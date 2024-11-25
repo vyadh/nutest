@@ -10,7 +10,6 @@ export def main [
     --suite: string
     --test: string
     --threads: int
-    --partition-output # TODO remove
     --no-color
 ] {
     # TODO error messages are bad when these are misconfigured
@@ -29,11 +28,7 @@ export def main [
     let reporter = reporter_table create $color_scheme
     do $reporter.start
     $filtered | orchestrator run-suites $reporter $threads
-    let results = if $partition_output {
-        do $reporter.results
-    } else {
-        do $reporter.results-all | reject output error
-    }
+    let results = do $reporter.results
     do $reporter.complete
 
     $results
@@ -78,8 +73,8 @@ def create-color-scheme [no_color: bool]: nothing -> closure {
 def color-none []: record -> string {
     match $in {
         { type: _, text: $text } => $text
-        { prefix: string } => ''
-        { suffix: string } => ''
+        { prefix: _ } => ''
+        { suffix: _ } => ''
     }
 }
 
@@ -91,7 +86,7 @@ def color-standard []: record -> string {
         { type: "warning", text: $text } => $"(ansi yellow)($in.text)(ansi reset)"
         { type: "error", text: $text }  => $"(ansi red)($in.text)(ansi reset)"
         # Below is mainly database queries where we can't wrap text, but can specify manually
-        { prefix: "stderr" } => '' # (ansi yellow)
-        { suffix: "stderr" } => '' #(ansi reset)
+        { prefix: "stderr" } => (ansi yellow)
+        { suffix: "stderr" } => (ansi reset)
     }
 }

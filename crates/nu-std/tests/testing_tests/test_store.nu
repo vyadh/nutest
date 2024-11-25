@@ -18,14 +18,14 @@ def colour-scheme-is-used-for-stderr [] {
     db insert-output { suite: "suite", test: "test", type: "output", lines: ["normal", "message"] }
     db insert-output { suite: "suite", test: "test", type: "error", lines: ["error", "text"] }
 
-    let results = db query { stderr-prefixing-color-scheme } | reject output error
+    let results = db query { stderr-prefixing-color-scheme }
 
     assert equal $results ([
         {
             suite: "suite"
             test: "test"
             result: "PASS"
-            stream: "normal\nmessage\nSTDERR:error\ntext:STDERR"
+            output: "normal\nmessage\nSTDERR:error\ntext:STDERR"
         }
     ])
 }

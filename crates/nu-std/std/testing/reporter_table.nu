@@ -14,19 +14,12 @@ export def create [color_scheme: closure]: nothing -> record {
 }
 
 def query-results [color_scheme: closure]: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
-    query-results-all $color_scheme | reject stream
-}
-
-def query-results-all [color_scheme: closure]: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
     let res = db query $color_scheme | each { |row|
         {
             suite: $row.suite
             test: $row.test
             result: (format-result $row.result $color_scheme)
-            # TODO rename stder, stdout, output
             output: $row.output
-            error: $row.error
-            stream: $row.stream
         }
     }
     $res

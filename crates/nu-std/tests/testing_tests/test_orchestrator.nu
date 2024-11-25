@@ -46,6 +46,7 @@ def nop-color-scheme []: nothing -> closure {
         match $in {
             { type: _, text: $text } => $text
             { prefix: _ } => ''
+            { suffix: _ } => ''
         }
     }
 }
@@ -83,7 +84,7 @@ def run-suite-with-no-tests [] {
     # TODO only errors with more details
 
     let suites = [{name: "none", path: $test_file, tests: []}]
-    let results = $suites | test-run $context | reject error
+    let results = $suites | test-run $context
 
     assert equal $results []
 }
@@ -103,7 +104,6 @@ def run-suite-with-passing-test [] {
             test: "passing"
             result: "PASS"
             output: ""
-            error: ""
         }
     ]
 }
@@ -123,7 +123,6 @@ def run-suite-with-ignored-test [] {
             test: "ignored-test"
             result: "SKIP"
             output: ""
-            error: ""
         }
     ]
 }
@@ -139,17 +138,16 @@ def run-suite-with-broken-test [] {
     let suites = [{ name: "broken", path: $test_file, tests: $tests }]
     let results = $suites | test-run $context
 
-    assert equal ($results | reject error) [
+    assert equal ($results | reject output) [
         {
             suite: "broken"
             test: "broken-test"
             result: "FAIL"
-            output: ""
         }
     ]
 
-    let error = $results | get error | first
-    assert str contains $error "Missing required positional argument"
+    let output = $results | get output | first
+    assert str contains $output "Missing required positional argument"
 }
 
 #[test]
@@ -163,17 +161,16 @@ def run-suite-with-missing-test [] {
     let suites = [{ name: "missing", path: $test_file, tests: $tests }]
     let results = $suites | test-run $context
 
-    assert equal ($results | reject error) [
+    assert equal ($results | reject output) [
         {
             suite: "missing"
             test: "missing-test"
             result: "FAIL"
-            output: ""
         }
     ]
 
-    let error = $results | get error | first
-    assert str contains $error "`missing-test` is neither a Nushell built-in or a known external command"
+    let output = $results | get output | first
+    assert str contains $output "`missing-test` is neither a Nushell built-in or a known external command"
 }
 
 #[test]
@@ -185,18 +182,17 @@ def run-suite-with-failing-test [] {
     let suites = [{ name: $suite.name, path: $suite.path, tests: $suite.tests }]
     let results = $suites | test-run $context
 
-    assert equal ($results | reject error) [
+    assert equal ($results | reject output) [
         {
             suite: "failing"
             test: "failing"
             result: "FAIL"
-            output: ""
         }
     ]
 
-    let error = $results | get error | first
-    assert str contains $error "Assertion failed."
-    assert str contains $error "These are not equal."
+    let output = $results | get output | first
+    assert str contains $output "Assertion failed."
+    assert str contains $output "These are not equal."
 }
 
 #[test]
@@ -207,20 +203,18 @@ def run-suite-with-multiple-tests [] {
     mut suite = create-suite $temp "multi"
     let suite = "assert equal 1 1" | append-test $temp $suite "test1"
     let suite = "assert equal 1 2" | append-test $temp $suite "test2"
-    let results = [ $suite ] | test-run $context | reject error
+    let results = [ $suite ] | test-run $context | reject output
 
     assert equal $results [
         {
             suite: "multi"
             test: "test1"
             result: "PASS"
-            output: ""
         }
         {
             suite: "multi"
             test: "test2"
             result: "FAIL"
-            output: ""
         }
     ]
 }
@@ -236,13 +230,13 @@ def run-multiple-suites [] {
     mut suite2 = create-suite $temp "suite2"
     let suite2 = "assert equal 1 1" | append-test $temp $suite2 "test3"
     let suite2 = "assert equal 1 2" | append-test $temp $suite2 "test4"
-    let results = [$suite1, $suite2] | test-run $context | reject error
+    let results = [$suite1, $suite2] | test-run $context | reject output
 
     assert equal $results ([
-        { suite: "suite1", test: "test1", result: "PASS", output: "" }
-        { suite: "suite1", test: "test2", result: "FAIL", output: "" }
-        { suite: "suite2", test: "test3", result: "PASS", output: "" }
-        { suite: "suite2", test: "test4", result: "FAIL", output: "" }
+        { suite: "suite1", test: "test1", result: "PASS" }
+        { suite: "suite1", test: "test2", result: "FAIL" }
+        { suite: "suite2", test: "test3", result: "PASS" }
+        { suite: "suite2", test: "test4", result: "FAIL" }
     ] | sort-by suite test)
 }
 
@@ -260,8 +254,7 @@ def run-test-with-output-and-error-lines [] {
             suite: "output"
             test: "test"
             result: "PASS"
-            output: "1\n2"
-            error: "3\n4"
+            output: "1\n2\n3\n4"
         }
     ]
 }
