@@ -21,18 +21,24 @@ Supports tests scripts in flexible configurations:
   - This would commonly be the case when using Nushell to test other things, such as for testing bash scripts, APIs, infrastructure. All the things Nushell is great at.
 - Nushell modules.
 
+A Nushell scripts being tested can either be utilised from their public interface as a module via `use <test-file>.nu` or it's private interface by `source <test-file>.nu`.
+
 Fast. Runs test suites (a file of tests) and each test in parallel with minimal Nu subshells.
+
+Allows before/after each/all to generate context for each test.
 
 Emits tests as a table of results that can be processed like normal Nu data. For example, you can filter the results to show only failed tests using:
 ```nu
 testing --no-color | where result == FAIL
 ```
 
-Allows before/after each/all to generate context for each test.
-
 Captures test output for debugging and display.
 
-Filtering of suites and tests to run via a pattern.
+Filtering of suites and tests to run via a pattern, such as:
+```nu
+testing --suite api --test test[0-9]
+```
+This will run all files that include `api` in the name and tests that start with `test` followed by a digit.
 
 
 ## Expected Features 
