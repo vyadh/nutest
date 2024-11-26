@@ -21,16 +21,12 @@ export def delete [] {
 
 export def insert-result [ row: record<suite: string, test: string, result: string> ] {
     retry-on-lock "nu_test_results" {
-        # TODO errors here are swallowed
-        #error make { msg: "test" }
         $row | stor insert --table-name nu_test_results
     }
 }
 
 export def insert-output [ row: record<suite: string, test: string, type: string, lines: list<string>> ] {
     retry-on-lock "nu_test_output" {
-        # TODO errors here are swallowed
-        #error make { msg: "test" }
         $row
             | reject lines
             | merge { line: ($row.lines | str join "\n") }
@@ -49,13 +45,15 @@ def retry-on-lock [table: string, operation: closure] {
         $attempt -= 1
         try {
             do $operation
-            if $attempt < ($max_attempts - 1) {
-            }
             break
         } catch { |e|
             let reason = ($e.json | from json).labels?.0?.text?
             if $reason == $"database table is locked: ($table)" {
+                # Retry
                 continue
+            } else {
+                # TODO test this
+                $e.raw # Rethrow
             }
         }
     }

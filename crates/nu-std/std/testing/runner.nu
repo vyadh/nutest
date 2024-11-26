@@ -73,7 +73,7 @@ def plan-execute-suite [threads: int, suite_data: list] {
         }
     }
 
-    $ignored | each { |test|
+    for test in $ignored {
         with-env { NU_TEST_NAME: $test.name } {
             emit "start" { }
             emit "result" { status: "SKIP" }
@@ -102,7 +102,7 @@ def execute-before [items: list]: record -> record {
 # TODO better message on incompatible signature (see above)
 def execute-after [items: list]: record -> nothing {
     let context = $in
-    $items | each { |item|
+    for item in $items {
         $context | do $item.execute
     }
 }

@@ -23,8 +23,6 @@ export def run-suites [reporter: record, threads: int]: list<record> -> nothing 
     }
 }
 
-# TODO one failure seems to cause (all?) tests to fail
-
 def run-suite [reporter: record, threads: int, suite: string, path: string, tests: table<name: string, type: string>] {
     let plan_data = create-suite-plan-data $tests
 
@@ -43,13 +41,14 @@ def run-suite [reporter: record, threads: int, suite: string, path: string, test
     #print $"($result)"
 
     if $result.exit_code == 0 {
-        $result.stdout
-            | lines
-            | each { $in | from nuon | process-event $reporter }
+        for line in ($result.stdout | lines) {
+            let data = $line | from nuon
+            $data | process-event $reporter
+        }
     } else {
         # This is only triggered on a suite-level failure so not caught by the embedded runner
         # This replicates this suite-level failure down to each test
-        $tests | each { |test|
+        for test in $tests {
             let template = { timestamp: (date now | format date "%+"), suite: $suite, test: $test.name }
             $template | merge { type: "result", payload: { status: "FAIL" } } | process-event $reporter
             $template | merge { type: "error", payload: { lines: [$result.stderr] } } | process-event $reporter
