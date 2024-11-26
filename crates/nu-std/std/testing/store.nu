@@ -52,8 +52,7 @@ def retry-on-lock [table: string, operation: closure] {
                 # Retry
                 continue
             } else {
-                # TODO test this
-                $e.raw # Rethrow
+                $e.raw # Rethrow anything else
             }
         }
     }
