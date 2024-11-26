@@ -80,9 +80,6 @@ def run-suite-with-no-tests [] {
     let test_file = $temp | path join "test.nu"
     touch $test_file
 
-    # TODO an `error make { msg: "something" } doesn't show any output in a test
-    # TODO only errors with more details
-
     let suites = [{name: "none", path: $test_file, tests: []}]
     let results = $suites | test-run $context
 
@@ -193,6 +190,26 @@ def run-suite-with-failing-test [] {
     let output = $results | get output | first
     assert str contains $output "Assertion failed."
     assert str contains $output "These are not equal."
+}
+
+#[test]
+def run-suite-with-custom-error [] {
+    let context = $in
+    let temp = $context.temp
+
+    let error = "error make { msg: something, label: { text: details } }"
+    let suite = $error | create-single-test-suite $temp "custom"
+    let suites = [{ name: $suite.name, path: $suite.path, tests: $suite.tests }]
+    let results = $suites | test-run $context
+
+    assert equal ($results) [
+        {
+            suite: "custom"
+            test: "custom"
+            result: "FAIL"
+            output: "something\ndetails"
+        }
+    ]
 }
 
 #[test]
