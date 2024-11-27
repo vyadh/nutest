@@ -1,7 +1,7 @@
 use discover.nu
 use orchestrator.nu
-use store.nu
 use reporter_table.nu
+use color_scheme.nu
 
 # nu -c "use std/testing; (testing .)"
 
@@ -17,7 +17,6 @@ export def main [
     let suite = $suite | default ".*"
     let test = $test | default ".*"
     let threads = $threads | default (default-threads)
-    let color_scheme = create-color-scheme $no_color
 
     # Discovered suites are of the type:
     # list<record<name: string, path: string, tests<table<name: string, type: string>>>
@@ -25,7 +24,7 @@ export def main [
     let suites = discover list-test-suites $path
     let filtered = $suites | filter-tests $suite $test
 
-    let reporter = reporter_table create $color_scheme
+    let reporter = reporter_table create (color_scheme create $no_color)
     do $reporter.start
     $filtered | orchestrator run-suites $reporter $threads
     let results = do $reporter.results
@@ -60,33 +59,4 @@ def filter-tests [
         }
         | where ($it.tests | is-not-empty)
     )
-}
-
-def create-color-scheme [no_color: bool]: nothing -> closure {
-    if $no_color {
-        { color-none }
-    } else {
-        { color-standard }
-    }
-}
-
-def color-none []: record -> string {
-    match $in {
-        { type: _, text: $text } => $text
-        { prefix: _ } => ''
-        { suffix: _ } => ''
-    }
-}
-
-def color-standard []: record -> string {
-    match $in {
-        { type: "pass", text: $text } => $"(ansi green)($text)(ansi reset)"
-        { type: "skip", text: $text } => $"(ansi yellow)($in.text)(ansi reset)"
-        { type: "fail", text: $text }  => $"(ansi red)($in.text)(ansi reset)"
-        { type: "warning", text: $text } => $"(ansi yellow)($in.text)(ansi reset)"
-        { type: "error", text: $text }  => $"(ansi red)($in.text)(ansi reset)"
-        # Below is mainly database queries where we can't wrap text, but can specify manually
-        { prefix: "stderr" } => (ansi yellow)
-        { suffix: "stderr" } => (ansi reset)
-    }
 }
