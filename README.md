@@ -21,7 +21,7 @@ Supports tests scripts in flexible configurations:
   - This would commonly be the case when using Nushell to test other things, such as for testing bash scripts, APIs, infrastructure. All the things Nushell is great at.
 - Nushell modules.
 
-A Nushell scripts being tested can either be utilised from their public interface as a module via `use <test-file>.nu` or it's private interface by `source <test-file>.nu`.
+Nushell scripts being tested can either be utilised from their public interface as a module via `use <test-file>.nu` or it's private interface by `source <test-file>.nu`.
 
 Fast. Runs test suites (a file of tests) and each test in parallel with minimal Nu subshells.
 
@@ -32,25 +32,25 @@ Emits tests as a table of results that can be processed like normal Nu data. For
 testing --no-color | where result == FAIL
 ```
 
-Captures test output for debugging and display.
-
-Filtering of suites and tests to run via a pattern, such as:
+Allows filter of suites and tests to run via a pattern, such as:
 ```nu
 testing --suite api --test test[0-9]
 ```
 This will run all files that include `api` in the name and tests that start with `test` followed by a digit.
 
+Captures test output for debugging and display.
+
+In normal operation the tests will be run and the results will be returned as a table with the exit code always set to 0. To avoid manually checking the results, the `--fail` flag can be used to set the exit code to 1 if any tests fail. In this mode, the test results will be printed in the default format and cannot be interrogated.
 
 ## Expected Features 
 
-- Emit non-zero exit code when a test fails to make this suitable for CI.
 - Resolve TODOs or move to below roadmap/enhancements.
 
 ## Roadmap
 
 - Test report in standard format (cargo test JSON or nextest / JUnit XML).
 - Generate test coverage.
-- Custom reporters. Explain use of store to translate from eventing to collected data.
+- Custom reporters. Document use of store to translate from event to collected data.
 
 
 ## Possible Enhancements
@@ -61,8 +61,7 @@ This will run all files that include `api` in the name and tests that start with
 - File stem pattern for gobbing to allow running tests in any file not just test ones
 - Optionally allow running ignored tests.
 - Streaming test results. Each suite is run in a separate nu process via `complete` and therefore each suite's results are not reported until the whole suite completed. There are some limitations here due to Nushell not being able to run processes concurrently. However, we may be able to stream the events and avoid the `complete` command to resolve this.
-- Per-suite concurrency control (e.g. `#[sequential]` or `#[disable-concurrency]` annotation).
-- Reporter that provides a diff of expected and actual output.
+- Per-suite concurrency control (e.g. `#[sequential]` or `#[disable-concurrency]` annotation) - would also fix test_store_success tests.
 
 
 ## Alternatives
@@ -100,4 +99,4 @@ Feedback on how well this works in practice is very welcome.
 
 #### SQLite
 
-Given Nutest runs as much as possible concurrently, this puts an unusual level of pressure on SQLite that collects test results and the output. For this reason, INSERTs sometimes fail and a retry mechanism has been added to attempt to insert the data again up to a particular maximum tries at which point Nutest may give up and throw an error. The retries have had some stress testing to come to a pragmatic value, but please let us know if you're seeing issues.
+Given Nutest runs as much as possible concurrently, this puts an unusual level of pressure on SQLite that collects test results and the output. For this reason, INSERTs sometimes fail and so a retry mechanism has been added to attempt to insert the data again up to a particular maximum tries at which point Nutest may give up and throw an error. The retries have had some stress testing to come to a pragmatic value, but please let us know if you're seeing issues.

@@ -1,7 +1,6 @@
 use std/assert
-use ../../std/testing
 
-# To avoid collisions with multiple tests creating databases, we run in a subshell.
+# To avoid collisions with the database, we run each test  in a subshell.
 
 #[before-each]
 def setup []: nothing -> record {
@@ -57,7 +56,7 @@ def test-run [command: string] {
 }
 
 #[test]
-def test-with-default-options [] {
+def with-default-options [] {
     let temp = $in.temp
 
     let results = test-run $"testing --no-color --path '($temp)'"
@@ -71,7 +70,7 @@ def test-with-default-options [] {
 }
 
 #[test]
-def test-with-specific-file [] {
+def with-specific-file [] {
     let temp = $in.temp
     let path = $temp | path join "test_2.nu"
 
@@ -84,7 +83,7 @@ def test-with-specific-file [] {
 }
 
 #[test]
-def test-with-specific-test [] {
+def with-specific-test [] {
     let temp = $in.temp
 
     let results = test-run $"testing --no-color --path ($temp) --test test_foo"
@@ -95,7 +94,7 @@ def test-with-specific-test [] {
 }
 
 #[test]
-def test-with-test-pattern [] {
+def with-test-pattern [] {
     let temp = $in.temp
 
     let results = test-run $"testing --no-color --path ($temp) --test 'test_ba[rz]'"
@@ -107,7 +106,7 @@ def test-with-test-pattern [] {
 }
 
 #[test]
-def test-with-specific-suite [] {
+def with-specific-suite [] {
     let temp = $in.temp
 
     let results = test-run $"testing --no-color --path ($temp) --suite test_1"
@@ -118,9 +117,27 @@ def test-with-specific-suite [] {
     ]
 }
 
-#[ignore] not sure how to best accomplish this yet
+# TODO passing bad flag to testing corrupts output capture
+
 #[test]
-def tests-should-have-appropriate-exit-code [] {
+def exit-on-fail-with-passing-tests [] {
+    let temp = $in.temp
+
+    let result = (
+        ^$nu.current-exe
+            --no-config-file
+            --commands $"
+                use std/testing
+                testing --no-color --path ($temp) --fail
+            "
+    ) | complete
+
+    assert equal $result.exit_code 0 "Exit code is 0"
+    assert ($result.stdout like "test_1[ │]+test_foo[ │]+PASS[ │]+oof") "Tests are output"
+}
+
+#[test]
+def exit-on-fail-with-failing-tests [] {
     let temp = $in.temp
     let test_file_3 = $temp | path join "test_3.nu"
     "
@@ -128,15 +145,15 @@ def tests-should-have-appropriate-exit-code [] {
     def test_quux [] { error make { msg: 'Ouch' } }
     " | save $test_file_3
 
-    let results = test-run $"testing --no-color --path ($temp) --suite test_1"
-    assert equal $env.LAST_EXIT_CODE "0"
+    let result = (
+        ^$nu.current-exe
+            --no-config-file
+            --commands $"
+                use std/testing
+                testing --no-color --path ($temp) --fail
+            "
+    ) | complete
 
-    let results = testing --no-color --path $temp
-    assert equal $env.LAST_EXIT_CODE "1"
-    assert equal $results [
-        { suite: test_1, test: test_bar, result: "PASS", output: "", error: "rab" }
-        { suite: test_1, test: test_foo, result: "PASS", output: "oof", error: "" }
-        { suite: test_2, test: test_baz, result: "PASS", output: "zab", error: "" }
-        { suite: test_3, test: test_quux, result: "FAIL", output: "", error: "Ouch" }
-    ]
+    assert equal $result.exit_code 1
+    assert ($result.stdout like "test_3[ │]+test_quux[ │]+FAIL[ │]+Ouch") "Tests are output"
 }
