@@ -2,6 +2,7 @@
 
 A Nushell test runner.
 
+![An example nu-test run](resources/test-run.png)
 
 ## Motivation
 
