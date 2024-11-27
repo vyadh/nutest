@@ -5,7 +5,7 @@ A Nushell test runner.
 
 ## Motivation
 
-Nushell doesn't include a test runner for Nu scripts out of the box. As a shell language, writing the odd script is Nushell's raison d'être. This project aims to encourage writing tests for those scripts by making testing extremely accessible.
+Nushell doesn't include a test runner for Nu scripts in the standard library. As a shell language, writing the odd script is Nushell's raison d'être. This project aims to encourage writing tests for those scripts by making testing extremely accessible.
 
 The hope is that this runner will be accepted into the Nushell standard library as the value of this is much diminished if the test runner needs to be obtained separately.
 
@@ -38,30 +38,34 @@ testing --suite api --test test[0-9]
 ```
 This will run all files that include `api` in the name and tests that start with `test` followed by a digit.
 
-Captures test output for debugging and display.
+Capture and display stdout and stderr in output for debugging.
 
 In normal operation the tests will be run and the results will be returned as a table with the exit code always set to 0. To avoid manually checking the results, the `--fail` flag can be used to set the exit code to 1 if any tests fail. In this mode, the test results will be printed in the default format and cannot be interrogated.
+```nu
+testing --fail
+```
 
 ## Expected Features 
 
-- Resolve TODOs or move to below roadmap/enhancements.
+- Resolve TODOs
 
 ## Roadmap
 
 - Test report in standard format (cargo test JSON or nextest / JUnit XML).
 - Generate test coverage.
-- Custom reporters. Document use of store to translate from event to collected data.
+- Allow custom reporters
+  - Also document use of store to translate from event to collected data.
 
 
-## Possible Enhancements
+## Possible Future Enhancements
 
 - Test timing.
 - Funky dynamic terminal UI.
-- Suite/test exclusions.
+- Exclusions of suite and/or tests.
 - File stem pattern for gobbing to allow running tests in any file not just test ones
 - Optionally allow running ignored tests.
-- Streaming test results. Each suite is run in a separate nu process via `complete` and therefore each suite's results are not reported until the whole suite completed. There are some limitations here due to Nushell not being able to run processes concurrently. However, we may be able to stream the events and avoid the `complete` command to resolve this.
-- Per-suite concurrency control (e.g. `#[sequential]` or `#[disable-concurrency]` annotation) - would also fix test_store_success tests.
+- Stream test results. Each suite is run in a separate nu process via `complete` and therefore each suite's results are not reported until the whole suite completed. There are some limitations here due to Nushell not being able to run processes concurrently. However, we may be able to stream the events and avoid the `complete` command to resolve this. This is ideally required for the event-based terminal UI.
+- Per-suite concurrency control (e.g. `#[sequential]` or `#[disable-concurrency]` annotation). This would also avoid the need for separate test_store_success suits and use of subshells in own tests.
 
 
 ## Alternatives
@@ -70,7 +74,7 @@ Nushell has its own private runner for the standard library `testing.nu`.
 
 There is also a runner in [nupm](https://github.com/nushell/nupm), the Nushell package manager.
 
-Both of these runners work on modules and are not suitable for testing single scripts. This runner is generic. It works with any Nu script, single files or modules.
+Both of these runners work on modules and so cannot be used for testing independent scripts. This runner is generic. It works with any Nu script, be that single files or modules.
 
 
 ## How Does It Work?
