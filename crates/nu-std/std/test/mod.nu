@@ -7,16 +7,16 @@ use color_scheme.nu
 
 export def main [
     --path: path
-    --suite: string
-    --test: string
+    --match-suites: string
+    --match-tests: string
     --threads: int
     --no-color
     --fail
 ] {
     # TODO error messages are bad when these are misconfigured
     let path = $path | default $env.PWD
-    let suite = $suite | default ".*"
-    let test = $test | default ".*"
+    let suite = $match_suites | default ".*"
+    let test = $match_tests | default ".*"
     let threads = $threads | default (default-threads)
 
     # Discovered suites are of the type:

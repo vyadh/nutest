@@ -35,7 +35,7 @@ test --no-color | where result == FAIL
 
 Allows filter of suites and tests to run via a pattern, such as:
 ```nu
-test --suite api --test test[0-9]
+test --match-suites api --match-tests test[0-9]
 ```
 This will run all files that include `api` in the name and tests that start with `test` followed by a digit.
 
