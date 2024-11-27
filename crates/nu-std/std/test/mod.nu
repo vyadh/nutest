@@ -3,7 +3,7 @@ use orchestrator.nu
 use reporter_table.nu
 use color_scheme.nu
 
-# nu -c "use std/testing; (testing .)"
+# nu -c "use std/test; (test .)"
 
 export def main [
     --path: path

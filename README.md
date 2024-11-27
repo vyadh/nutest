@@ -30,12 +30,12 @@ Allows before/after each/all to generate context for each test.
 
 Emits tests as a table of results that can be processed like normal Nu data. For example, you can filter the results to show only failed tests using:
 ```nu
-testing --no-color | where result == FAIL
+test --no-color | where result == FAIL
 ```
 
 Allows filter of suites and tests to run via a pattern, such as:
 ```nu
-testing --suite api --test test[0-9]
+test --suite api --test test[0-9]
 ```
 This will run all files that include `api` in the name and tests that start with `test` followed by a digit.
 
@@ -43,7 +43,7 @@ Capture and display stdout and stderr in output for debugging.
 
 In normal operation the tests will be run and the results will be returned as a table with the exit code always set to 0. To avoid manually checking the results, the `--fail` flag can be used to set the exit code to 1 if any tests fail. In this mode, the test results will be printed in the default format and cannot be interrogated.
 ```nu
-testing --fail
+test --fail
 ```
 
 ## Expected Features 
@@ -90,7 +90,7 @@ Collate all events for all suites and tests being run print the test results tab
 
 ### Concurrency
 
-Tests written in Nutest are run concurrently by default. Assuming your tests need to run in parallel is a good design constraint for self-contained tests that run efficiently. However, if this is not practical, this can be disabled by specifying the `--threads=1` option to the `testing` command.
+Tests written in Nutest are run concurrently by default. Assuming your tests need to run in parallel is a good design constraint for self-contained tests that run efficiently. However, if this is not practical, this can be disabled by specifying the `--threads=1` option to the `test` command.
 
 There are two levels of concurrency used in Nutest, leveraging `par-each`, where the following are run concurrently:
 - Suites (file of tests).

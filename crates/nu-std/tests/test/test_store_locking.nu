@@ -1,5 +1,5 @@
 use std/assert
-source ../../std/testing/store.nu
+source ../../std/test/store.nu
 
 #[before-all]
 def create_store [] record -> record {

@@ -1,9 +1,9 @@
 def main [] {
 
-    use std/testing
-    let new = testing | select suite name success
+    use std/test
+    let new = test | select suite name success
 
-    let old = ^$nu.current-exe -c "source testing.nu; run-tests" | complete
+    let old = ^$nu.current-exe -c "source test.nu; run-tests" | complete
 
     let new_table = (
         $new

@@ -5,7 +5,7 @@ const default_pattern = "**/{*_test,test_*}.nu"
 
 # Usage:
 #  cd crates/nu-std
-#  nu -c 'use std/testing; testing list-files '
+#  nu -c 'use std/test; test list-files '
 
 export def list-files [
     path: string

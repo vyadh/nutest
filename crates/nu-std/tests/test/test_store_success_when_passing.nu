@@ -1,5 +1,5 @@
 use std/assert
-source ../../std/testing/store.nu
+source ../../std/test/store.nu
 
 # Note: Using isolated suite to avoid concurrency conflicts with other tests
 # Note: Tests for results are done in test_orchestrator and test_integration
@@ -16,7 +16,10 @@ def delete_store [] {
 }
 
 #[test]
-def result-success-when-no-tests [] {
+def result-success-when-only-passing-tests [] {
+    insert-result { suite: "suite", test: "pass1", result: "PASS" }
+    insert-result { suite: "suite", test: "pass2", result: "PASS" }
+
     let result = success
 
     assert equal $result true

@@ -9,8 +9,8 @@ def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, 
         ^$nu.current-exe
             --no-config-file
             --commands $"
-                source std/testing/runner.nu
-                source tests/testing_tests/test_runner.nu
+                source std/test/runner.nu
+                source tests/test/test_runner.nu
                 plan-execute-suite-emit ($suite) 0 ($plan)
             "
     ) | complete
