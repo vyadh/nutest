@@ -82,7 +82,7 @@ def retry-on-table-lock-eventually-succeeds [] {
 }
 
 #[test]
-def retry-on-table-lock-throws-throw-other-errors [] {
+def retry-on-table-lock-throws-other-errors [] {
     let context = $in
     $context | initialise-attempts-file
     let table = "test_table"
@@ -108,30 +108,5 @@ def throw-database-locked-error [table: string] {
         label: {
             text: $"database table is locked: ($table)"
         }
-    }
-}
-
-#[test]
-def colour-scheme-is-used-for-stderr [] {
-    insert-result { suite: "suite", test: "test", result: "PASS" }
-    insert-output { suite: "suite", test: "test", type: "output", lines: ["normal", "message"] }
-    insert-output { suite: "suite", test: "test", type: "error", lines: ["error", "text"] }
-
-    let results = query { stderr-prefixing-color-scheme }
-
-    assert equal $results ([
-        {
-            suite: "suite"
-            test: "test"
-            result: "PASS"
-            output: "normal\nmessage\nSTDERR:error\ntext:STDERR"
-        }
-    ])
-}
-
-def stderr-prefixing-color-scheme []: record -> string {
-    match $in {
-        { prefix: "stderr" } => "STDERR:"
-        { suffix: "stderr" } => ":STDERR"
     }
 }

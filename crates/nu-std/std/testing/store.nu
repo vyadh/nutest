@@ -61,6 +61,18 @@ def retry-on-lock [table: string, operation: closure] {
     }
 }
 
+export def success []: nothing -> bool {
+    let has_failures = stor open | query db "
+        SELECT EXISTS (
+            SELECT 1
+            FROM nu_test_results
+            WHERE result = 'FAIL'
+        ) AS failures
+    " | get failures.0 | into bool
+
+    not $has_failures
+}
+
 export def query [color_scheme: closure]: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
     # SQL doesn't have backslash escapes so we use `char(10)`, being newline (\n)
     (
