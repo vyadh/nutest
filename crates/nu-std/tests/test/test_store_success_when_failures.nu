@@ -1,4 +1,4 @@
-use std/assert
+use std assert
 source ../../std/test/store.nu
 
 # Note: Using isolated suite to avoid concurrency conflicts with other tests

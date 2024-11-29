@@ -1,4 +1,4 @@
-use std/assert
+use std assert
 source ../../std/test/store.nu
 
 #[before-all]

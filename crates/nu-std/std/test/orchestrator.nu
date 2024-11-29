@@ -1,4 +1,4 @@
-use std/assert
+use std assert
 
 # This script generates the test suite data and embeds a runner into a nushell sub-process to execute.
 

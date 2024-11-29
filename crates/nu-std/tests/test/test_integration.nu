@@ -1,4 +1,4 @@
-use std/assert
+use std assert
 
 # To avoid collisions with the database, we run each test  in a subshell.
 

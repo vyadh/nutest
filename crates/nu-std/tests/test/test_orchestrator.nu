@@ -1,4 +1,4 @@
-use std/assert
+use std assert
 use ../../std/test/orchestrator.nu [
     create-suite-plan-data
     run-suites
@@ -296,7 +296,7 @@ def create-suite [temp: string, suite: string]: nothing -> record {
     let path = $temp | path join $"($suite).nu"
 
     $"
-        use std/assert
+        use std assert
     " | save $path
 
     {

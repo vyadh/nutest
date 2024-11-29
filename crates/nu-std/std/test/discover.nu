@@ -1,4 +1,4 @@
-use std/assert
+use std assert
 
 const default_pattern = "**/{*_test,test_*}.nu"
 #const default_pattern = "**/*.nu"
