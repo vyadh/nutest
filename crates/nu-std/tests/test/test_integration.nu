@@ -133,7 +133,7 @@ def exit-on-fail-with-passing-tests [] {
     ) | complete
 
     assert equal $result.exit_code 0 "Exit code is 0"
-    assert ($result.stdout like "test_1[ │]+test_foo[ │]+PASS[ │]+oof") "Tests are output"
+    assert ($result.stdout =~ "test_1[ │]+test_foo[ │]+PASS[ │]+oof") "Tests are output"
 }
 
 #[test]
@@ -155,5 +155,5 @@ def exit-on-fail-with-failing-tests [] {
     ) | complete
 
     assert equal $result.exit_code 1
-    assert ($result.stdout like "test_3[ │]+test_quux[ │]+FAIL[ │]+Ouch") "Tests are output"
+    assert ($result.stdout =~ "test_3[ │]+test_quux[ │]+FAIL[ │]+Ouch") "Tests are output"
 }

@@ -57,9 +57,9 @@ test --fail
 - Allow custom reporters
   - Also document use of store to translate from event to collected data.
 
-
 ## Possible Future Enhancements
 
+- List tests without running them.
 - Test timing.
 - Funky dynamic terminal UI.
 - Exclusions of suite and/or tests.

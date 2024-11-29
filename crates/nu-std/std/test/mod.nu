@@ -29,7 +29,7 @@ export def main [
     do $reporter.start
     $filtered | orchestrator run-suites $reporter $threads
     let results = do $reporter.results
-    let failure = $results | where result like FAIL | is-not-empty
+    let failure = $results | where result =~ FAIL | is-not-empty
     do $reporter.complete
 
     # To reflect the exit code we need to print the results instead
@@ -54,14 +54,14 @@ def filter-tests [
     suite_pattern: string, test_pattern: string
 ]: table<name: string, path: string, tests<table<name: string, type: string>>> -> table<name: string, path: string, tests<table<name: string, type: string>>> {
     ($in
-        | where name like $suite_pattern
+        | where name =~ $suite_pattern
         | each { |suite|
             {
                 name: $suite.name
                 path: $suite.path
                 tests: ($suite.tests | where
                     # Filter only 'test' and 'ignore' by pattern
-                    ($it.type != test and $it.type != ignore) or $it.name like $test_pattern
+                    ($it.type != test and $it.type != ignore) or $it.name =~ $test_pattern
                 )
             }
         }
