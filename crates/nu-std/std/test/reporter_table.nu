@@ -6,8 +6,8 @@ export def create [color_scheme: closure]: nothing -> record {
     {
         start: { store create }
         complete: { store delete }
+        success: { store success }
         results: { query-results $color_scheme }
-        results-all: { query-results-all $color_scheme }
         fire-result: { |row| insert-result $row }
         fire-output: { |row| insert-output $row }
     }

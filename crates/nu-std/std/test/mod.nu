@@ -29,13 +29,13 @@ export def main [
     do $reporter.start
     $filtered | orchestrator run-suites $reporter $threads
     let results = do $reporter.results
-    let failure = $results | where result =~ FAIL | is-not-empty
+    let success = do $reporter.success
     do $reporter.complete
 
     # To reflect the exit code we need to print the results instead
     if ($fail) {
         print $results
-        exit (if $failure { 1 } else { 0 })
+        exit (if $success { 0 } else { 1 })
     } else {
         $results
     }
