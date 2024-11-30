@@ -15,7 +15,6 @@ export def main [
     --fail                 # Print results and exit with non-zero status if any tests fail (useful for CI/CD systems)
 ]: nothing -> table<suite: string, test: string, result: string, output: string> {
 
-    # TODO error messages are bad when these are misconfigured
     let path = $path | default $env.PWD
     let suite = $match_suites | default ".*"
     let test = $match_tests | default ".*"

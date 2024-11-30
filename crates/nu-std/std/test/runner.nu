@@ -18,19 +18,23 @@
 #   `execute` is the closure function of `type`
 #
 
-# TODO prefix commands with something unusual to avoid conflicts
+# Note: The below commands are prefixed to avoid conflicts with test files.
 
-export def plan-execute-suite-emit [$suite: string, threads: int, suite_data: list] {
+export def nutest-299792458-execute-suite [suite: string, threads: int, suite_data: list] {
     with-env { NU_TEST_SUITE_NAME: $suite } {
-        plan-execute-suite $threads $suite_data
+        nutest-299792458-execute-suite-internal $threads $suite_data
     }
 
     # Don't output any result
     null
 }
 
-def plan-execute-suite [threads: int, suite_data: list] {
+def nutest-299792458-execute-suite-internal [threads: int, suite_data: list] {
     let plan = $suite_data | group-by type
+
+    def get-or-empty [key: string]: list -> list {
+        $in | get --ignore-errors $key | default []
+    }
 
     let before_all = $plan | get-or-empty "before-all"
     let before_each = $plan | get-or-empty "before-each"
@@ -40,58 +44,54 @@ def plan-execute-suite [threads: int, suite_data: list] {
     let ignored = $plan | get-or-empty "ignore"
 
     # TODO test exception handling
-    let context_all = { } | execute-before $before_all
+    let context_all = { } | nutest-299792458-execute-before $before_all
 
     $tests | par-each --threads $threads { |test|
         # Allow print output to be associated with specific tests by adding name to the environment
         with-env { NU_TEST_NAME: $test.name } {
-            emit "start" { }
+            nutest-299792458-emit "start" { }
 
             # TODO clean this up a bit
             try {
-                let context = $context_all | execute-before $before_each
+                let context = $context_all | nutest-299792458-execute-before $before_each
 
                 try {
                     $context | do $test.execute
-                    $context | execute-after $after_each # TODO if throws, will exec again
-                    emit "result" { status: "PASS" }
+                    $context | nutest-299792458-execute-after $after_each # TODO if throws, will exec again
+                    nutest-299792458-emit "result" { status: "PASS" }
                 } catch { |error|
-                    emit "result" { status: "FAIL" }
-                    print -e ...(format_error $error)
+                    nutest-299792458-emit "result" { status: "FAIL" }
+                    print -e ...(nutest-299792458-format-error $error)
                     # TODO test exception handling, since this should still run
-                    $context | execute-after $after_each
+                    $context | nutest-299792458-execute-after $after_each
                 }
 
             } catch { |error|
-                emit "result" { status: "FAIL" }
-                print -e ...(format_error $error)
+                nutest-299792458-emit "result" { status: "FAIL" }
+                print -e ...(nutest-299792458-format-error $error)
                 # TODO test exception handling, since this should still run
-                $context_all | execute-after $after_each
+                $context_all | nutest-299792458-execute-after $after_each
             }
 
-            emit "finish" { }
+            nutest-299792458-emit "finish" { }
         }
     }
 
     for test in $ignored {
         with-env { NU_TEST_NAME: $test.name } {
-            emit "start" { }
-            emit "result" { status: "SKIP" }
-            emit "finish" { }
+            nutest-299792458-emit "start" { }
+            nutest-299792458-emit "result" { status: "SKIP" }
+            nutest-299792458-emit "finish" { }
         }
     }
 
     # TODO test exception handling
-    $context_all | execute-after $after_all
-}
-
-def get-or-empty [key: string]: list -> list {
-    $in | get --ignore-errors $key | default []
+    $context_all | nutest-299792458-execute-after $after_all
 }
 
 # TODO better message on incompatible signature where we don't supply the context
 #   not: expected: input, and argument, to be both record or both
-def execute-before [items: list]: record -> record {
+def nutest-299792458-execute-before [items: list]: record -> record {
     let initial_context = $in
     $items | reduce --fold $initial_context { |it, acc|
         let next = (do $it.execute)
@@ -100,14 +100,14 @@ def execute-before [items: list]: record -> record {
 }
 
 # TODO better message on incompatible signature (see above)
-def execute-after [items: list]: record -> nothing {
+def nutest-299792458-execute-after [items: list]: record -> nothing {
     let context = $in
     for item in $items {
         $context | do $item.execute
     }
 }
 
-def format_error [error: record]: nothing -> list<string> {
+def nutest-299792458-format-error [error: record]: nothing -> list<string> {
     let json = $error.json | from json
     let message = $json.msg
     let help = $json | get help?
@@ -138,15 +138,15 @@ def format_error [error: record]: nothing -> list<string> {
 }
 
 # Keep a reference to the internal print command
-alias print-internal = print
+alias nutest-299792458-print = print
 
 # Override the print command to provide context for output
 def print [--stderr (-e), --raw (-r), --no-newline (-n), ...rest: string] {
     let type = if $stderr { "error" } else { "output" }
-    emit $type { lines: ($rest | flatten) }
+    nutest-299792458-emit $type { lines: ($rest | flatten) }
 }
 
-def emit [type: string, payload: record] {
+def nutest-299792458-emit [type: string, payload: record] {
     let event = {
         timestamp: (date now | format date "%+")
         suite: $env.NU_TEST_SUITE_NAME?
@@ -155,5 +155,5 @@ def emit [type: string, payload: record] {
         payload: $payload
     }
     let packet = $event | to nuon
-    print-internal $packet
+    nutest-299792458-print $packet
 }

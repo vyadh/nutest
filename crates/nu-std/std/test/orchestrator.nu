@@ -31,7 +31,7 @@ def run-suite [reporter: record, threads: int, suite: string, path: string, test
             --commands $"
                 source std/test/runner.nu
                 source ($path)
-                plan-execute-suite-emit ($suite) ($threads) ($plan_data)
+                nutest-299792458-execute-suite ($suite) ($threads) ($plan_data)
             "
     ) | complete
 

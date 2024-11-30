@@ -11,7 +11,7 @@ def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, 
             --commands $"
                 source std/test/runner.nu
                 source tests/test/test_runner.nu
-                plan-execute-suite-emit ($suite) 0 ($plan)
+                nutest-299792458-execute-suite ($suite) 0 ($plan)
             "
     ) | complete
 
