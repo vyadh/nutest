@@ -5,14 +5,16 @@ use color_scheme.nu
 
 # nu -c "use std/test; (test .)"
 
+# Discover and run annotated test commands.
 export def main [
-    --path: path
-    --match-suites: string
-    --match-tests: string
-    --threads: int
-    --no-color
-    --fail
-] {
+    --path: path           # Location of tests (defaults to current directory)
+    --match-suites: string # Regular expression to match against suite names (defaults to all)
+    --match-tests: string  # Regular expression to match against test names (defaults to all)
+    --threads: int         # Number of threads used to run tests (defaults to automatic (zero))
+    --no-color             # Disable colour output to allow easier processing of test results
+    --fail                 # Print results and exit with non-zero status if any tests fail (useful for CI/CD systems)
+]: nothing -> table<suite: string, test: string, result: string, output: string> {
+
     # TODO error messages are bad when these are misconfigured
     let path = $path | default $env.PWD
     let suite = $match_suites | default ".*"
