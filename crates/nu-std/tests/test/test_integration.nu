@@ -117,8 +117,6 @@ def with-specific-suite [] {
     ]
 }
 
-# TODO passing bad flag to testing corrupts output capture
-
 #[test]
 def exit-on-fail-with-passing-tests [] {
     let temp = $in.temp

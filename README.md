@@ -48,18 +48,18 @@ test --fail
 
 ## Expected Features 
 
-- Resolve TODOs
+- Resolve TODOs in runner
+- List tests without running them.
 
 ## Roadmap
 
-- Test report in standard format (cargo test JSON or nextest / JUnit XML).
-- Generate test coverage.
+- Test report in standard format (cargo test JSON or nextest / JUnit XML)
+- Generate test coverage (in llvm-cov format to allow combining with Nushell coverage)
 - Allow custom reporters
   - Also document use of store to translate from event to collected data.
 
 ## Possible Future Enhancements
 
-- List tests without running them.
 - Test timing.
 - Funky dynamic terminal UI.
 - Exclusions of suite and/or tests.
