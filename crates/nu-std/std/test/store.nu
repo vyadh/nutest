@@ -79,6 +79,7 @@ export def query [color_scheme: closure]: nothing -> table<suite: string, test: 
         stor open
             | query db "
                 WITH
+                    -- Combine the output and error lines into a single column with errors highlighted
                     stream AS (
                         SELECT
                             suite,
@@ -92,6 +93,17 @@ export def query [color_scheme: closure]: nothing -> table<suite: string, test: 
                             ) AS output
                         FROM nu_test_output
                         GROUP BY suite, test
+                    ),
+
+                    -- A test can pass and then fail due to after-all post-processing
+                    -- Below extracts only the last result reported based on insertion order
+                    results AS (
+                        SELECT
+                            suite,
+                            test,
+                            result,
+                            ROW_NUMBER() OVER (PARTITION BY suite, test ORDER BY rowid DESC) AS row
+                        FROM nu_test_results
                     )
 
                 SELECT
@@ -100,10 +112,13 @@ export def query [color_scheme: closure]: nothing -> table<suite: string, test: 
                     r.result,
                     COALESCE(s.output, '') AS output
 
-                FROM nu_test_results AS r
+                FROM results AS r
 
                 LEFT JOIN stream AS s
                 ON r.suite = s.suite AND r.test = s.test
+
+                -- The last result for each test given tests can pass then fail
+                WHERE r.row = 1
 
                 ORDER BY r.suite, r.test
             " --params {

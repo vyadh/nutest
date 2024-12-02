@@ -276,6 +276,33 @@ def run-test-with-output-and-error-lines [] {
     ]
 }
 
+#[test]
+# This test is to ensure that even though we get multiple results for a test,
+# (both a PASS then a FAIL) the end result is just a FAIL
+def after-all-failure-should-mark-all-failed [] {
+    let context = $in
+    let temp = $context.temp
+
+    mut suite = create-suite $temp "suite"
+    let suite = "assert equal 1 1" | append-test $temp $suite "test1"
+    let suite = "assert equal 1 1" | append-test $temp $suite "test2"
+    let suite = "assert equal 1 2" | append-test $temp $suite "after-all" --type "after-all"
+    let results = [ $suite ] | test-run $context | reject output
+
+    assert equal $results ([
+        {
+            suite: "suite"
+            test: "test1"
+            result: "FAIL"
+        }
+        {
+            suite: "suite"
+            test: "test2"
+            result: "FAIL"
+        }
+    ] | sort-by test)
+}
+
 
 def test-run [context: record] list<record> -> list<record> {
     let suites = $in

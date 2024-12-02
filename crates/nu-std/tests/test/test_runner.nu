@@ -212,6 +212,36 @@ def execute-before-all-error-handling [] {
     ]
 }
 
+#[test]
+def execute-after-all-error-handling [] {
+    let plan = [
+        { name: "test1", type: "test", execute: "{ noop }" }
+        { name: "test2", type: "test", execute: "{ noop }" }
+        { name: "after-all", type: "after-all", execute: "{ failure }" }
+    ]
+
+    let results = test-run "suite" $plan
+
+    # Note how the test passes first and then fails because of the after-all failure
+    assert equal $results [
+        [suite test type payload];
+        [ "suite", "test1", "start", {} ]
+        [ "suite", "test1", "result", { status: "PASS" } ]
+        [ "suite", "test1", "finish", {} ]
+        [ "suite", "test1", "start", {} ]
+        [ "suite", "test1", "result", { status: "FAIL" } ]
+        [ "suite", "test1", "error", { lines: [$failure_message] } ]
+        [ "suite", "test1", "finish", {} ]
+        [ "suite", "test2", "start", {} ]
+        [ "suite", "test2", "result", { status: "PASS" } ]
+        [ "suite", "test2", "finish", {} ]
+        [ "suite", "test2", "start", {} ]
+        [ "suite", "test2", "result", { status: "FAIL" } ]
+        [ "suite", "test2", "error", { lines: [$failure_message] } ]
+        [ "suite", "test2", "finish", {} ]
+    ]
+}
+
 def noop [] {
 }
 

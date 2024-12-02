@@ -53,13 +53,10 @@ def nutest-299792458-execute-suite-internal [threads: int, suite_data: list] {
         # Each test run has it's own exception handling so is not expected to fail
         $tests | nutest-299792458-execute-tests $threads $context_all $before_each $after_each
 
-        # TODO should we execute if before_all fails?
-        # TODO test exception handling
-        try {
-            $context_all | nutest-299792458-execute-after $after_all
-        }
+        # Run all after-all commands
+        $context_all | nutest-299792458-execute-after $after_all
     } catch { |error|
-        # This should only happen when before_all fails so mark all tests failed
+        # This should only happen when before|after all fails so mark all tests failed
         nutest-299792458-force-error $tests $error
     }
 }
