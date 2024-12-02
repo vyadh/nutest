@@ -43,8 +43,26 @@ def nutest-299792458-execute-suite-internal [threads: int, suite_data: list] {
     let tests = $plan | get-or-empty "test"
     let ignored = $plan | get-or-empty "ignore"
 
+    # Highlight skipped tests first as there is no error handling required
+    nutest-299792458-force-status $ignored "SKIP"
+
     # TODO test exception handling
     let context_all = { } | nutest-299792458-execute-before $before_all
+
+    $tests | nutest-299792458-execute-tests $threads $context_all $before_each $after_each
+
+    # TODO test exception handling
+    $context_all | nutest-299792458-execute-after $after_all
+}
+
+def nutest-299792458-execute-tests [
+    threads: int
+    context_all: record
+    before_each: list
+    after_each: list
+]: list -> nothing {
+
+    let tests = $in
 
     $tests | par-each --threads $threads { |test|
         # Allow print output to be associated with specific tests by adding name to the environment
@@ -76,17 +94,16 @@ def nutest-299792458-execute-suite-internal [threads: int, suite_data: list] {
             nutest-299792458-emit "finish" { }
         }
     }
+}
 
-    for test in $ignored {
+def nutest-299792458-force-status [tests: list, status: string] {
+    for test in $tests {
         with-env { NU_TEST_NAME: $test.name } {
             nutest-299792458-emit "start" { }
-            nutest-299792458-emit "result" { status: "SKIP" }
+            nutest-299792458-emit "result" { status: $status }
             nutest-299792458-emit "finish" { }
         }
     }
-
-    # TODO test exception handling
-    $context_all | nutest-299792458-execute-after $after_all
 }
 
 # TODO better message on incompatible signature where we don't supply the context
