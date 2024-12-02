@@ -189,6 +189,29 @@ def execute-after-error-handling [] {
     ]
 }
 
+#[test]
+def execute-before-all-error-handling [] {
+    let plan = [
+        { name: "test1", type: "test", execute: "{ noop }" }
+        { name: "test2", type: "test", execute: "{ noop }" }
+        { name: "before-all", type: "before-all", execute: "{ failure }" }
+    ]
+
+    let results = test-run "suite" $plan
+
+    assert equal $results [
+        [suite test type payload];
+        [ "suite", "test1", "start", {} ]
+        [ "suite", "test1", "result", { status: "FAIL" } ]
+        [ "suite", "test1", "error", { lines: [$failure_message] } ]
+        [ "suite", "test1", "finish", {} ]
+        [ "suite", "test2", "start", {} ]
+        [ "suite", "test2", "result", { status: "FAIL" } ]
+        [ "suite", "test2", "error", { lines: [$failure_message] } ]
+        [ "suite", "test2", "finish", {} ]
+    ]
+}
+
 def noop [] {
 }
 

@@ -44,15 +44,24 @@ def nutest-299792458-execute-suite-internal [threads: int, suite_data: list] {
     let ignored = $plan | get-or-empty "ignore"
 
     # Highlight skipped tests first as there is no error handling required
-    nutest-299792458-force-status $ignored "SKIP"
+    nutest-299792458-force-result $ignored "SKIP"
 
-    # TODO test exception handling
-    let context_all = { } | nutest-299792458-execute-before $before_all
+    try {
+        # Run all before-all commands
+        let context_all = { } | nutest-299792458-execute-before $before_all
 
-    $tests | nutest-299792458-execute-tests $threads $context_all $before_each $after_each
+        # Each test run has it's own exception handling so is not expected to fail
+        $tests | nutest-299792458-execute-tests $threads $context_all $before_each $after_each
 
-    # TODO test exception handling
-    $context_all | nutest-299792458-execute-after $after_all
+        # TODO should we execute if before_all fails?
+        # TODO test exception handling
+        try {
+            $context_all | nutest-299792458-execute-after $after_all
+        }
+    } catch { |error|
+        # This should only happen when before_all fails so mark all tests failed
+        nutest-299792458-force-error $tests $error
+    }
 }
 
 def nutest-299792458-execute-tests [
@@ -96,11 +105,23 @@ def nutest-299792458-execute-tests [
     }
 }
 
-def nutest-299792458-force-status [tests: list, status: string] {
+def nutest-299792458-force-result [tests: list, status: string] {
     for test in $tests {
         with-env { NU_TEST_NAME: $test.name } {
             nutest-299792458-emit "start" { }
             nutest-299792458-emit "result" { status: $status }
+            nutest-299792458-emit "finish" { }
+        }
+    }
+}
+
+def nutest-299792458-force-error [tests: list, error: record] {
+    let formatted = (nutest-299792458-format-error $error)
+    for test in $tests {
+        with-env { NU_TEST_NAME: $test.name } {
+            nutest-299792458-emit "start" { }
+            nutest-299792458-emit "result" { status: "FAIL" }
+            print -e ...$formatted
             nutest-299792458-emit "finish" { }
         }
     }
