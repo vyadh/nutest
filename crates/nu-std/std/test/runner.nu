@@ -18,7 +18,7 @@
 #   `execute` is the closure function of `type`
 #
 
-# Note: The below commands are prefixed to avoid conflicts with test files.
+# Note: The below commands all have a prefix to avoid possible conflicts with user test files.
 
 export def nutest-299792458-execute-suite [suite: string, threads: int, suite_data: list] {
     with-env { NU_TEST_SUITE_NAME: $suite } {
@@ -47,16 +47,12 @@ def nutest-299792458-execute-suite-internal [threads: int, suite_data: list] {
     nutest-299792458-force-result $ignored "SKIP"
 
     try {
-        # Run all before-all commands
         let context_all = { } | nutest-299792458-execute-before $before_all
-
-        # Each test run has it's own exception handling so is not expected to fail
         $tests | nutest-299792458-execute-tests $threads $context_all $before_each $after_each
-
-        # Run all after-all commands
         $context_all | nutest-299792458-execute-after $after_all
     } catch { |error|
-        # This should only happen when before|after all fails so mark all tests failed
+        # This should only happen when before/after all fails, so mark all tests failed
+        # Each test run has its own exception handling so is not expected to trigger this
         nutest-299792458-force-error $tests $error
     }
 }
@@ -74,31 +70,36 @@ def nutest-299792458-execute-tests [
         # Allow print output to be associated with specific tests by adding name to the environment
         with-env { NU_TEST_NAME: $test.name } {
             nutest-299792458-emit "start" { }
-
-            # TODO clean this up a bit
-            try {
-                let context = $context_all | nutest-299792458-execute-before $before_each
-
-                try {
-                    $context | do $test.execute
-                    $context | nutest-299792458-execute-after $after_each # TODO if throws, will exec again
-                    nutest-299792458-emit "result" { status: "PASS" }
-                } catch { |error|
-                    nutest-299792458-emit "result" { status: "FAIL" }
-                    print -e ...(nutest-299792458-format-error $error)
-                    # TODO test exception handling, since this should still run
-                    $context | nutest-299792458-execute-after $after_each
-                }
-
-            } catch { |error|
-                nutest-299792458-emit "result" { status: "FAIL" }
-                print -e ...(nutest-299792458-format-error $error)
-                # TODO test exception handling, since this should still run
-                $context_all | nutest-299792458-execute-after $after_each
-            }
-
+            nutest-299792458-execute-test $context_all $before_each $after_each $test
             nutest-299792458-emit "finish" { }
         }
+    }
+}
+
+def nutest-299792458-execute-test [context_all: record, before_each: list, after_each: list, test: record] {
+    # TODO gather the before context we can to better process after-each?
+    let context = try {
+        $context_all | nutest-299792458-execute-before $before_each
+    } catch { |error|
+        nutest-299792458-fail $error
+        return
+    }
+
+    try {
+        $context | do $test.execute
+        nutest-299792458-emit "result" { status: "PASS" }
+        # Note that although we have emitted PASS the after-each may still fail (see below)
+    } catch { |error|
+        nutest-299792458-fail $error
+    }
+
+    try {
+        $context | nutest-299792458-execute-after $after_each
+    } catch { |error|
+        # It's possible to get a test PASS above then emit FAIL when processing after-each.
+        # This needs to be handled by the reporter. We could work around it here, but since we have
+        # to handle for after-all outside concurrent processing of tests anyway this is simpler.
+        nutest-299792458-fail $error
     }
 }
 
@@ -140,6 +141,11 @@ def nutest-299792458-execute-after [items: list]: record -> nothing {
     for item in $items {
         $context | do $item.execute
     }
+}
+
+def nutest-299792458-fail [error: record] {
+    nutest-299792458-emit "result" { status: "FAIL" }
+    print -e ...(nutest-299792458-format-error $error)
 }
 
 def nutest-299792458-format-error [error: record]: nothing -> list<string> {

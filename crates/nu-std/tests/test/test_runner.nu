@@ -121,8 +121,8 @@ def execute-after-test [] {
         [suite test type payload];
         [ "after-suite", "test", "start", {} ]
         [ "after-suite", "test", "output", { lines: ["What do you get if you multiply six by nine?", 42] } ]
-        [ "after-suite", "test", "output", { lines: ["What do you get if you multiply six by nine?", 42] } ]
         [ "after-suite", "test", "result", { status: "PASS" } ]
+        [ "after-suite", "test", "output", { lines: ["What do you get if you multiply six by nine?", 42] } ]
         [ "after-suite", "test", "finish", {} ]
     ]
 }
@@ -142,13 +142,13 @@ def execute-before-and-after-captures-output [] {
         [suite test type payload];
         [ "suite", "test1", "start", {} ]
         [ "suite", "test1", "output", { lines: [$success_message] } ]
-        [ "suite", "test1", "error", { lines: [$warning_message] } ]
         [ "suite", "test1", "result", { status: "PASS" } ]
+        [ "suite", "test1", "error", { lines: [$warning_message] } ]
         [ "suite", "test1", "finish", {} ]
         [ "suite", "test2", "start", {} ]
         [ "suite", "test2", "output", { lines: [$success_message] } ]
-        [ "suite", "test2", "error", { lines: [$warning_message] } ]
         [ "suite", "test2", "result", { status: "PASS" } ]
+        [ "suite", "test2", "error", { lines: [$warning_message] } ]
         [ "suite", "test2", "finish", {} ]
     ]
 }
@@ -175,7 +175,7 @@ def execute-before-error-handling [] {
 def execute-after-error-handling [] {
     let plan = [
         { name: "test", type: "test", execute: "{ noop }" }
-        { name: "after-each", type: "before-each", execute: "{ failure }" }
+        { name: "after-each", type: "after-each", execute: "{ failure }" }
     ]
 
     let results = test-run "suite" $plan
@@ -183,7 +183,8 @@ def execute-after-error-handling [] {
     assert equal $results [
         [suite test type payload];
         [ "suite", "test", "start", {} ]
-        [ "suite", "test", "result", { status: "FAIL" } ]
+        [ "suite", "test", "result", { status: "PASS" } ] # The test passed
+        [ "suite", "test", "result", { status: "FAIL" } ] # But after-each failed
         [ "suite", "test", "error", { lines: [$failure_message] } ]
         [ "suite", "test", "finish", {} ]
     ]
@@ -291,15 +292,15 @@ def full-cycle-context [] {
         [ "full-cycle", "test1", "start", {} ]
         [ "full-cycle", "test1", "output", { lines: [ "b" ] } ]
         [ "full-cycle", "test1", "output", { lines: [ "t" ] } ]
-        [ "full-cycle", "test1", "output", { lines: [ "a" ] } ]
         [ "full-cycle", "test1", "result", { status: "PASS" } ]
+        [ "full-cycle", "test1", "output", { lines: [ "a" ] } ]
         [ "full-cycle", "test1", "finish", {} ]
 
         [ "full-cycle", "test2", "start", {} ]
         [ "full-cycle", "test2", "output", { lines: [ "b" ] } ]
         [ "full-cycle", "test2", "output", { lines: [ "t" ] } ]
-        [ "full-cycle", "test2", "output", { lines: [ "a" ] } ]
         [ "full-cycle", "test2", "result", { status: "PASS" } ]
+        [ "full-cycle", "test2", "output", { lines: [ "a" ] } ]
         [ "full-cycle", "test2", "finish", {} ]
 
         # After all is only executed once at the end
