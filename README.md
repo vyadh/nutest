@@ -51,12 +51,14 @@ test --fail
 - Resolve TODOs in runner
 - List tests without running them.
 
+
 ## Roadmap
 
 - Test report in standard format (cargo test JSON or nextest / JUnit XML)
 - Generate test coverage (in llvm-cov format to allow combining with Nushell coverage)
 - Allow custom reporters
   - Also document use of store to translate from event to collected data.
+
 
 ## Possible Future Enhancements
 
@@ -67,6 +69,9 @@ test --fail
 - Optionally allow running ignored tests.
 - Stream test results. Each suite is run in a separate nu process via `complete` and therefore each suite's results are not reported until the whole suite completed. There are some limitations here due to Nushell not being able to run processes concurrently. However, we may be able to stream the events and avoid the `complete` command to resolve this. This is ideally required for the event-based terminal UI.
 - Per-suite concurrency control (e.g. `#[sequential]` or `#[disable-concurrency]` annotation). This would also avoid the need for separate test_store_success suits and use of subshells in own tests.
+- There is some simplicity in the current design that means after-each processing may not always happen:
+  - Currently, a test will be marked as failed on the first before-each that fails, the test will not be run and neither will the after-each. So a before-each that creates temporary files before a failure will not be removed.   
+  - Similarly, execution will stop on the first after-each that fails.
 
 
 ## Alternatives

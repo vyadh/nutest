@@ -77,7 +77,6 @@ def nutest-299792458-execute-tests [
 }
 
 def nutest-299792458-execute-test [context_all: record, before_each: list, after_each: list, test: record] {
-    # TODO gather the before context we can to better process after-each?
     let context = try {
         $context_all | nutest-299792458-execute-before $before_each
     } catch { |error|
