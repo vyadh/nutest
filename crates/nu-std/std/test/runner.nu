@@ -47,6 +47,7 @@ def nutest-299792458-execute-suite-internal [threads: int, suite_data: list] {
     nutest-299792458-force-result $ignored "SKIP"
 
     try {
+        # TODO before/after all exception handling
         let context_all = { } | nutest-299792458-execute-before $before_all
         $tests | nutest-299792458-execute-tests $threads $context_all $before_each $after_each
         $context_all | nutest-299792458-execute-after $after_all
@@ -124,17 +125,14 @@ def nutest-299792458-force-error [tests: list, error: record] {
     }
 }
 
-# TODO better message on incompatible signature where we don't supply the context
-#   not: expected: input, and argument, to be both record or both
 def nutest-299792458-execute-before [items: list]: record -> record {
     let initial_context = $in
     $items | reduce --fold $initial_context { |it, acc|
-        let next = (do $it.execute)
+        let next = (do $it.execute) | default { }
         $acc | merge $next
     }
 }
 
-# TODO better message on incompatible signature (see above)
 def nutest-299792458-execute-after [items: list]: record -> nothing {
     let context = $in
     for item in $items {

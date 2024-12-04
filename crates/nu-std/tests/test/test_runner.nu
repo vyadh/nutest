@@ -90,7 +90,7 @@ def execute-plan-tests [] {
 }
 
 #[test]
-def execute-before-test [] {
+def execute-before-each-test [] {
     let plan = [
         { name: "test", type: "test", execute: "{ assert-context-received }" }
         { name: "before-each", type: "before-each", execute: "{ get-context }" }
@@ -108,7 +108,7 @@ def execute-before-test [] {
 }
 
 #[test]
-def execute-after-test [] {
+def execute-after-each-test [] {
     let plan = [
         { name: "test", type: "test", execute: "{ assert-context-received }" }
         { name: "setup", type: "before-each", execute: "{ get-context }" }
@@ -128,7 +128,7 @@ def execute-after-test [] {
 }
 
 #[test]
-def execute-before-and-after-captures-output [] {
+def execute-before-and-after-each-captures-output [] {
     let plan = [
         { name: "before-each", type: "before-each", execute: "{ success; get-context }" }
         { name: "test1", type: "test", execute: "{ noop }" }
@@ -154,7 +154,7 @@ def execute-before-and-after-captures-output [] {
 }
 
 #[test]
-def execute-before-error-handling [] {
+def execute-before-each-error-handling [] {
     let plan = [
         { name: "test", type: "test", execute: "{ noop }" }
         { name: "before-each", type: "before-each", execute: "{ failure }" }
@@ -172,7 +172,7 @@ def execute-before-error-handling [] {
 }
 
 #[test]
-def execute-after-error-handling [] {
+def execute-after-each-error-handling [] {
     let plan = [
         { name: "test", type: "test", execute: "{ noop }" }
         { name: "after-each", type: "after-each", execute: "{ failure }" }
@@ -188,6 +188,48 @@ def execute-after-error-handling [] {
         [ "suite", "test", "error", { lines: [$failure_message] } ]
         [ "suite", "test", "finish", {} ]
     ]
+}
+
+#[test]
+def execute-before-that-returns-nothing [] {
+    let plan = [
+        { name: "all-has-output", type: "before-all", execute: "{ { value1: 'preserved-all' } }" }
+        { name: "all-no-output", type: "before-all", execute: "{ null }" }
+        { name: "each-has-output", type: "before-each", execute: "{ { value2: 'preserved-each' } }" }
+        { name: "each-no-output", type: "before-each", execute: "{ null }" }
+        { name: "test", type: "test", execute: "{ print $in.value1; print $in.value2 }" }
+    ]
+
+    let result = test-run "suite" $plan |
+        where type in ["result", "output", "error"]
+
+    assert equal $result [
+        [suite test type payload];
+        [ "suite", "test", "output", { lines: [ "preserved-all" ] } ]
+        [ "suite", "test", "output", { lines: [ "preserved-each" ] } ]
+        [ "suite", "test", "result", { status: "PASS" } ]
+    ]
+}
+
+#[test]
+def execute-after-that-accepts-nothing [] {
+    let plan = [
+        { name: "some-context", type: "before-all", execute: "{ { key: 'value' } }" }
+        { name: "test", type: "test", execute: "{ noop }" }
+        { name: "each-no-input", type: "after-each", execute: "{ after-no-input }" }
+        { name: "all-no-input", type: "after-all", execute: "{ after-no-input }" }
+    ]
+
+    let result = test-run "suite" $plan |
+        where type in ["result", "output", "error"]
+
+    assert equal $result [
+        [suite test type payload];
+        [ "suite", "test", "result", { status: "PASS" } ]
+    ]
+}
+
+def after-no-input []: nothing -> nothing {
 }
 
 #[test]
