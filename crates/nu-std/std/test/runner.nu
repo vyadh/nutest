@@ -186,7 +186,7 @@ alias nutest-299792458-print = print
 # Override the print command to provide context for output
 def print [--stderr (-e), --raw (-r), --no-newline (-n), ...rest: any] {
     let type = if $stderr { "error" } else { "output" }
-    nutest-299792458-emit $type { lines: $rest }
+    nutest-299792458-emit $type { data: $rest }
 }
 
 def nutest-299792458-emit [type: string, payload: record] {
