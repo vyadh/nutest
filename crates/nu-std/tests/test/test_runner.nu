@@ -191,48 +191,6 @@ def execute-after-each-error-handling [] {
 }
 
 #[test]
-def execute-before-that-returns-nothing [] {
-    let plan = [
-        { name: "all-has-output", type: "before-all", execute: "{ { value1: 'preserved-all' } }" }
-        { name: "all-no-output", type: "before-all", execute: "{ null }" }
-        { name: "each-has-output", type: "before-each", execute: "{ { value2: 'preserved-each' } }" }
-        { name: "each-no-output", type: "before-each", execute: "{ null }" }
-        { name: "test", type: "test", execute: "{ print $in.value1; print $in.value2 }" }
-    ]
-
-    let result = test-run "suite" $plan |
-        where type in ["result", "output", "error"]
-
-    assert equal $result [
-        [suite test type payload];
-        [ "suite", "test", "output", { lines: [ "preserved-all" ] } ]
-        [ "suite", "test", "output", { lines: [ "preserved-each" ] } ]
-        [ "suite", "test", "result", { status: "PASS" } ]
-    ]
-}
-
-#[test]
-def execute-after-that-accepts-nothing [] {
-    let plan = [
-        { name: "some-context", type: "before-all", execute: "{ { key: 'value' } }" }
-        { name: "test", type: "test", execute: "{ noop }" }
-        { name: "each-no-input", type: "after-each", execute: "{ after-no-input }" }
-        { name: "all-no-input", type: "after-all", execute: "{ after-no-input }" }
-    ]
-
-    let result = test-run "suite" $plan |
-        where type in ["result", "output", "error"]
-
-    assert equal $result [
-        [suite test type payload];
-        [ "suite", "test", "result", { status: "PASS" } ]
-    ]
-}
-
-def after-no-input []: nothing -> nothing {
-}
-
-#[test]
 def execute-before-all-error-handling [] {
     let plan = [
         { name: "test1", type: "test", execute: "{ noop }" }
@@ -311,6 +269,110 @@ def assert-context-received [] {
     let context = $in
     print ($context | get question) ($context | get answer)
     assert equal $context (get-context)
+}
+
+#[test]
+def signature-before-that-returns-nothing [] {
+    let plan = [
+        { name: "all-has-output", type: "before-all", execute: "{ { value1: 'preserved-all' } }" }
+        { name: "all-no-output", type: "before-all", execute: "{ null }" }
+        { name: "each-has-output", type: "before-each", execute: "{ { value2: 'preserved-each' } }" }
+        { name: "each-no-output", type: "before-each", execute: "{ null }" }
+        { name: "test", type: "test", execute: "{ print $in.value1; print $in.value2 }" }
+    ]
+
+    let result = test-run "suite" $plan |
+        where type in ["result", "output", "error"]
+
+    assert equal $result [
+        [suite test type payload];
+        [ "suite", "test", "output", { lines: [ "preserved-all" ] } ]
+        [ "suite", "test", "output", { lines: [ "preserved-each" ] } ]
+        [ "suite", "test", "result", { status: "PASS" } ]
+    ]
+}
+
+#[test]
+def signature-after-that-accepts-nothing [] {
+    let plan = [
+        { name: "some-context", type: "before-all", execute: "{ { key: 'value' } }" }
+        { name: "test", type: "test", execute: "{ noop }" }
+        { name: "each-no-input", type: "after-each", execute: "{ after-no-input }" }
+        { name: "all-no-input", type: "after-all", execute: "{ after-no-input }" }
+    ]
+
+    let result = test-run "suite" $plan |
+        where type in ["result", "output", "error"]
+
+    assert equal $result [
+        [suite test type payload];
+        [ "suite", "test", "result", { status: "PASS" } ]
+    ]
+}
+
+def after-no-input []: nothing -> nothing {
+}
+
+#[test]
+def signature-before-each-that-returns-non-record [] {
+    let plan = [
+        { name: "returns-string", type: "before-each", execute: "{ 'value' }" }
+        { name: "test", type: "test", execute: "{ }" }
+    ]
+
+    let result = test-run "suite" $plan |
+        where type in ["result", "output", "error"]
+
+    assert equal $result [
+        [suite test type payload];
+        [ "suite", "test", "result", { status: "FAIL" } ]
+        [ "suite", "test", "error", { lines: [
+            "The before-each/all function 'returns-string' must return a record or nothing, not 'string'"
+        ] } ]
+    ]
+}
+
+#[test]
+def signature-before-all-that-returns-non-record [] {
+    let plan = [
+        { name: "returns-string", type: "before-all", execute: "{ 'value' }" }
+        { name: "test", type: "test", execute: "{ }" }
+    ]
+
+    let result = test-run "suite" $plan |
+        where type in ["result", "output", "error"]
+
+    assert equal $result [
+        [suite test type payload];
+        [ "suite", "test", "result", { status: "FAIL" } ]
+        [ "suite", "test", "error", { lines: [
+            "The before-each/all function 'returns-string' must return a record or nothing, not 'string'"
+        ] } ]
+    ]
+}
+
+#[test]
+def signature-after-that-accepts-non-record [] {
+    let plan = [
+        { name: "test", type: "test", execute: "{ }" }
+        { name: "accepts-string", type: "after-all", execute: "{ accepts-string }" }
+    ]
+
+    let result = test-run "suite" $plan |
+        where type in ["result"]
+
+    assert equal $result [
+        [suite test type payload];
+        [ "suite", "test", "result", { status: "FAIL" } ]
+        # The error message is not checked because it's generated from the core.
+        # Currently "Can't convert to Closure". This is not a great error message,
+        # however short of doing additional error interception or pre-checking via
+        # `scope commands` there's not much we can do.
+    ]
+}
+
+def accepts-string []: string -> nothing {
+    print $in
 }
 
 #[test]

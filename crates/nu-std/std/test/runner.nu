@@ -129,6 +129,10 @@ def nutest-299792458-execute-before [items: list]: record -> record {
     let initial_context = $in
     $items | reduce --fold $initial_context { |it, acc|
         let next = (do $it.execute) | default { }
+        let type = $next | describe
+        if (not ($type | str starts-with "record")) {
+            error make { msg: $"The before-each/all function '($it.name)' must return a record or nothing, not '($type)'" }
+        }
         $acc | merge $next
     }
 }
