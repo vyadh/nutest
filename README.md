@@ -48,7 +48,6 @@ test --fail
 
 ## Expected Features 
 
-- Resolve TODOs in runner
 - List tests without running them.
 
 
@@ -60,8 +59,9 @@ test --fail
   - Also document use of store to translate from event to collected data.
 
 
-## Possible Future Enhancements
+## Future Ideas
 
+- Fluent assertion module with pluggable matchers.
 - Test timing.
 - Funky dynamic terminal UI.
 - Exclusions of suite and/or tests.

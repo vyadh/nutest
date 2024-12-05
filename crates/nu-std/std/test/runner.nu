@@ -47,7 +47,6 @@ def nutest-299792458-execute-suite-internal [threads: int, suite_data: list] {
     nutest-299792458-force-result $ignored "SKIP"
 
     try {
-        # TODO before/after all exception handling
         let context_all = { } | nutest-299792458-execute-before $before_all
         $tests | nutest-299792458-execute-tests $threads $context_all $before_each $after_each
         $context_all | nutest-299792458-execute-after $after_all
@@ -129,6 +128,7 @@ def nutest-299792458-execute-before [items: list]: record -> record {
     let initial_context = $in
     $items | reduce --fold $initial_context { |it, acc|
         let next = (do $it.execute) | default { }
+        # todo match
         let type = $next | describe
         if (not ($type | str starts-with "record")) {
             error make { msg: $"The before-each/all function '($it.name)' must return a record or nothing, not '($type)'" }
@@ -166,10 +166,11 @@ def nutest-299792458-format-error [error: record]: nothing -> list<string> {
 
         if ($message | str contains "Assertion failed") {
             let formatted = ($detail
-                | str replace --all --regex '\n[ ]+Left' "\n|>Left"
-                | str replace --all --regex '\n[ ]+Right' "\n|>Right"
-                | str replace --all --regex '[\n\r]+' ''
-                | str replace --all "|>" "\n|>") | str join ""
+                | str replace --all --regex '\n[ ]+Left' "|>Left"
+                | str replace --all --regex '\n[ ]+Right' "|>Right"
+                | str replace --all --regex '[\n\r]+' '\n'
+                | str replace --all "|>" "\n|>")
+                | str join ""
             [$message, ...($formatted | lines)]
          } else {
             [$message, ...($detail | lines)]
@@ -183,9 +184,41 @@ def nutest-299792458-format-error [error: record]: nothing -> list<string> {
 alias nutest-299792458-print = print
 
 # Override the print command to provide context for output
-def print [--stderr (-e), --raw (-r), --no-newline (-n), ...rest: string] {
+def print [--stderr (-e), --raw (-r), --no-newline (-n), ...rest: any] {
     let type = if $stderr { "error" } else { "output" }
-    nutest-299792458-emit $type { lines: ($rest | flatten) }
+    #let lines = $rest | flatten
+    let lines = nutest-299792458-lines ...$rest
+    nutest-299792458-emit $type { lines: $lines }
+}
+
+# Ensure we don't break our line-based processing by forcing to a single line
+# This includes explicit newlines and printing of structured data
+def nutest-299792458-lines [...rest: any]: nothing -> list<any> {
+    $rest
+        # This line packs a punch:
+        #  - Any single values are output as-is
+        #  - Structured data may have embedded newlines, so we express that is multiple
+        #| each { match $in | describe to nuon | lines }
+        | each { |value|
+            let res = match ($value | describe --no-collect) {
+                "string" => ($value | lines)
+                #"int" | "bool" | "float" | "date" => $value
+                #"duration" | "filesize" => $value
+                # The 'lines' call quotes types
+                #_ => ($value | to nuon --raw)
+                #_ => '!'
+                _ => $value
+            }
+
+            let encoded = $res | to nuon
+            if ($encoded | str contains "\n") {
+                ($encoded | lines)
+            } else {
+                # No need to convert
+                $res
+            }
+        }
+        | flatten
 }
 
 def nutest-299792458-emit [type: string, payload: record] {
@@ -196,6 +229,6 @@ def nutest-299792458-emit [type: string, payload: record] {
         type: $type
         payload: $payload
     }
-    let packet = $event | to nuon
+    let packet = $event | to nuon --raw
     nutest-299792458-print $packet
 }

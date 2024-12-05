@@ -90,6 +90,85 @@ def execute-plan-tests [] {
 }
 
 #[test]
+def execute-test-types-basic [] {
+    let plan = [
+        { name: "bool", type: "test", execute: "{ print true }" }
+        { name: "datetime", type: "test", execute: "{ print 2022-02-02T14:30:00+05:00 }" }
+        { name: "duration", type: "test", execute: "{ print 2min }" }
+        { name: "filesize", type: "test", execute: "{ print 8KiB }" }
+        { name: "float", type: "test", execute: "{ print 0.5 }" }
+        { name: "int", type: "test", execute: "{ print 1 }" }
+    ]
+
+    let results = test-run "types" $plan | where type == "output"
+
+    assert equal $results [
+        [suite test type payload];
+        [ "types", "bool", "output", { lines: [true] } ]
+        [ "types", "datetime", "output", { lines: [2022-02-02T14:30:00+05:00] } ]
+        [ "types", "duration", "output", { lines: [2min] } ]
+        [ "types", "filesize", "output", { lines: [8KiB] } ]
+        [ "types", "float", "output", { lines: [0.5] } ]
+        [ "types", "int", "output", { lines: [1] } ]
+    ]
+}
+
+#[test]
+def execute-test-types-structured [] {
+    let plan = [
+        { name: "list", type: "test", execute: "{ print [1, '2', 3min] }" }
+        { name: "record", type: "test", execute: "{ print { a: 1, b: 2 } }" }
+    ]
+
+    let results = test-run "types" $plan | where type in ["result", "output", "error"]
+
+    assert equal $results [
+        [suite test type payload];
+        [ "types", "list", "output", { lines: [1, "2", 3min] } ]
+        [ "types", "list", "result", { status: "PASS" } ]
+        [ "types", "record", "output", { lines: [{a: 1, b: 2}] } ]
+        [ "types", "record", "result", { status: "PASS" } ]
+    ]
+}
+
+#[test]
+def execute-test-with-multiple-lines [] {
+    let plan = [
+        { name: "multi-print", type: "test", execute: "{ print 'one'; print 'two' }" }
+        { name: "print-rest", type: "test", execute: "{ print 'one' 'two' }" }
+        { name: "with-newlines", type: "test", execute: "{ print 'one\ntwo' }" }
+    ]
+
+    let results = test-run "suite" $plan | where type == "output"
+
+    assert equal $results [
+        [suite test type payload];
+        [ "suite", "multi-print", "output", { lines: ["one"] } ]
+        [ "suite", "multi-print", "output", { lines: ["two"] } ]
+        [ "suite", "print-rest", "output", { lines: ["one", "two"] } ]
+        [ "suite", "with-newlines", "output", { lines: ["one", "two"] } ]
+    ]
+}
+
+#[test]
+def execute-test-with-multiple-lines-deep [] {
+    let plan = [
+        { name: "list", type: "test", execute: "{ print [1, '2\n3', 4min] }" }
+        { name: "record", type: "test", execute: "{ print { a: 1, b: '2\n3' } }" }
+    ]
+
+    let results = test-run "types" $plan | where type in ["result", "output", "error"]
+
+    assert equal $results [
+        [suite test type payload];
+        [ "types", "list", "output", { lines: [1, "2", "3", 4min] } ]
+        [ "types", "list", "result", { status: "PASS" } ]
+        [ "types", "record", "output", { lines: [{a: 1, b: "2\n3"}] } ]
+        [ "types", "record", "result", { status: "PASS" } ]
+    ]
+}
+
+#[test]
 def execute-before-each-test [] {
     let plan = [
         { name: "test", type: "test", execute: "{ assert-context-received }" }
