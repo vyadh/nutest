@@ -186,39 +186,7 @@ alias nutest-299792458-print = print
 # Override the print command to provide context for output
 def print [--stderr (-e), --raw (-r), --no-newline (-n), ...rest: any] {
     let type = if $stderr { "error" } else { "output" }
-    #let lines = $rest | flatten
-    let lines = nutest-299792458-lines ...$rest
-    nutest-299792458-emit $type { lines: $lines }
-}
-
-# Ensure we don't break our line-based processing by forcing to a single line
-# This includes explicit newlines and printing of structured data
-def nutest-299792458-lines [...rest: any]: nothing -> list<any> {
-    $rest
-        # This line packs a punch:
-        #  - Any single values are output as-is
-        #  - Structured data may have embedded newlines, so we express that is multiple
-        #| each { match $in | describe to nuon | lines }
-        | each { |value|
-            let res = match ($value | describe --no-collect) {
-                "string" => ($value | lines)
-                #"int" | "bool" | "float" | "date" => $value
-                #"duration" | "filesize" => $value
-                # The 'lines' call quotes types
-                #_ => ($value | to nuon --raw)
-                #_ => '!'
-                _ => $value
-            }
-
-            let encoded = $res | to nuon
-            if ($encoded | str contains "\n") {
-                ($encoded | lines)
-            } else {
-                # No need to convert
-                $res
-            }
-        }
-        | flatten
+    nutest-299792458-emit $type { lines: $rest }
 }
 
 def nutest-299792458-emit [type: string, payload: record] {
@@ -229,6 +197,10 @@ def nutest-299792458-emit [type: string, payload: record] {
         type: $type
         payload: $payload
     }
-    let packet = $event | to nuon --raw
+
+    # We need to encode the event to avoid newlines in output/error breaking the stream
+    # This avoids hacks to selectively remove newlines from potentially nested structures
+    let packet = $event | to nuon --raw | encode base64
+
     nutest-299792458-print $packet
 }

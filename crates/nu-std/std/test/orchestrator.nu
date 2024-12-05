@@ -37,12 +37,11 @@ def run-suite [reporter: record, threads: int, suite: string, path: string, test
 
     # Useful for understanding event stream
     #print $'($plan_data)'
-    #print $"($result)"
 
     if $result.exit_code == 0 {
         for line in ($result.stdout | lines) {
-            let data = $line | from nuon
-            $data | process-event $reporter
+            let event = $line | decode-event
+            $event | process-event $reporter
         }
     } else {
         # This is only triggered on a suite-level failure so not caught by the embedded runner
@@ -53,6 +52,10 @@ def run-suite [reporter: record, threads: int, suite: string, path: string, test
             $template | merge { type: "error", payload: { lines: [$result.stderr] } } | process-event $reporter
         }
     }
+}
+
+def decode-event []: string -> record {
+    $in | decode base64 | decode | from nuon
 }
 
 export def create-suite-plan-data [tests: table<name: string, type: string>]: nothing -> string {
@@ -77,11 +80,13 @@ def process-event [reporter: record] {
             do $reporter.fire-result $message
         }
         { type: "output" } => {
-            let message = $template | merge { type: output, lines: $event.payload.lines }
+            let lines = $event.payload.lines | into string
+            let message = $template | merge { type: output, lines: $lines }
             do $reporter.fire-output $message
         }
         { type: "error" } => {
-            let message = $template | merge { type: error, lines: $event.payload.lines }
+            let lines = $event.payload.lines | into string
+            let message = $template | merge { type: error, lines: $lines }
             do $reporter.fire-output $message
         }
     }

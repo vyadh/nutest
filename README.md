@@ -61,6 +61,7 @@ test --fail
 
 ## Future Ideas
 
+- More sophisticated change display rather than simple assertion module output, e.g. differences in records and tables, perhaps displayed as tables
 - Fluent assertion module with pluggable matchers.
 - Test timing.
 - Funky dynamic terminal UI.

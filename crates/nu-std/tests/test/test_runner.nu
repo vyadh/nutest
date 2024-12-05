@@ -22,7 +22,7 @@ def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, 
     (
         $result.stdout
             | lines
-            | each { $in | from nuon }
+            | each { $in | decode base64 | decode | from nuon }
             | sort-by suite test
             | reject timestamp
     )
@@ -124,7 +124,7 @@ def execute-test-types-structured [] {
 
     assert equal $results [
         [suite test type payload];
-        [ "types", "list", "output", { lines: [1, "2", 3min] } ]
+        [ "types", "list", "output", { lines: [[1, "2", 3min]] } ]
         [ "types", "list", "result", { status: "PASS" } ]
         [ "types", "record", "output", { lines: [{a: 1, b: 2}] } ]
         [ "types", "record", "result", { status: "PASS" } ]
@@ -146,7 +146,7 @@ def execute-test-with-multiple-lines [] {
         [ "suite", "multi-print", "output", { lines: ["one"] } ]
         [ "suite", "multi-print", "output", { lines: ["two"] } ]
         [ "suite", "print-rest", "output", { lines: ["one", "two"] } ]
-        [ "suite", "with-newlines", "output", { lines: ["one", "two"] } ]
+        [ "suite", "with-newlines", "output", { lines: ["one\ntwo"] } ]
     ]
 }
 
@@ -161,7 +161,7 @@ def execute-test-with-multiple-lines-deep [] {
 
     assert equal $results [
         [suite test type payload];
-        [ "types", "list", "output", { lines: [1, "2", "3", 4min] } ]
+        [ "types", "list", "output", { lines: [[1, "2\n3", 4min]] } ]
         [ "types", "list", "result", { status: "PASS" } ]
         [ "types", "record", "output", { lines: [{a: 1, b: "2\n3"}] } ]
         [ "types", "record", "result", { status: "PASS" } ]
