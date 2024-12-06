@@ -1,7 +1,6 @@
 #
 # This script is used by the runner to directly invoke tests from the plan data.
 #
-#
 # INPUT DATA STRUCTURES
 #
 # suite_data:

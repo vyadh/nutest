@@ -3,10 +3,6 @@ use std assert
 const default_pattern = "**/{*_test,test_*}.nu"
 #const default_pattern = "**/*.nu"
 
-# Usage:
-#  cd crates/nu-std
-#  nu -c 'use std/test; test list-files '
-
 export def list-files [
     path: string
     pattern: string = $default_pattern
