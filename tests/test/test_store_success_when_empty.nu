@@ -4,18 +4,18 @@ source ../../std/test/store.nu
 # Note: Using isolated suite to avoid concurrency conflicts with other tests
 # Note: Tests for results are done in test_orchestrator and test_integration
 
-#[before-all]
+# [before-all]
 def create_store [] record -> record {
     create
     { }
 }
 
-#[after-all]
+# [after-all]
 def delete_store [] {
     delete
 }
 
-#[test]
+# [test]
 def result-success-when-no-tests [] {
     let result = success
 

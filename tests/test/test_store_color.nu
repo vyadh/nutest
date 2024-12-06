@@ -3,18 +3,18 @@ source ../../std/test/store.nu
 
 # Note: Using isolated suite to avoid concurrency conflicts with other tests
 
-#[before-all]
+# [before-all]
 def create_store [] record -> record {
     create
     { }
 }
 
-#[after-all]
+# [after-all]
 def delete_store [] {
     delete
 }
 
-#[test]
+# [test]
 def colour-scheme-is-used-for-stderr [] {
     insert-result { suite: "suite", test: "test", result: "PASS" }
     insert-output { suite: "suite", test: "test", type: "output", lines: ["normal", "message"] }

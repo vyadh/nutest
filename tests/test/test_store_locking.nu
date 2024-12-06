@@ -1,24 +1,24 @@
 use std/assert
 source ../../std/test/store.nu
 
-#[before-all]
+# [before-all]
 def create_store [] record -> record {
     create
     { }
 }
 
-#[after-all]
+# [after-all]
 def delete_store [] {
     delete
 }
 
-#[before-each]
+# [before-each]
 def create-state-file [] record -> record {
     let state_file = mktemp
     { state_file: $state_file }
 }
 
-#[after-each]
+# [after-each]
 def delete-state-file [] record -> nothing {
     let state_file = $in.state_file
     rm -f $state_file
@@ -39,7 +39,7 @@ def attempt-count [] record<state: string> -> int {
     (open $context.state_file | into int)
 }
 
-#[test]
+# [test]
 def retry-on-table-lock-fails [] {
     let context = $in
     $context | initialise-attempts-file
@@ -60,7 +60,7 @@ def retry-on-table-lock-fails [] {
     assert equal ($context | attempt-count) 20
 }
 
-#[test]
+# [test]
 def retry-on-table-lock-eventually-succeeds [] {
     let context = $in
     $context | initialise-attempts-file
@@ -81,7 +81,7 @@ def retry-on-table-lock-eventually-succeeds [] {
     assert equal ($context | attempt-count) 5
 }
 
-#[test]
+# [test]
 def retry-on-table-lock-throws-other-errors [] {
     let context = $in
     $context | initialise-attempts-file
