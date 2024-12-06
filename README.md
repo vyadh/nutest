@@ -62,7 +62,8 @@ def cleanup [] {
   let context = $in
   print "after each"
   print $context
-}```
+}
+```
 
 Will return:
 ```
