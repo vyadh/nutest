@@ -21,13 +21,13 @@ For now it support:
 | **\[test\]** | this is the main tag to annotate tests.| 
 | **\[before-all\]** | this is run once before all tests.|
 | **\[before-each\]** | this is run before each test.|
-| **\[after-all\]** | this is run once before all tests.|
+| **\[after-all\]** | this is run once after all tests.|
 | **\[after-each\]** | this is run after each test.|
 | **\[ignore\]** | ignores the test but still collects it, similar to `todo` in other test runners.|
 
 For example:
 
-```nuhshell
+```nushell
 use std assert
 
 #[before-each]
