@@ -1,4 +1,4 @@
-use std assert
+use std/assert
 
 const success_message = "I'd much rather be happy than right any day"
 const warning_message = "Don't Panic"

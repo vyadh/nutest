@@ -1,4 +1,4 @@
-use std assert
+use std/assert
 use ../../std/test/discover.nu [
     list-files
     list-test-suites
