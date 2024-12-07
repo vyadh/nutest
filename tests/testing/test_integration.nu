@@ -43,7 +43,7 @@ def test-run [command: string] {
         ^$nu.current-exe
             --no-config-file
             --commands $"
-                use std/testing
+                use std/testing *
                 ($command) | to nuon
             "
     ) | complete
@@ -59,7 +59,7 @@ def test-run [command: string] {
 def with-default-options [] {
     let temp = $in.temp
 
-    let results = test-run $"testing run --no-color --path '($temp)'"
+    let results = test-run $"run-tests --no-color --path '($temp)'"
 
     assert equal $results [
         { suite: test_1, test: test_bar, result: "PASS", output: "rab" }
@@ -74,7 +74,7 @@ def with-specific-file [] {
     let temp = $in.temp
     let path = $temp | path join "test_2.nu"
 
-    let results = test-run $"testing run --no-color --path ($path)"
+    let results = test-run $"run-tests --no-color --path ($path)"
 
     assert equal $results [
         { suite: test_2, test: test_baz, result: "PASS", output: "zab" }
@@ -86,7 +86,7 @@ def with-specific-file [] {
 def with-specific-test [] {
     let temp = $in.temp
 
-    let results = test-run $"testing run --no-color --path ($temp) --match-tests test_foo"
+    let results = test-run $"run-tests --no-color --path ($temp) --match-tests test_foo"
 
     assert equal $results [
         { suite: test_1, test: test_foo, result: "PASS", output: "oof" }
@@ -97,7 +97,7 @@ def with-specific-test [] {
 def with-test-pattern [] {
     let temp = $in.temp
 
-    let results = test-run $"testing run --no-color --path ($temp) --match-tests 'test_ba[rz]'"
+    let results = test-run $"run-tests --no-color --path ($temp) --match-tests 'test_ba[rz]'"
 
     assert equal $results [
         { suite: test_1, test: test_bar, result: "PASS", output: "rab" }
@@ -109,7 +109,7 @@ def with-test-pattern [] {
 def with-specific-suite [] {
     let temp = $in.temp
 
-    let results = test-run $"testing run --no-color --path ($temp) --match-suites test_1"
+    let results = test-run $"run-tests --no-color --path ($temp) --match-suites test_1"
 
     assert equal $results [
         { suite: test_1, test: test_bar, result: "PASS", output: "rab" }
@@ -125,8 +125,8 @@ def exit-on-fail-with-passing-tests [] {
         ^$nu.current-exe
             --no-config-file
             --commands $"
-                use std/testing
-                testing run --no-color --path ($temp) --fail
+                use std/testing *
+                run-tests --no-color --path ($temp) --fail
             "
     ) | complete
 
@@ -147,8 +147,8 @@ def exit-on-fail-with-failing-tests [] {
         ^$nu.current-exe
             --no-config-file
             --commands $"
-                use std/testing
-                testing run --no-color --path ($temp) --fail
+                use std/testing *
+                run-tests --no-color --path ($temp) --fail
             "
     ) | complete
 

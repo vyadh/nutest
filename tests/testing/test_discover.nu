@@ -4,10 +4,6 @@ use ../../std/testing/discover.nu [
     list-test-suites
 ]
 
-# Usage:
-#  cd crates/nu-std
-#  nu -c 'use std/testing; run list-files .'
-
 #[before-each]
 def setup [] {
     let temp = mktemp --directory

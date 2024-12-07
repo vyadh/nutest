@@ -102,12 +102,12 @@ Allows before/after each/all to generate context for each test.
 
 Emits tests as a table of results that can be processed like normal Nu data. For example, you can filter the results to show only failed tests using:
 ```nu
-testing run --no-color | where result == FAIL
+run-tests --no-color | where result == FAIL
 ```
 
 Allows filter of suites and tests to run via a pattern, such as:
 ```nu
-testing run --match-suites api --match-tests test[0-9]
+run-tests --match-suites api --match-tests test[0-9]
 ```
 This will run all files that include `api` in the name and tests that start with `test` followed by a digit.
 
@@ -115,7 +115,7 @@ Capture and display stdout and stderr in output for debugging.
 
 In normal operation the tests will be run and the results will be returned as a table with the exit code always set to 0. To avoid manually checking the results, the `--fail` flag can be used to set the exit code to 1 if any tests fail. In this mode, the test results will be printed in the default format and cannot be interrogated.
 ```nu
-testing run --fail
+run-tests --fail
 ```
 
 ## Roadmap
