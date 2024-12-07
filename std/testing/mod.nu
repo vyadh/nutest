@@ -3,11 +3,6 @@
 # Example Usage:
 #   use std/testing; run-tests
 
-use discover.nu
-use orchestrator.nu
-use reporter_table.nu
-use color_scheme.nu
-
 # Discover and run annotated test commands.
 export def run-tests [
     --path: path           # Location of tests (defaults to current directory)
@@ -17,6 +12,11 @@ export def run-tests [
     --no-color             # Disable colour output to allow easier processing of test results
     --fail                 # Print results and exit with non-zero status if any tests fail (useful for CI/CD systems)
 ]: nothing -> table<suite: string, test: string, result: string, output: string> {
+
+    use discover.nu
+    use orchestrator.nu
+    use reporter_table.nu
+    use color_scheme.nu
 
     let path = $path | default $env.PWD
     let suite = $match_suites | default ".*"
