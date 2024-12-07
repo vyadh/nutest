@@ -4,6 +4,10 @@ A Nushell test runner.
 
 ![An example nu-test run](resources/test-run.png)
 
+## Requirements
+
+Nushell 0.101.0 or later.
+
 ## Motivation
 
 Nushell doesn't include a test runner for Nu scripts in the standard library. As a shell language, writing the odd script is Nushell's raison d'être. This project aims to encourage writing tests for those scripts by making testing extremely accessible.
