@@ -1,5 +1,5 @@
 use std/assert
-source ../../std/test/store.nu
+source ../../std/testing/store.nu
 
 # Note: Using isolated suite to avoid concurrency conflicts with other tests
 

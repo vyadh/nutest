@@ -1,12 +1,12 @@
 use std/assert
-use ../../std/test/discover.nu [
+use ../../std/testing/discover.nu [
     list-files
     list-test-suites
 ]
 
 # Usage:
 #  cd crates/nu-std
-#  nu -c 'use std/test; test list-files .'
+#  nu -c 'use std/testing; testing list-files .'
 
 #[before-each]
 def setup [] {

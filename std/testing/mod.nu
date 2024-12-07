@@ -3,7 +3,7 @@ use orchestrator.nu
 use reporter_table.nu
 use color_scheme.nu
 
-# nu -c "use std/test; test"
+# nu -c "use std/testing; testing"
 
 # Discover and run annotated test commands.
 export def main [

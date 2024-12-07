@@ -1,10 +1,10 @@
 use std/assert
-use ../../std/test/orchestrator.nu [
+use ../../std/testing/orchestrator.nu [
     create-suite-plan-data
     run-suites
 ]
-use ../../std/test/store.nu
-use ../../std/test/reporter_table.nu
+use ../../std/testing/store.nu
+use ../../std/testing/reporter_table.nu
 
 #[test]
 def validate-test-plan [] {
