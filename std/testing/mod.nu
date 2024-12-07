@@ -1,7 +1,7 @@
 # This module is for running tests.
 #
 # Example Usage:
-#   use std/testing; run-tests
+#   use std/testing *; run-tests
 
 # Discover and run annotated test commands.
 export def run-tests [

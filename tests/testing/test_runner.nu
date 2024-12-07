@@ -406,7 +406,7 @@ def signature-before-each-that-returns-non-record [] {
         [suite test type payload];
         [ "suite", "test", "result", { status: "FAIL" } ]
         [ "suite", "test", "error", { data: [
-            "The before-each/all function 'returns-string' must return a record or nothing, not 'string'"
+            "The before-each/all command 'returns-string' must return a record or nothing, not 'string'"
         ] } ]
     ]
 }
@@ -425,7 +425,7 @@ def signature-before-all-that-returns-non-record [] {
         [suite test type payload];
         [ "suite", "test", "result", { status: "FAIL" } ]
         [ "suite", "test", "error", { data: [
-            "The before-each/all function 'returns-string' must return a record or nothing, not 'string'"
+            "The before-each/all command 'returns-string' must return a record or nothing, not 'string'"
         ] } ]
     ]
 }
