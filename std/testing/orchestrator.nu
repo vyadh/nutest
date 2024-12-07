@@ -29,7 +29,7 @@ def run-suite [reporter: record, threads: int, suite: string, path: string, test
         ^$nu.current-exe
             --no-config-file
             --commands $"
-                use std/testing/runner.nu *
+                use (runner-module) *
                 source ($path)
                 nutest-299792458-execute-suite ($suite) ($threads) ($plan_data)
             "
@@ -51,6 +51,17 @@ def run-suite [reporter: record, threads: int, suite: string, path: string, test
             $template | merge { type: "result", payload: { status: "FAIL" } } | process-event $reporter
             $template | merge { type: "error", payload: { data: [$result.stderr] } } | process-event $reporter
         }
+    }
+}
+
+def runner-module []: nothing -> string {
+    let files = scope modules | where name == "runner" | get file
+    if ($files | is-empty) {
+        # This is required when nu-test is embedded in the standard library
+        return "std/testing/runner.nu"
+    } else {
+        # This is required when nu-test is run as a separate module
+        $files | first
     }
 }
 
