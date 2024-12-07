@@ -4,7 +4,7 @@ source ../../std/testing/store.nu
 # Note: Using isolated suite to avoid concurrency conflicts with other tests
 
 # [before-all]
-def create_store [] record -> record {
+def create_store []: record -> record {
     create
     { }
 }

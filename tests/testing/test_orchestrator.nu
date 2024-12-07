@@ -304,7 +304,7 @@ def after-all-failure-should-mark-all-failed [] {
 }
 
 
-def test-run [context: record] list<record> -> list<record> {
+def test-run [context: record]: list<record> -> list<record> {
     let suites = $in
     let reporter = $context.reporter
 

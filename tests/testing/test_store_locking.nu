@@ -2,7 +2,7 @@ use std/assert
 source ../../std/testing/store.nu
 
 # [before-all]
-def create_store [] record -> record {
+def create_store []: record -> record {
     create
     { }
 }
@@ -13,28 +13,28 @@ def delete_store [] {
 }
 
 # [before-each]
-def create-state-file [] record -> record {
+def create-state-file []: record -> record {
     let state_file = mktemp
     { state_file: $state_file }
 }
 
 # [after-each]
-def delete-state-file [] record -> nothing {
+def delete-state-file []: record -> nothing {
     let state_file = $in.state_file
     rm -f $state_file
 }
 
-def initialise-attempts-file [] record<state: string> -> nothing {
+def initialise-attempts-file []: record<state: string> -> nothing {
     let context = $in
     "0" | save -f $context.state_file
 }
 
-def new-attempt [] record<state: string> -> nothing {
+def new-attempt []: record<state: string> -> nothing {
     let context = $in
     ($context | attempt-count) + 1 | save -f $context.state_file
 }
 
-def attempt-count [] record<state: string> -> int {
+def attempt-count []: record<state: string> -> int {
     let context = $in
     (open $context.state_file | into int)
 }
