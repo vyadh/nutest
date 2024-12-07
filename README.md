@@ -12,6 +12,78 @@ The hope is that this runner will be accepted into the Nushell standard library 
 
 Hopefully this project has been archived by the time you read this!
 
+## Writing Tests
+
+**nu-test** uses command description as a tag system for tests, test discovery will ignore non-tagged commands.
+For now it support:
+| tag | description |
+| - | - |
+| **\[test\]** | this is the main tag to annotate tests.| 
+| **\[before-all\]** | this is run once before all tests.|
+| **\[before-each\]** | this is run before each test.|
+| **\[after-all\]** | this is run once after all tests.|
+| **\[after-each\]** | this is run after each test.|
+| **\[ignore\]** | ignores the test but still collects it, similar to `todo` in other test runners.|
+
+For example:
+
+```nushell
+use std assert
+
+#[before-each]
+def setup [] {
+  print "before each"
+  {
+    data: "xxx"
+  }
+}
+
+#[test]
+def "some-data is xxx" [] {
+  let context = $in
+  print $"Running test A: ($context.data)"
+  assert equal "xxx" $context.data
+}
+
+#[test]
+def "is one equal one" [] {
+  print $"Running test B: ($in.data)"
+  assert equal 1 1
+}
+
+#[test]
+def "is two equal two" [] {
+  print $"Running test C: ($in.data)"
+  assert equal 2 2
+}
+
+#[after-each]
+def cleanup [] {
+  let context = $in
+  print "after each"
+  print $context
+}
+```
+
+Will return:
+```
+╭───────────┬──────────────────┬────────┬─────────────────────╮
+│   suite   │       test       │ result │       output        │
+├───────────┼──────────────────┼────────┼─────────────────────┤
+│ test_base │ is one equal one │ PASS   │ before each         │
+│           │                  │        │ Running test B: xxx │
+│           │                  │        │ after each          │
+│           │                  │        │ {data: xxx}         │
+│ test_base │ is two equal two │ PASS   │ before each         │
+│           │                  │        │ Running test C: xxx │
+│           │                  │        │ after each          │
+│           │                  │        │ {data: xxx}         │
+│ test_base │ some-data is xxx │ PASS   │ before each         │
+│           │                  │        │ Running test A: xxx │
+│           │                  │        │ after each          │
+│           │                  │        │ {data: xxx}         │
+╰───────────┴──────────────────┴────────┴─────────────────────╯
+```
 
 ## Current Features
 
