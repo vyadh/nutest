@@ -5,12 +5,13 @@ const warning_message = "Don't Panic"
 const failure_message = "No tea"
 
 def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, type, payload> {
+    const this_file = path self
     let result = (
         ^$nu.current-exe
             --no-config-file
             --commands $"
                 use std/testing/runner.nu *
-                source tests/testing/test_runner.nu
+                source ($this_file)
                 nutest-299792458-execute-suite ($suite) 0 ($plan)
             "
     ) | complete
