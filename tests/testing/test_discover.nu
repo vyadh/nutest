@@ -6,7 +6,7 @@ use ../../std/testing/discover.nu [
 
 # Usage:
 #  cd crates/nu-std
-#  nu -c 'use std/testing; testing list-files .'
+#  nu -c 'use std/testing; run list-files .'
 
 #[before-each]
 def setup [] {

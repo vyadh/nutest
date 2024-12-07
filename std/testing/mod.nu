@@ -3,10 +3,10 @@ use orchestrator.nu
 use reporter_table.nu
 use color_scheme.nu
 
-# nu -c "use std/testing; testing"
+# nu -c "use std/testing; run run"
 
 # Discover and run annotated test commands.
-export def main [
+export def run [
     --path: path           # Location of tests (defaults to current directory)
     --match-suites: string # Regular expression to match against suite names (defaults to all)
     --match-tests: string  # Regular expression to match against test names (defaults to all)
