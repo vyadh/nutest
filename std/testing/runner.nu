@@ -182,7 +182,7 @@ def nutest-299792458-format-error [error: record]: nothing -> list<string> {
 alias nutest-299792458-print = print
 
 # Override the print command to provide context for output
-def print [--stderr (-e), --raw (-r), --no-newline (-n), ...rest: any] {
+export def print [--stderr (-e), --raw (-r), --no-newline (-n), ...rest: any] {
     let type = if $stderr { "error" } else { "output" }
     nutest-299792458-emit $type { data: $rest }
 }

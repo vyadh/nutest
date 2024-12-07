@@ -29,7 +29,7 @@ def run-suite [reporter: record, threads: int, suite: string, path: string, test
         ^$nu.current-exe
             --no-config-file
             --commands $"
-                source std/testing/runner.nu
+                use std/testing/runner.nu *
                 source ($path)
                 nutest-299792458-execute-suite ($suite) ($threads) ($plan_data)
             "

@@ -20,7 +20,7 @@ def setup-tests [temp: string] {
     #[test]
     def test_foo [] { print oof }
     #[test]
-    def test_bar [] { print -e rab}
+    def test_bar [] { print -e rab }
     " | save $test_file_1
 
     "
