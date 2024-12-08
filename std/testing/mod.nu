@@ -3,6 +3,23 @@
 # Example Usage:
 #   use std/testing *; run-tests
 
+# Discover annotated test commands.
+export def list-tests [
+    --path: string # Location of tests (defaults to current directory)
+]: nothing -> table<suite: string, test: string> {
+
+    use discover.nu
+
+    let path = $path | default $env.PWD | check-path
+    let suites = discover list-test-suites $path
+
+    $suites | each { |suite|
+        $suite.tests
+            | where { $in.type in ["test", "ignore"] }
+            | each { |test| { suite: $suite.name, test: $test.name } }
+    } | flatten | sort-by suite test
+}
+
 # Discover and run annotated test commands.
 export def run-tests [
     --path: path           # Location of tests (defaults to current directory)

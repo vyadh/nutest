@@ -170,3 +170,25 @@ def useful-error-on-non-existent-path [] {
     assert str contains $result.stderr "Path doesn't exist: /tmp/non/existent/path"
     assert equal $result.exit_code 1
 }
+
+#[test]
+def list-tests-as-table [] {
+    let temp = $in.temp
+
+    "
+    #[test]
+    def test_zat [] { print oof }
+    #[before-each]
+    def setup [] { print -e rab }
+    " | save ($temp | path join "test_3.nu")
+
+    let results = test-run $"list-tests --path ($temp)"
+
+    assert equal $results [
+        { suite: test_1, test: test_bar }
+        { suite: test_1, test: test_foo }
+        { suite: test_2, test: test_baz }
+        { suite: test_2, test: test_qux }
+        { suite: test_3, test: test_zat }
+    ]
+}

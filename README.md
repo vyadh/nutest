@@ -125,7 +125,6 @@ run-tests --fail
 ## Roadmap
 
 - Add summary reporter
-- List tests without running them.
 - Test report in standard format (cargo test JSON or nextest / JUnit XML)
 - Generate test coverage (in llvm-cov format to allow combining with Nushell coverage)
 - Allow custom reporters
