@@ -124,7 +124,6 @@ run-tests --fail
 
 ## Roadmap
 
-- Better error when --path doesn't exist
 - Add summary reporter
 - List tests without running them.
 - Test report in standard format (cargo test JSON or nextest / JUnit XML)

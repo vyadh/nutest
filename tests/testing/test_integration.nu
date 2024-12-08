@@ -155,3 +155,18 @@ def exit-on-fail-with-failing-tests [] {
     assert equal $result.exit_code 1
     assert ($result.stdout =~ "test_3[ │]+test_quux[ │]+FAIL[ │]+Ouch") "Tests are output"
 }
+
+#[test]
+def useful-error-on-non-existent-path [] {
+    let result = (
+        ^$nu.current-exe
+            --no-config-file
+            --commands $"
+                use std/testing *
+                run-tests --path /tmp/non/existent/path
+            "
+    ) | complete
+
+    assert str contains $result.stderr "Path doesn't exist: /tmp/non/existent/path"
+    assert equal $result.exit_code 1
+}

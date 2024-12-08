@@ -18,7 +18,7 @@ export def run-tests [
     use reporter_table.nu
     use theme.nu
 
-    let path = $path | default $env.PWD
+    let path = $path | default $env.PWD | check-path
     let suite = $match_suites | default ".*"
     let test = $match_tests | default ".*"
     let threads = $threads | default (default-threads)
@@ -71,4 +71,12 @@ def filter-tests [
         }
         | where ($it.tests | is-not-empty)
     )
+}
+
+def check-path []: string -> string {
+    let path = $in
+    if (not ($path | path exists)) {
+        error make { msg: $"Path doesn't exist: ($path)" }
+    }
+    $path
 }
