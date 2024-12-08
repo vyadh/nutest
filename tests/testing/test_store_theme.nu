@@ -15,12 +15,12 @@ def delete_store [] {
 }
 
 # [test]
-def colour-scheme-is-used-for-stderr [] {
+def theme-is-used-for-stderr [] {
     insert-result { suite: "suite", test: "test", result: "PASS" }
     insert-output { suite: "suite", test: "test", type: "output", lines: ["normal", "message"] }
     insert-output { suite: "suite", test: "test", type: "error", lines: ["error", "text"] }
 
-    let results = query { stderr-prefixing-color-scheme }
+    let results = query { stderr-prefixing-theme }
 
     assert equal $results ([
         {
@@ -32,7 +32,7 @@ def colour-scheme-is-used-for-stderr [] {
     ])
 }
 
-def stderr-prefixing-color-scheme []: record -> string {
+def stderr-prefixing-theme []: record -> string {
     match $in {
         { prefix: "stderr" } => "STDERR:"
         { suffix: "stderr" } => ":STDERR"

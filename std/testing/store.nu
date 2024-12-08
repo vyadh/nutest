@@ -73,7 +73,7 @@ export def success []: nothing -> bool {
     not $has_failures
 }
 
-export def query [color_scheme: closure]: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
+export def query [theme: closure]: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
     # SQL doesn't have backslash escapes so we use `char(10)`, being newline (\n)
     (
         stor open
@@ -122,8 +122,8 @@ export def query [color_scheme: closure]: nothing -> table<suite: string, test: 
 
                 ORDER BY r.suite, r.test
             " --params {
-                error_prefix: ({ prefix: "stderr" } | do $color_scheme)
-                error_suffix: ({ suffix: "stderr" } | do $color_scheme)
+                error_prefix: ({ prefix: "stderr" } | do $theme)
+                error_suffix: ({ suffix: "stderr" } | do $theme)
             }
     )
 }

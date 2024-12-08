@@ -9,14 +9,14 @@ export def run-tests [
     --match-suites: string # Regular expression to match against suite names (defaults to all)
     --match-tests: string  # Regular expression to match against test names (defaults to all)
     --threads: int         # Number of threads used to run tests (defaults to automatic (zero))
-    --no-color             # Disable colour output to allow easier processing of test results
+    --no-theme             # Disable decorations/color in output to allow easier processing of test results
     --fail                 # Print results and exit with non-zero status if any tests fail (useful for CI/CD systems)
 ]: nothing -> table<suite: string, test: string, result: string, output: string> {
 
     use discover.nu
     use orchestrator.nu
     use reporter_table.nu
-    use color_scheme.nu
+    use theme.nu
 
     let path = $path | default $env.PWD
     let suite = $match_suites | default ".*"
@@ -29,7 +29,7 @@ export def run-tests [
     let suites = discover list-test-suites $path
     let filtered = $suites | filter-tests $suite $test
 
-    let reporter = reporter_table create (color_scheme create $no_color)
+    let reporter = reporter_table create (theme create $no_theme)
     do $reporter.start
     $filtered | orchestrator run-suites $reporter $threads
     let results = do $reporter.results

@@ -33,7 +33,7 @@ def trim []: string -> string {
 # Since we only have one database it needs to be created once before all tests.
 # We also need to ensure we narrow down results to the unique ones used in each test.
 def reporter-setup []: nothing -> record {
-    let reporter = reporter_table create (nop-color-scheme)
+    let reporter = reporter_table create (nop-theme)
     do $reporter.start
 
     {
@@ -41,7 +41,7 @@ def reporter-setup []: nothing -> record {
     }
 }
 
-def nop-color-scheme []: nothing -> closure {
+def nop-theme []: nothing -> closure {
     {
         match $in {
             { type: _, text: $text } => $text

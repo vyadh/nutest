@@ -2,34 +2,34 @@
 
 use store.nu
 
-export def create [color_scheme: closure]: nothing -> record {
+export def create [theme: closure]: nothing -> record {
     {
         start: { store create }
         complete: { store delete }
         success: { store success }
-        results: { query-results $color_scheme }
+        results: { query-results $theme }
         fire-result: { |row| insert-result $row }
         fire-output: { |row| insert-output $row }
     }
 }
 
-def query-results [color_scheme: closure]: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
-    let res = store query $color_scheme | each { |row|
+def query-results [theme: closure]: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
+    let res = store query $theme | each { |row|
         {
             suite: $row.suite
             test: $row.test
-            result: (format-result $row.result $color_scheme)
+            result: (format-result $row.result $theme)
             output: $row.output
         }
     }
     $res
 }
 
-def format-result [result: string, color_scheme: closure]: nothing -> string {
+def format-result [result: string, theme: closure]: nothing -> string {
     match $result {
-        "PASS" => ({ type: "pass", text: $result } | do $color_scheme)
-        "SKIP" => ({ type: "skip", text: $result } | do $color_scheme)
-        "FAIL" => ({ type: "fail", text: $result } | do $color_scheme)
+        "PASS" => ({ type: "pass", text: $result } | do $theme)
+        "SKIP" => ({ type: "skip", text: $result } | do $theme)
+        "FAIL" => ({ type: "fail", text: $result } | do $theme)
         _ => $result
     }
 }

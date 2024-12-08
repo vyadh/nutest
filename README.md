@@ -106,7 +106,7 @@ Allows before/after each/all to generate context for each test.
 
 Emits tests as a table of results that can be processed like normal Nu data. For example, you can filter the results to show only failed tests using:
 ```nu
-run-tests --no-color | where result == FAIL
+run-tests --no-theme | where result == FAIL
 ```
 
 Allows filter of suites and tests to run via a pattern, such as:
@@ -124,6 +124,7 @@ run-tests --fail
 
 ## Roadmap
 
+- Better error when --path doesn't exist
 - Add summary reporter
 - List tests without running them.
 - Test report in standard format (cargo test JSON or nextest / JUnit XML)
