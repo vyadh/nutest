@@ -10,11 +10,9 @@ Nushell 0.101.0 or later.
 
 ## Motivation
 
-Nushell doesn't include a test runner for Nu scripts in the standard library. As a shell language, writing the odd script is Nushell's raison d'être. This project aims to encourage writing tests for those scripts by making testing extremely accessible.
+Nushell doesn't currently include a test runner for Nu scripts in the standard library. As a shell language, writing the odd script is Nushell's raison d'être. Nu-test aims to encourage writing tests for those scripts by making testing more easily accessible.
 
 The hope is that this runner will be accepted into the Nushell standard library as the value of this is much diminished if the test runner needs to be obtained separately.
-
-Hopefully this project has been archived by the time you read this!
 
 ## Writing Tests
 
@@ -106,7 +104,21 @@ Allows before/after each/all to generate context for each test.
 
 Emits tests as a table of results that can be processed like normal Nu data. For example, you can filter the results to show only failed tests using:
 ```nu
-run-tests --no-theme | where result == FAIL
+run-tests --reporter table | where result == FAIL
+```
+
+Provides a reporter that just shows the summary of the test run:
+```nu
+run-tests --reporter summary
+```
+Will return:
+```
+╭─────────┬────╮
+│ total   │ 54 │
+│ passed  │ 50 │
+│ failed  │ 1  │
+│ skipped │ 3  │
+╰─────────┴────╯
 ```
 
 Allows filter of suites and tests to run via a pattern, such as:
@@ -124,7 +136,7 @@ run-tests --fail
 
 ## Roadmap
 
-- Add summary reporter
+- Show fuller error text when not a matching error
 - Test report in standard format (cargo test JSON or nextest / JUnit XML)
 - Generate test coverage (in llvm-cov format to allow combining with Nushell coverage)
 - Allow custom reporters
@@ -179,6 +191,6 @@ Additionally, given the kinds of use-cases Nushell is used for, many tests are l
 
 Feedback on how well this works in practice is very welcome.
 
-#### SQLite
+### SQLite
 
 Given Nutest runs as much as possible concurrently, this puts an unusual level of pressure on SQLite that collects test results and the output. For this reason, INSERTs sometimes fail and so a retry mechanism has been added to attempt to insert the data again up to a particular maximum tries at which point Nutest may give up and throw an error. The retries have had some stress testing to come to a pragmatic value, but please let us know if you're seeing issues.

@@ -8,13 +8,13 @@ export def create [theme: closure]: nothing -> record {
         complete: { store delete }
         success: { store success }
         results: { query-results $theme }
-        fire-result: { |row| insert-result $row }
-        fire-output: { |row| insert-output $row }
+        fire-result: { |row| store insert-result $row }
+        fire-output: { |row| store insert-output $row }
     }
 }
 
-def query-results [theme: closure]: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
-    let res = store query $theme | each { |row|
+def query-results [theme: closure]: nothing -> table<suite: string, test: string, result: string, output: string> {
+    store query $theme | each { |row|
         {
             suite: $row.suite
             test: $row.test
@@ -22,7 +22,6 @@ def query-results [theme: closure]: nothing -> table<suite: string, test: string
             output: $row.output
         }
     }
-    $res
 }
 
 def format-result [result: string, theme: closure]: nothing -> string {
@@ -32,12 +31,4 @@ def format-result [result: string, theme: closure]: nothing -> string {
         "FAIL" => ({ type: "fail", text: $result } | do $theme)
         _ => $result
     }
-}
-
-def insert-result [row: record<suite: string, test: string, result: string>] {
-    store insert-result $row
-}
-
-def insert-output [row: record<suite: string, test: string, type: string, lines: list<string>>] {
-    store insert-output $row
 }

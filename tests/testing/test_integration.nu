@@ -59,7 +59,7 @@ def test-run [command: string] {
 def with-default-options [] {
     let temp = $in.temp
 
-    let results = test-run $"run-tests --no-theme --path '($temp)'"
+    let results = test-run $"run-tests --reporter table --path '($temp)'"
 
     assert equal $results [
         { suite: test_1, test: test_bar, result: "PASS", output: "rab" }
@@ -74,7 +74,7 @@ def with-specific-file [] {
     let temp = $in.temp
     let path = $temp | path join "test_2.nu"
 
-    let results = test-run $"run-tests --no-theme --path ($path)"
+    let results = test-run $"run-tests --reporter table --path ($path)"
 
     assert equal $results [
         { suite: test_2, test: test_baz, result: "PASS", output: "zab" }
@@ -86,7 +86,7 @@ def with-specific-file [] {
 def with-specific-test [] {
     let temp = $in.temp
 
-    let results = test-run $"run-tests --no-theme --path ($temp) --match-tests test_foo"
+    let results = test-run $"run-tests --reporter table --path ($temp) --match-tests test_foo"
 
     assert equal $results [
         { suite: test_1, test: test_foo, result: "PASS", output: "oof" }
@@ -97,7 +97,7 @@ def with-specific-test [] {
 def with-test-pattern [] {
     let temp = $in.temp
 
-    let results = test-run $"run-tests --no-theme --path ($temp) --match-tests 'test_ba[rz]'"
+    let results = test-run $"run-tests --reporter table --path ($temp) --match-tests 'test_ba[rz]'"
 
     assert equal $results [
         { suite: test_1, test: test_bar, result: "PASS", output: "rab" }
@@ -109,7 +109,7 @@ def with-test-pattern [] {
 def with-specific-suite [] {
     let temp = $in.temp
 
-    let results = test-run $"run-tests --no-theme --path ($temp) --match-suites test_1"
+    let results = test-run $"run-tests --reporter table --path ($temp) --match-suites test_1"
 
     assert equal $results [
         { suite: test_1, test: test_bar, result: "PASS", output: "rab" }
@@ -126,7 +126,7 @@ def exit-on-fail-with-passing-tests [] {
             --no-config-file
             --commands $"
                 use std/testing *
-                run-tests --no-theme --path ($temp) --fail
+                run-tests --reporter table --path ($temp) --fail
             "
     ) | complete
 
@@ -148,7 +148,7 @@ def exit-on-fail-with-failing-tests [] {
             --no-config-file
             --commands $"
                 use std/testing *
-                run-tests --no-theme --path ($temp) --fail
+                run-tests --reporter table --path ($temp) --fail
             "
     ) | complete
 
@@ -169,6 +169,27 @@ def useful-error-on-non-existent-path [] {
 
     assert str contains $result.stderr "Path doesn't exist: /tmp/non/existent/path"
     assert equal $result.exit_code 1
+}
+
+#[test]
+def with-summary-reporter [] {
+    let temp = $in.temp
+    let test_file_3 = $temp | path join "test_3.nu"
+    "
+    #[test]
+    def test_quux [] { error make { msg: 'Ouch' } }
+    #[ignore]
+    def test_oof [] { }
+    " | save $test_file_3
+
+    let results = test-run $"run-tests --reporter summary --path ($temp)"
+
+    assert equal $results {
+        total: 6
+        passed: 3
+        failed: 1
+        skipped: 2
+    }
 }
 
 #[test]
