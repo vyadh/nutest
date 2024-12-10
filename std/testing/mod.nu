@@ -120,6 +120,12 @@ def select-reporter [reporter: string]: nothing -> record<start: closure, comple
 
             reporter_summary create
         }
+        "terminal" => {
+            use theme.nu
+            use reporter_terminal.nu
+
+            reporter_terminal create (theme standard)
+        }
         _ => {
             error make { msg: $"Unknown reporter: ($reporter)" }
         }
