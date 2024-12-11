@@ -8,6 +8,7 @@ export def create [theme: closure]: nothing -> record {
         complete: { store delete }
         success: { store success }
         results: { query-results $theme }
+        has-return-value: true
         fire-start: { |row| }
         fire-finish: { |row| }
         fire-result: { |row| store insert-result $row }

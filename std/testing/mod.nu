@@ -60,8 +60,11 @@ export def run-tests [
     if ($fail) {
         print $results
         exit (if $success { 0 } else { 1 })
-    } else {
+    } else if ($reporter.has-return-value) {
         $results
+    } else {
+        # Nothing to print
+        null
     }
 }
 

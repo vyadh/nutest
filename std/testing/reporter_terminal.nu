@@ -8,6 +8,7 @@ export def create [theme: closure]: nothing -> record {
         complete: { complete-suite }
         success: { success }
         results: { [] }
+        has-return-value: false
         fire-start: { |row| start-test $row }
         fire-finish: { |row| complete-test $theme $row }
         fire-result: { |row| fire-result $row }
