@@ -49,7 +49,8 @@ def retry-on-lock [table: string, operation: closure] {
         } catch { |e|
             let reason = ($e.json | from json).labels?.0?.text?
             if $reason == $"database table is locked: ($table)" {
-                # Retry
+                # Retry after a random sleep to avoid contention
+                sleep (random int ..25 | into duration --unit ms)
                 continue
             } else {
                 $e.raw # Rethrow anything else
