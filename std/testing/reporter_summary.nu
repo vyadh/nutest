@@ -9,6 +9,8 @@ export def create []: nothing -> record {
         complete: { store delete }
         success: { store success }
         results: { query-summary }
+        fire-start: { |row| }
+        fire-finish: { |row| }
         fire-result: { |row| store insert-result $row }
         fire-output: { |row| } # Not required
     }

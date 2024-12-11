@@ -48,8 +48,10 @@ def run-suite [reporter: record, threads: int, suite: string, path: string, test
         # This replicates this suite-level failure down to each test
         for test in $tests {
             let template = { timestamp: (date now | format date "%+"), suite: $suite, test: $test.name }
+            $template | merge { type: "start", payload: { } } | process-event $reporter
             $template | merge { type: "result", payload: { status: "FAIL" } } | process-event $reporter
             $template | merge { type: "error", payload: { data: [$result.stderr] } } | process-event $reporter
+            $template | merge { type: "finish", payload: { } } | process-event $reporter
         }
     }
 }
@@ -86,6 +88,12 @@ def process-event [reporter: record] {
     let template = { suite: $event.suite, test: $event.test }
 
     match $event {
+        { type: "start" } => {
+            do $reporter.fire-start $template
+        }
+        { type: "finish" } => {
+            do $reporter.fire-finish $template
+        }
         { type: "result" } => {
             let message = $template | merge { result: $event.payload.status }
             do $reporter.fire-result $message

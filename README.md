@@ -144,6 +144,7 @@ run-tests --fail
 
 ## Future Ideas
 
+- Highlight differences in output using background colours like a diff tool.
 - More sophisticated change display rather than simple assertion module output, e.g. differences in records and tables, perhaps displayed as tables
 - Fluent assertion module with pluggable matchers.
 - Test timing.

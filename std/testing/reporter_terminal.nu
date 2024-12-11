@@ -4,21 +4,31 @@ use store.nu
 
 export def create [theme: closure]: nothing -> record {
     {
-        start: { start }
-        complete: { complete }
+        start: { start-suite }
+        complete: { complete-suite }
         success: { success }
         results: { [] }
+        fire-start: { |row| start-test $row }
+        fire-finish: { |row| complete-test $row }
         fire-result: { |row| fire-result $theme $row }
         fire-output: { |row| fire-output $theme $row }
     }
 }
 
-def start []: nothing -> nothing {
+def start-suite []: nothing -> nothing {
     print "Running tests..."
 }
 
-def complete []: nothing -> nothing {
+def complete-suite []: nothing -> nothing {
     print "Test run completed"
+}
+
+def start-test [row: record]: nothing -> nothing {
+    print $"Running test: ($row.suite) ($row.test)..."
+}
+
+def complete-test [row: record]: nothing -> nothing {
+    print $"...completed test: ($row.suite) ($row.test)"
 }
 
 def success [] {
