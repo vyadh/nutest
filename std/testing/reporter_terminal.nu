@@ -28,8 +28,9 @@ def success [] {
 
 def fire-result [theme: closure, row: record<suite: string, test: string, result: string>] {
     let formatted = (format-result $row.result $theme)
-    # TODO use theme for suite and test colours
-    print $"($formatted) (ansi light_blue)($row.suite)(ansi reset) ($row.test)"
+    let suite = { type: "suite", text: $row.suite } | do $theme
+    let test = { type: "test", text: $row.test } | do $theme
+    print $"($formatted) ($suite) ($test)"
 }
 
 def fire-output [theme: closure, row: record<suite: string, test: string, type: string, lines: list<string>>] {
