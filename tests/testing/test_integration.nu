@@ -38,23 +38,6 @@ def cleanup [] {
     rm --recursive $context.temp
 }
 
-def test-run [command: string] {
-    let result = (
-        ^$nu.current-exe
-            --no-config-file
-            --commands $"
-                use std/testing *
-                ($command) | to nuon
-            "
-    ) | complete
-
-    if $result.exit_code != 0 {
-        $"[sub-process failed: ($result.stderr)]"
-    } else {
-        $result.stdout | from nuon
-    }
-}
-
 #[test]
 def with-default-options [] {
     let temp = $in.temp
@@ -212,4 +195,72 @@ def list-tests-as-table [] {
         { suite: test_2, test: test_qux }
         { suite: test_3, test: test_zat }
     ]
+}
+
+#[test]
+def with-terminal-reporter [] {
+    let temp = $in.temp
+    let test_file_3 = $temp | path join "test_3.nu"
+    "
+    #[test]
+    def test_quux [] { error make { msg: 'Ouch' } }
+    #[ignore]
+    def test_oof [] { }
+    " | save $test_file_3
+
+    let results = test-run-raw $"run-tests --reporter terminal --threads 1 --path ($temp)"
+
+    # Sadly the ordering is indeterminate here so we need to sort
+    assert equal ($results | sort-lines) ($"Running tests...
+✅ (ansi green)PASS(ansi reset) (ansi light_blue)test_1(ansi reset) test_foo
+✅ (ansi green)PASS(ansi reset) (ansi light_blue)test_1(ansi reset) test_bar
+✅ (ansi green)PASS(ansi reset) (ansi light_blue)test_2(ansi reset) test_baz
+🚧 (ansi yellow)SKIP(ansi reset) (ansi light_blue)test_2(ansi reset) test_qux
+❌ (ansi red)FAIL(ansi reset) (ansi light_blue)test_3(ansi reset) test_quux
+  (ansi yellow)Ouch(ansi reset)
+🚧 (ansi yellow)SKIP(ansi reset) (ansi light_blue)test_3(ansi reset) test_oof
+Test run completed: 6 total, 3 passed, 1 failed, 2 skipped" | sort-lines)
+
+    # Ensure error is associated with the right test
+    assert str contains $results ($"
+❌ (ansi red)FAIL(ansi reset) (ansi light_blue)test_3(ansi reset) test_quux
+  (ansi yellow)Ouch(ansi reset)" | str trim)
+}
+
+def sort-lines []: string -> list<string> {
+    $in | str trim | split row "\n" | sort
+}
+
+def test-run [command: string] {
+    let result = (
+        ^$nu.current-exe
+            --no-config-file
+            --commands $"
+                use std/testing *
+                ($command) | to nuon
+            "
+    ) | complete
+
+    if $result.exit_code != 0 {
+        $"[sub-process failed: ($result.stderr)]"
+    } else {
+        $result.stdout | from nuon
+    }
+}
+
+def test-run-raw [command: string] {
+    let result = (
+        ^$nu.current-exe
+            --no-config-file
+            --commands $"
+                use std/testing *
+                ($command)
+            "
+    ) | complete
+
+    if $result.exit_code != 0 {
+        $"[sub-process failed: ($result.stderr)]"
+    } else {
+        $result.stdout
+    }
 }
