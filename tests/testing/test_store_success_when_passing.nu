@@ -5,13 +5,13 @@ source ../../std/testing/store.nu
 # Note: Tests for results are done in test_orchestrator and test_integration
 
 # [before-all]
-def create_store []: record -> record {
+def create-store []: record -> record {
     create
     { }
 }
 
 # [after-all]
-def delete_store [] {
+def delete-store [] {
     delete
 }
 

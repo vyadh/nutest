@@ -74,56 +74,70 @@ export def success []: nothing -> bool {
 }
 
 export def query [theme: closure]: nothing -> table<suite: string, test: string, result: string, output: string> {
-    # SQL doesn't have backslash escapes so we use `char(10)`, being newline (\n)
-    (
-        stor open
-            | query db "
-                WITH
-                    -- Combine the output and error lines into a single column with errors highlighted
-                    stream AS (
-                        SELECT
-                            suite,
-                            test,
-                            GROUP_CONCAT(
-                                CASE
-                                    WHEN type = 'error' THEN :error_prefix || line || :error_suffix
-                                    ELSE line
-                                END,
-                                char(10)
-                            ) AS output
-                        FROM nu_test_output
-                        GROUP BY suite, test
-                    ),
+    stor open
+        | query db (query-string) --params {
+            error_prefix: ({ prefix: "stderr" } | do $theme)
+            error_suffix: ({ suffix: "stderr" } | do $theme)
+        }
+}
 
-                    -- A test can pass and then fail due to after-all post-processing
-                    -- Below extracts only the last result reported based on insertion order
-                    results AS (
-                        SELECT
-                            suite,
-                            test,
-                            result,
-                            ROW_NUMBER() OVER (PARTITION BY suite, test ORDER BY rowid DESC) AS row
-                        FROM nu_test_results
-                    )
+export def query-test [suite: string, test: string, theme: closure]: nothing -> table<suite: string, test: string, result: string, output: string> {
+    let condition = "AND r.suite = :suite AND r.test = :test"
+    stor open
+        | query db (query-string $condition) --params {
+            error_prefix: ({ prefix: "stderr" } | do $theme)
+            error_suffix: ({ suffix: "stderr" } | do $theme)
+            suite: $suite
+            test: $test
+        }
+}
 
+# SQL doesn't have backslash escapes so we use `char(10)`, being newline (\n)
+def query-string [condition: string = ""]: nothing -> string {
+    "
+        WITH
+            -- Combine the output and error lines into a single column with errors highlighted
+            stream AS (
                 SELECT
-                    r.suite,
-                    r.test,
-                    r.result,
-                    COALESCE(s.output, '') AS output
+                    suite,
+                    test,
+                    GROUP_CONCAT(
+                        CASE
+                            WHEN type = 'error' THEN :error_prefix || line || :error_suffix
+                            ELSE line
+                        END,
+                        char(10)
+                    ) AS output
+                FROM nu_test_output
+                GROUP BY suite, test
+            ),
 
-                FROM results AS r
+            -- A test can pass and then fail due to after-all post-processing
+            -- Below extracts only the last result reported based on insertion order
+            results AS (
+                SELECT
+                    suite,
+                    test,
+                    result,
+                    ROW_NUMBER() OVER (PARTITION BY suite, test ORDER BY rowid DESC) AS row
+                FROM nu_test_results
+            )
 
-                LEFT JOIN stream AS s
-                ON r.suite = s.suite AND r.test = s.test
+        SELECT
+            r.suite,
+            r.test,
+            r.result,
+            COALESCE(s.output, '') AS output
 
-                -- The last result for each test given tests can pass then fail
-                WHERE r.row = 1
+        FROM results AS r
 
-                ORDER BY r.suite, r.test
-            " --params {
-                error_prefix: ({ prefix: "stderr" } | do $theme)
-                error_suffix: ({ suffix: "stderr" } | do $theme)
-            }
-    )
+        LEFT JOIN stream AS s
+        ON r.suite = s.suite AND r.test = s.test
+
+        -- Firstly take the last result for each test given tests can pass then fail
+        -- Secondly a condition is optionally used to filter the results
+        WHERE r.row = 1 $condition
+
+        ORDER BY r.suite, r.test
+    " | str replace "$condition" $condition
 }

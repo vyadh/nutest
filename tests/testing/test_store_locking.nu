@@ -2,13 +2,13 @@ use std/assert
 source ../../std/testing/store.nu
 
 # [before-all]
-def create_store []: record -> record {
+def create-store []: record -> record {
     create
     { }
 }
 
 # [after-all]
-def delete_store [] {
+def delete-store [] {
     delete
 }
 
