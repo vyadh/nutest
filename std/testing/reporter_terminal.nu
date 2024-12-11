@@ -53,27 +53,13 @@ def complete-test [theme: closure, event: record]: nothing -> nothing {
     let row = store query $theme
         | where suite == $event.suite and test == $event.test
         | first
-
-    let result = $row.result
-    let formatted = (format-result $result $theme)
+    let formatted = (format-result $row.result $theme)
 
     if ($row.result == "FAIL") {
-        print $"($formatted) ($suite) ($test)\n  (format-lines $row.output)"
+        print $"($formatted) ($suite) ($test)\n(indent $row.output)"
     } else {
         print $"($formatted) ($suite) ($test)"
     }
-}
-
-def success [] {
-    store success
-}
-
-def fire-result [row: record<suite: string, test: string, result: string>] {
-    store insert-result $row
-}
-
-def fire-output [row: record<suite: string, test: string, type: string, lines: list<string>>] {
-    store insert-output $row
 }
 
 def format-result [result: string, theme: closure]: nothing -> string {
@@ -85,10 +71,18 @@ def format-result [result: string, theme: closure]: nothing -> string {
     }
 }
 
-# TODO Would be better to normalise newlines above on the way in rather than here
-def format-lines [output: string]: nothing -> string {
-    $output
-        | str replace --all "\\n" "\n"
-        | str trim
-        | str replace --all "\n" "\n  "
+def indent [output: string]: nothing -> string {
+    "  " + ($output | str replace --all "\n" "\n  ")
+}
+
+def fire-result [row: record<suite: string, test: string, result: string>] {
+    store insert-result $row
+}
+
+def fire-output [row: record<suite: string, test: string, type: string, lines: list<string>>] {
+    store insert-output $row
+}
+
+def success [] {
+    store success
 }
