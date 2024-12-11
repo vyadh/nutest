@@ -73,7 +73,7 @@ export def success []: nothing -> bool {
     not $has_failures
 }
 
-export def query [theme: closure]: nothing -> table<suite: string, test: string, result: string, output: string, error: string> {
+export def query [theme: closure]: nothing -> table<suite: string, test: string, result: string, output: string> {
     # SQL doesn't have backslash escapes so we use `char(10)`, being newline (\n)
     (
         stor open

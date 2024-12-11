@@ -9,9 +9,9 @@ export def create [theme: closure]: nothing -> record {
         success: { success }
         results: { [] }
         fire-start: { |row| start-test $row }
-        fire-finish: { |row| complete-test $row }
-        fire-result: { |row| fire-result $theme $row }
-        fire-output: { |row| fire-output $theme $row }
+        fire-finish: { |row| complete-test $theme $row }
+        fire-result: { |row| fire-result $row }
+        fire-output: { |row| fire-output $row }
     }
 }
 
@@ -43,42 +43,36 @@ def count [key: string]: list -> int {
 }
 
 def start-test [row: record]: nothing -> nothing {
-    print $"Running test: ($row.suite) ($row.test)..."
 }
 
-def complete-test [row: record]: nothing -> nothing {
-    print $"...completed test: ($row.suite) ($row.test)"
+def complete-test [theme: closure, event: record]: nothing -> nothing {
+    let suite = { type: "suite", text: $event.suite } | do $theme
+    let test = { type: "test", text: $event.test } | do $theme
+
+    # TODO limit to suite and test in SQL query rather than get everything every time
+    let row = store query $theme
+        | where suite == $event.suite and test == $event.test
+        | first
+
+    let result = $row.result
+    let formatted = (format-result $result $theme)
+
+    if ($row.result == "FAIL") {
+        print $"($formatted) ($suite) ($test)\n  (format-lines $row.output)"
+    } else {
+        print $"($formatted) ($suite) ($test)"
+    }
 }
 
 def success [] {
     store success
 }
 
-def fire-result [theme: closure, row: record<suite: string, test: string, result: string>] {
+def fire-result [row: record<suite: string, test: string, result: string>] {
     store insert-result $row
-
-    let formatted = (format-result $row.result $theme)
-    let suite = { type: "suite", text: $row.suite } | do $theme
-    let test = { type: "test", text: $row.test } | do $theme
-    # TODO limit to suite and test in SQL query rather than get everything every time
-    let lines = store query $theme
-        | where $row.result == "FAIL"
-        | where $row.suite == $it.suite and $row.test == $it.test
-        | each { |row| $row.output }
-        | str join "\n"
-        | str replace --all "\\n" "\n"
-        | str trim
-        | str replace --all "\n" "\n  "
-        # TODO Would be better to normalise newlines above on the way in rather than here
-
-    if ($lines | is-not-empty) {
-        print $"($formatted) ($suite) ($test)\n  ($lines)"
-    } else {
-        print $"($formatted) ($suite) ($test)"
-    }
 }
 
-def fire-output [theme: closure, row: record<suite: string, test: string, type: string, lines: list<string>>] {
+def fire-output [row: record<suite: string, test: string, type: string, lines: list<string>>] {
     store insert-output $row
 }
 
@@ -89,4 +83,12 @@ def format-result [result: string, theme: closure]: nothing -> string {
         "FAIL" => ({ type: "fail", text: $result } | do $theme)
         _ => $result
     }
+}
+
+# TODO Would be better to normalise newlines above on the way in rather than here
+def format-lines [output: string]: nothing -> string {
+    $output
+        | str replace --all "\\n" "\n"
+        | str trim
+        | str replace --all "\n" "\n  "
 }
