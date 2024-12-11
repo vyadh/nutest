@@ -49,10 +49,7 @@ def complete-test [theme: closure, event: record]: nothing -> nothing {
     let suite = { type: "suite", text: $event.suite } | do $theme
     let test = { type: "test", text: $event.test } | do $theme
 
-    # TODO limit to suite and test in SQL query rather than get everything every time
-    let row = store query $theme
-        | where suite == $event.suite and test == $event.test
-        | first
+    let row = store query-test $event.suite $event.test $theme | first
     let formatted = (format-result $row.result $theme)
 
     if ($row.result == "FAIL") {
