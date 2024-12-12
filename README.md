@@ -4,6 +4,12 @@ A Nushell test runner.
 
 ![An example nu-test run](resources/test-run.png)
 
+*^ Tests are structured data that can be processed just like any other table.*
+
+![An example nu-test run](resources/test-run-terminal.png)
+
+*^ Terminal mode - test results appear as they complete.*
+
 ## Requirements
 
 Nushell 0.101.0 or later.
@@ -137,16 +143,17 @@ run-tests --fail
 ## Roadmap
 
 - Show fuller error text when not a matching error
-- Test report in standard format (cargo test JSON or nextest / JUnit XML)
-- Generate test coverage (in llvm-cov format to allow combining with Nushell coverage)
-- Allow custom reporters
-  - Also document use of store to translate from event to collected data.
-
-## Future Ideas
-
 - Highlight differences in output using background colours like a diff tool.
 - More sophisticated change display rather than simple assertion module output, e.g. differences in records and tables, perhaps displayed as tables
 - Fluent assertion module with pluggable matchers.
+- 
+- Test report in standard format (cargo test JSON or nextest / JUnit XML)
+- Generate test coverage (in llvm-cov format to allow combining with Nushell coverage)
+
+## Future Ideas
+
+- Allow custom reporters
+  - Also document use of store to translate from event to collected data.
 - Test timing.
 - Funky dynamic terminal UI.
 - Exclusions of suite and/or tests.

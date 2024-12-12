@@ -53,7 +53,7 @@ def complete-test [theme: closure, event: record]: nothing -> nothing {
     let row = store query-test $event.suite $event.test $theme | first
     let formatted = (format-result $row.result $theme)
 
-    if ($row.result == "FAIL") {
+    if ($row.output | is-not-empty) {
         print $"($formatted) ($suite) ($test)\n(indent $row.output)"
     } else {
         print $"($formatted) ($suite) ($test)"
