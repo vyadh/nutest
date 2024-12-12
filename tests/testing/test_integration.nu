@@ -141,16 +141,17 @@ def exit-on-fail-with-failing-tests [] {
 
 #[test]
 def useful-error-on-non-existent-path [] {
+    let missing_path = [(pwd), "non", "existant", "path"] | path join
     let result = (
         ^$nu.current-exe
             --no-config-file
             --commands $"
                 use std/testing *
-                run-tests --path /tmp/non/existent/path
+                run-tests --path ($missing_path)
             "
     ) | complete
 
-    assert str contains $result.stderr "Path doesn't exist: /tmp/non/existent/path"
+    assert str contains $result.stderr $"Path doesn't exist: ($missing_path)"
     assert equal $result.exit_code 1
 }
 
@@ -213,8 +214,11 @@ def with-terminal-reporter [] {
     # Sadly the ordering is indeterminate here so we need to sort
     assert equal ($results | sort-lines) ($"Running tests...
 ✅ (ansi green)PASS(ansi reset) (ansi light_blue)test_1(ansi reset) test_foo
+  oof
 ✅ (ansi green)PASS(ansi reset) (ansi light_blue)test_1(ansi reset) test_bar
+  (ansi yellow)rab(ansi reset)
 ✅ (ansi green)PASS(ansi reset) (ansi light_blue)test_2(ansi reset) test_baz
+  zab
 🚧 (ansi yellow)SKIP(ansi reset) (ansi light_blue)test_2(ansi reset) test_qux
 ❌ (ansi red)FAIL(ansi reset) (ansi light_blue)test_3(ansi reset) test_quux
   (ansi yellow)Ouch(ansi reset)
