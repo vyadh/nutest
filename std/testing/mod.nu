@@ -23,8 +23,9 @@ export def list-tests [
 # Discover and run annotated test commands.
 #
 # The results are returned based on the specified reporter, being one of:
-# - `decorated` (default): A table listing all tests with decorations and color.
-# - `table`: A table listing all test results without decorations/colour, useful for querying.
+# - `terminal` (default): Output test results as they complete as text.
+# - `table-pretty` (default): A table listing all tests with decorations and color.
+# - `table`: A table listing all test results as data, useful for querying.
 # - `summary`: A table with the total tests passed/failed/skipped.
 export def run-tests [
     --path: path           # Location of tests (defaults to current directory)
@@ -42,7 +43,7 @@ export def run-tests [
     let suite = $match_suites | default ".*"
     let test = $match_tests | default ".*"
     let threads = $threads | default (default-threads)
-    let reporter = select-reporter ($reporter | default "decorated")
+    let reporter = select-reporter ($reporter | default "terminal")
 
     # Discovered suites are of the type:
     # list<record<name: string, path: string, tests<table<name: string, type: string>>>
@@ -106,7 +107,7 @@ def check-path []: string -> string {
 
 def select-reporter [reporter: string]: nothing -> record<start: closure, complete: closure, success: closure, results: closure, fire-result: closure, fire-output: closure> {
     match $reporter {
-        "decorated" => {
+        "table-pretty" => {
             use theme.nu
             use reporter_table.nu
 

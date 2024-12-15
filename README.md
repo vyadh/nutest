@@ -155,7 +155,10 @@ run-tests --fail
 - Allow custom reporters
   - Also document use of store to translate from event to collected data.
 - Test timing.
-- Funky dynamic terminal UI.
+- Dynamic terminal UI, showing the currently executing suites and tests.
+  - This will resolve not being able to see the currently running tests in the terminal reporter
+  - Would include things like a progress bar, running total of completed, fails, skips, etc.
+  - If we save historical test run timings, we should also estimate time left
 - Exclusions of suite and/or tests.
 - File stem pattern for gobbing to allow running tests in any file not just test ones
 - Optionally allow running ignored tests.
