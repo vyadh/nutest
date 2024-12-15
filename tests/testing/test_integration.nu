@@ -209,9 +209,9 @@ def with-terminal-reporter [] {
     def test_oof [] { }
     " | save $test_file_3
 
-    let results = test-run-raw $"run-tests --reporter terminal --threads 1 --path ($temp)"
+    let results = test-run-raw $"run-tests --reporter terminal --path ($temp) --strategy { threads: 1 }"
 
-    # Sadly the ordering is indeterminate here so we need to sort
+    # The ordering of the suites is currently indeterminate so we need to sort lines
     assert equal ($results | sort-lines) ($"Running tests...
 ✅ (ansi green)PASS(ansi reset) (ansi light_blue)test_1(ansi reset) test_foo
   oof

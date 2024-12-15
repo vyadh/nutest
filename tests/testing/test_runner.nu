@@ -12,7 +12,7 @@ def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, 
             --commands $"
                 use std/testing/runner.nu *
                 source ($this_file)
-                nutest-299792458-execute-suite ($suite) 0 ($plan)
+                nutest-299792458-execute-suite { threads: 0 } ($suite) ($plan)
             "
     ) | complete
 
@@ -439,15 +439,16 @@ def signature-after-that-accepts-non-record [] {
     ]
 
     let result = test-run "suite" $plan |
-        where type in ["result"]
+        where type in ["result", "output"]
 
     assert equal $result [
         [suite test type payload];
+        # This is a suite-level failure generated outside the runner (the orchestrator outside this test).
+        # Short of doing additional error interception or pre-checking via
+        # `scope commands` there's not much we can do about this.
+        # We still test the output here however to capture unintended behaviour changes.
+        [ "suite", "signature-after-that-accepts-non-record", "output", { data: [{}] } ]
         [ "suite", "test", "result", { status: "FAIL" } ]
-        # The error message is not checked because it's generated from the core.
-        # Currently "Can't convert to Closure". This is not a great error message,
-        # however short of doing additional error interception or pre-checking via
-        # `scope commands` there's not much we can do.
     ]
 }
 

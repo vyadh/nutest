@@ -35,7 +35,7 @@ For now it support:
 
 For example:
 
-```nushell
+```nu
 use std assert
 
 #[before-each]
@@ -95,6 +95,8 @@ Will return:
 
 ## Current Features
 
+### Flexible Tests
+
 Supports tests scripts in flexible configurations:
 - Single file with both implementation and tests
 - Separate implementation and test files
@@ -102,18 +104,34 @@ Supports tests scripts in flexible configurations:
   - This would commonly be the case when using Nushell to test other things, such as for testing bash scripts, APIs, infrastructure. All the things Nushell is great at.
 - Nushell modules.
 
-Nushell scripts being tested can either be utilised from their public interface as a module via `use <test-file>.nu` or it's private interface by `source <test-file>.nu`.
+Nushell scripts being tested can either be utilised from their public interface as a module via `use <test-file>.nu` or testing their private interface by `source <test-file>.nu`.
 
-Fast. Runs test suites (a file of tests) and each test in parallel with minimal Nu subshells.
+### Context and Setup/Teardown
 
-Allows before/after each/all to generate context for each test.
+Specify before/after for each test via `[before-each]` and `[after-each]` annotations, or for all tests via `[before-all]` and `[after-all]`.
 
-Emits tests as a table of results that can be processed like normal Nu data. For example, you can filter the results to show only failed tests using:
+These setup/teardown commands can also be used to generate contexts used by each test, see Writing Tests section for ane example.
+
+### Filtering
+
+Allows filter of suites and tests to run via a pattern, such as:
+```nu
+run-tests --match-suites api --match-tests test[0-9]
+```
+This will run all files that include `api` in the name and tests that contain `test` followed by a digit.
+
+### Reporting
+
+By default, there is the terminal reporter that outputs the test results as they complete. This is useful for long-running tests where you want to see the results as they happen.
+
+It is also possible to emit test results as a normal data table that can be processed like other Nushell data. For example, you can filter the results to show only failed tests using:
 ```nu
 run-tests --reporter table | where result == FAIL
 ```
 
-Provides a reporter that just shows the summary of the test run:
+See screenshots above for examples of the output (in that case using `--reporter table-pretty`).
+
+Finally, there is a reporter that just shows the summary of the test run:
 ```nu
 run-tests --reporter summary
 ```
@@ -127,31 +145,57 @@ Will return:
 ╰─────────┴────╯
 ```
 
-Allows filter of suites and tests to run via a pattern, such as:
-```nu
-run-tests --match-suites api --match-tests test[0-9]
-```
-This will run all files that include `api` in the name and tests that start with `test` followed by a digit.
+### Test Output
 
-Capture and display stdout and stderr in output for debugging.
+Output from the `print` command to stdout and stderr will be captured and shown against test results, which is useful for debugging failing tests.
+
+### CI/CD Support
 
 In normal operation the tests will be run and the results will be returned as a table with the exit code always set to 0. To avoid manually checking the results, the `--fail` flag can be used to set the exit code to 1 if any tests fail. In this mode, the test results will be printed in the default format and cannot be interrogated.
+
 ```nu
 run-tests --fail
 ```
 
+This is useful for CI/CD pipelines where it is desirable to fail the current
+job. However, note that using this directly in your shell will exit your shell session!
+
+### Concurrency
+
+Tests written in Nutest are run concurrently by default.
+
+This is a good design constraint for self-contained tests that run efficiently. The default concurrency strategy is geared for CPU-bound tests, maximising the use of available CPU cores. However, some cases may need adjustment to run efficiently. For example, IO-bound tests may benefit from lower concurrency and tests waiting on external resources may benefit by not being limited to the available CPU cores.
+
+The level of concurrency adjusted or even disabled by specifying the `--strategy { threads: <n> }` option to the `run-tests` command, where <n> is the number of concurrently executing machine threads. The default is handling the concurrency automatically.
+
+See the Concurrency section under How Does It Work? for more details.
+
+The concurrency level can also be specified at the suite-level by way of a `strategy` annotation. For example, the following strategy will run all tests in the suite sequentially:
+
+```nu
+#[strategy]
+def threads []: nothing -> record {
+  { threads: 1 }
+}
+```
+
+This would be beneficial in a project where most tests should run concurrently by default, but a subset perhaps require an expensive resource to be created, or one that requires exclusive access.
+
 ## Roadmap
 
 - Show fuller error text when not a matching error
-- Highlight differences in output using background colours like a diff tool.
-- More sophisticated change display rather than simple assertion module output, e.g. differences in records and tables, perhaps displayed as tables
+- Test execution of external tools wrt to terminal output
+  - This might need to be flagged to run in a separate process?
 - Fluent assertion module with pluggable matchers.
+- GitHub Actions for nu-test itself
 - 
 - Test report in standard format (cargo test JSON or nextest / JUnit XML)
 - Generate test coverage (in llvm-cov format to allow combining with Nushell coverage)
 
 ## Future Ideas
 
+- More sophisticated change display rather than simple assertion module output, e.g. differences in records and tables, perhaps displayed as tables
+  - Perhaps highlight differences in output using background colours like a diff tool.
 - Allow custom reporters
   - Also document use of store to translate from event to collected data.
 - Test timing.
@@ -190,7 +234,7 @@ Collate all events for all suites and tests being run print the test results tab
 
 ### Concurrency
 
-Tests written in Nutest are run concurrently by default. Assuming your tests need to run in parallel is a good design constraint for self-contained tests that run efficiently. However, if this is not practical, this can be disabled by specifying the `--threads=1` option to the `test` command.
+Nutest runs both test suites (a file of tests) and each test in parallel with minimal Nu subshells.
 
 There are two levels of concurrency used in Nutest, leveraging `par-each`, where the following are run concurrently:
 - Suites (file of tests).

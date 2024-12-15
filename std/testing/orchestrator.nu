@@ -16,13 +16,23 @@ use std/assert
 #     path: string
 #     tests: list<test>
 # }
-export def run-suites [reporter: record, threads: int]: list<record> -> nothing {
-    $in | par-each --threads $threads { |suite|
-        run-suite $reporter $threads $suite.name $suite.path $suite.tests
+export def run-suites [
+    reporter: record,
+    strategy: record<threads: int>
+]: list<record<name: string, path: string, tests: table>> -> nothing {
+
+    $in | par-each --threads $strategy.threads { |suite|
+        run-suite $reporter $strategy $suite.name $suite.path $suite.tests
     }
 }
 
-def run-suite [reporter: record, threads: int, suite: string, path: string, tests: table<name: string, type: string>] {
+def run-suite [
+    reporter: record
+    strategy: record<threads: int>
+    suite: string
+    path: string
+    tests: table<name: string, type: string>
+] {
     let plan_data = create-suite-plan-data $tests
 
     let result = (
@@ -31,7 +41,7 @@ def run-suite [reporter: record, threads: int, suite: string, path: string, test
             --commands $"
                 use (runner-module) *
                 source ($path)
-                nutest-299792458-execute-suite ($suite) ($threads) ($plan_data)
+                nutest-299792458-execute-suite ($strategy | to nuon) ($suite) ($plan_data)
             "
     ) | complete
 

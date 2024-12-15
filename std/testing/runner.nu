@@ -19,16 +19,25 @@
 
 # Note: The below commands all have a prefix to avoid possible conflicts with user test files.
 
-export def nutest-299792458-execute-suite [suite: string, threads: int, suite_data: list] {
+export def nutest-299792458-execute-suite [
+    strategy: record<threads: int>
+    suite: string
+    suite_data: list
+] {
+
     with-env { NU_TEST_SUITE_NAME: $suite } {
-        nutest-299792458-execute-suite-internal $threads $suite_data
+        nutest-299792458-execute-suite-internal $strategy $suite_data
     }
 
     # Don't output any result
     null
 }
 
-def nutest-299792458-execute-suite-internal [threads: int, suite_data: list] {
+def nutest-299792458-execute-suite-internal [
+    strategy: record<threads: int>
+    suite_data: list
+] {
+
     let plan = $suite_data | group-by type
 
     def get-or-empty [key: string]: list -> list {
@@ -47,7 +56,7 @@ def nutest-299792458-execute-suite-internal [threads: int, suite_data: list] {
 
     try {
         let context_all = { } | nutest-299792458-execute-before $before_all
-        $tests | nutest-299792458-execute-tests $threads $context_all $before_each $after_each
+        $tests | nutest-299792458-execute-tests $strategy $context_all $before_each $after_each
         $context_all | nutest-299792458-execute-after $after_all
     } catch { |error|
         # This should only happen when before/after all fails, so mark all tests failed
@@ -57,7 +66,7 @@ def nutest-299792458-execute-suite-internal [threads: int, suite_data: list] {
 }
 
 def nutest-299792458-execute-tests [
-    threads: int
+    strategy: record<threads: int>
     context_all: record
     before_each: list
     after_each: list
@@ -65,7 +74,7 @@ def nutest-299792458-execute-tests [
 
     let tests = $in
 
-    $tests | par-each --threads $threads { |test|
+    $tests | par-each --threads $strategy.threads { |test|
         # Allow print output to be associated with specific tests by adding name to the environment
         with-env { NU_TEST_NAME: $test.name } {
             nutest-299792458-emit "start" { }
