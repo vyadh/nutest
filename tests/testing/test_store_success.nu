@@ -1,18 +1,27 @@
 use std/assert
 source ../../std/testing/store.nu
 
-# Note: Using isolated suite to avoid concurrency conflicts with other tests
-# Note: Tests for results are done in test_orchestrator and test_integration
+# [strategy]
+def sequential []: nothing -> record {
+    { threads: 1 }
+}
 
-# [before-all]
+# [before-each]
 def create-store []: record -> record {
     create
     { }
 }
 
-# [after-all]
+# [after-each]
 def delete-store [] {
     delete
+}
+
+# [test]
+def result-success-when-no-tests [] {
+    let result = success
+
+    assert equal $result true
 }
 
 # [test]
@@ -24,4 +33,14 @@ def result-failure-when-failing-tests [] {
     let result = success
 
     assert equal $result false
+}
+
+# [test]
+def result-success-when-only-passing-tests [] {
+    insert-result { suite: "suite", test: "pass1", result: "PASS" }
+    insert-result { suite: "suite", test: "pass2", result: "PASS" }
+
+    let result = success
+
+    assert equal $result true
 }

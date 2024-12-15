@@ -166,7 +166,7 @@ Tests written in Nutest are run concurrently by default.
 
 This is a good design constraint for self-contained tests that run efficiently. The default concurrency strategy is geared for CPU-bound tests, maximising the use of available CPU cores. However, some cases may need adjustment to run efficiently. For example, IO-bound tests may benefit from lower concurrency and tests waiting on external resources may benefit by not being limited to the available CPU cores.
 
-The level of concurrency adjusted or even disabled by specifying the `--strategy { threads: <n> }` option to the `run-tests` command, where <n> is the number of concurrently executing machine threads. The default is handling the concurrency automatically.
+The level of concurrency adjusted or even disabled by specifying the `--strategy { threads: <n> }` option to the `run-tests` command, where `<n>` is the number of concurrently executing machine threads. The default is handling the concurrency automatically.
 
 See the Concurrency section under How Does It Work? for more details.
 
@@ -179,7 +179,7 @@ def threads []: nothing -> record {
 }
 ```
 
-This would be beneficial in a project where most tests should run concurrently by default, but a subset perhaps require an expensive resource to be created, or one that requires exclusive access.
+This would be beneficial in a project where most tests should run concurrently by default, but a subset perhaps require exclusive access to a resource, or one that needs resetting on a per-test basis.
 
 ## Roadmap
 

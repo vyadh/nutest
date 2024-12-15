@@ -20,13 +20,13 @@
 # Note: The below commands all have a prefix to avoid possible conflicts with user test files.
 
 export def nutest-299792458-execute-suite [
-    strategy: record<threads: int>
+    default_strategy: record<threads: int>
     suite: string
     suite_data: list
 ] {
 
     with-env { NU_TEST_SUITE_NAME: $suite } {
-        nutest-299792458-execute-suite-internal $strategy $suite_data
+        nutest-299792458-execute-suite-internal $default_strategy $suite_data
     }
 
     # Don't output any result
@@ -34,16 +34,21 @@ export def nutest-299792458-execute-suite [
 }
 
 def nutest-299792458-execute-suite-internal [
-    strategy: record<threads: int>
+    default_strategy: record<threads: int>
     suite_data: list
 ] {
 
     let plan = $suite_data | group-by type
 
+    def find-or-default [key: string, default: record]: list -> record {
+        let values = $in | get --ignore-errors $key
+        if ($values | is-empty) { $default } else { $values | first }
+    }
     def get-or-empty [key: string]: list -> list {
         $in | get --ignore-errors $key | default []
     }
 
+    let strategy = $plan | find-or-default "strategy" { execute: { {} } } # Closure in record
     let before_all = $plan | get-or-empty "before-all"
     let before_each = $plan | get-or-empty "before-each"
     let after_each = $plan | get-or-empty "after-each"
@@ -55,11 +60,12 @@ def nutest-299792458-execute-suite-internal [
     nutest-299792458-force-result $ignored "SKIP"
 
     try {
+        let strategy = $default_strategy | merge (do $strategy.execute)
         let context_all = { } | nutest-299792458-execute-before $before_all
         $tests | nutest-299792458-execute-tests $strategy $context_all $before_each $after_each
         $context_all | nutest-299792458-execute-after $after_all
     } catch { |error|
-        # This should only happen when before/after all fails, so mark all tests failed
+        # This should only happen when strategy or before/after all fails, so mark all tests failed
         # Each test run has its own exception handling so is not expected to trigger this
         nutest-299792458-force-error $tests $error
     }
