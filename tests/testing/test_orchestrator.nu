@@ -5,6 +5,7 @@ use ../../std/testing/orchestrator.nu [
 ]
 use ../../std/testing/store.nu
 use ../../std/testing/reporter_table.nu
+use ../../std/testing/theme.nu
 
 #[test]
 def validate-test-plan [] {
@@ -33,43 +34,27 @@ def trim []: string -> string {
 # Since we only have one database it needs to be created once before all tests.
 # We also need to ensure we narrow down results to the unique ones used in each test.
 def reporter-setup []: nothing -> record {
-    let reporter = reporter_table create (nop-theme)
+    let reporter = reporter_table create (theme none)
     do $reporter.start
-
-    {
-        reporter: $reporter
-    }
-}
-
-def nop-theme []: nothing -> closure {
-    {
-        match $in {
-            { type: _, text: $text } => $text
-            { prefix: _ } => ''
-            { suffix: _ } => ''
-        }
-    }
-}
-
-# [before-each]
-def setup-temp-dir []: nothing -> record {
-    let temp = mktemp --tmpdir --directory
-
-    {
-        temp: $temp
-    }
-}
-
-# [after-each]
-def cleanup [] {
-    let context = $in
-    rm --recursive $context.temp
+    { reporter: $reporter }
 }
 
 # [after-all]
 def reporter-complete [] {
     let reporter = $in.reporter
     do $reporter.complete
+}
+
+# [before-each]
+def setup-temp-dir []: nothing -> record {
+    let temp = mktemp --tmpdir --directory
+    { temp: $temp }
+}
+
+# [after-each]
+def cleanup-temp-dir [] {
+    let context = $in
+    rm --recursive $context.temp
 }
 
 # [test]
