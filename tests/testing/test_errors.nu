@@ -9,14 +9,14 @@ def sequential []: nothing -> record {
     { threads: 1 }
 }
 
-# [before-each]
+# [before-all]
 def reporter-setup []: nothing -> record {
     let reporter = reporter_table create (theme none)
     do $reporter.start
     { reporter: $reporter }
 }
 
-# [after-each]
+# [after-all]
 def reporter-complete [] {
     let reporter = $in.reporter
     do $reporter.complete
@@ -48,28 +48,38 @@ def assertion-failure [] {
     " | trim-all)
 }
 
-def test-run [test: string]: record -> string {
+# [test]
+def basic-error [] {
+    let test = "error make { msg: 'some error' }"
+
+    let output = $in | test-run $test
+
+    assert equal $output "some error"
+}
+
+def test-run [code: string]: record -> string {
     let context = $in
     let temp = $context.temp
 
-    let suite = $test | create-suite $temp
+    let test = random chars
+    let suite = $code | create-suite $temp $test
     let reporter = $context.reporter
 
     [$suite] | orchestrator run-suites $reporter { threads: 1 }
     let results = do $reporter.results
-    let result = $results | first
+    let result = $results | where test == $test | first
 
     assert equal $result.result "FAIL"
 
     $result.output
 }
 
-def create-suite [temp: string]: string -> record {
+def create-suite [temp: string, test: string]: string -> record {
     let path = $temp | path join $"suite.nu"
 
     $"
         use std/assert
-        def test-name [] {
+        def ($test) [] {
             ($in)
         }
     " | save --append $path
@@ -77,7 +87,7 @@ def create-suite [temp: string]: string -> record {
     {
         name: "suite"
         path: $path
-        tests: [{ name: "test-name", type: "test" }]
+        tests: [{ name: $test, type: "test" }]
     }
 }
 

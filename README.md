@@ -183,6 +183,7 @@ This would be beneficial in a project where most tests should run concurrently b
 
 ## Roadmap
 
+- Handle output from before/after all (ignore it?)
 - Show fuller error text when not a matching error
 - Test execution of external tools wrt to terminal output
   - This might need to be flagged to run in a separate process?
