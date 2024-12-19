@@ -18,7 +18,7 @@ use std/assert
 # }
 export def run-suites [
     reporter: record,
-    strategy: record<threads: int>
+    strategy: record
 ]: list<record<name: string, path: string, tests: table>> -> nothing {
 
     $in | par-each --threads $strategy.threads { |suite|
@@ -28,7 +28,7 @@ export def run-suites [
 
 def run-suite [
     reporter: record
-    strategy: record<threads: int>
+    strategy: record
     suite: string
     path: string
     tests: table<name: string, type: string>

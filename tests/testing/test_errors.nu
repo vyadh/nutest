@@ -3,12 +3,6 @@ use ../../std/testing/orchestrator.nu
 use ../../std/testing/reporter_table.nu
 use ../../std/testing/theme.nu
 
-# [strategy]
-# Database is global so we need to run tests sequentially.
-def sequential []: nothing -> record {
-    { threads: 1 }
-}
-
 # [before-all]
 def reporter-setup []: nothing -> record {
     let reporter = reporter_table create (theme none)
@@ -54,18 +48,40 @@ def basic-error [] {
 
     let output = $in | test-run $test
 
-    assert equal $output "some error"
+    assert str contains $output "some error"
 }
 
-def test-run [code: string]: record -> string {
+# [test]
+def rendered-error [] {
+    let test = "
+        let variable = 'span source'
+
+        error make {
+            msg: 'a decorated error'
+            label: {
+                text: 'happened here'
+                span: (metadata $variable).span
+            }
+            help: 'some help'
+        }"
+
+    let output = $in | test-run $test { error_format: "rendered" }
+
+    assert str contains $output "a decorated error"
+    assert str contains $output "happened here"
+    assert str contains $output "some help"
+}
+
+def test-run [code: string, strategy: record = { }]: record -> string {
     let context = $in
     let temp = $context.temp
+    let strategy = { threads: 1, error_format: "compact" } | merge $strategy
 
     let test = random chars
     let suite = $code | create-suite $temp $test
     let reporter = $context.reporter
 
-    [$suite] | orchestrator run-suites $reporter { threads: 1 }
+    [$suite] | orchestrator run-suites $reporter $strategy
     let results = do $reporter.results
     let result = $results | where test == $test | first
 

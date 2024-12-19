@@ -131,7 +131,7 @@ def exit-on-fail-with-failing-tests [] {
             --no-config-file
             --commands $"
                 use std/testing *
-                run-tests --reporter table --path ($temp) --fail
+                run-tests --reporter table --path ($temp) --fail --strategy { error_format: compact }
             "
     ) | complete
 
@@ -209,7 +209,7 @@ def with-terminal-reporter [] {
     def test_oof [] { }
     " | save $test_file_3
 
-    let results = test-run-raw $"run-tests --reporter terminal --path ($temp) --strategy { threads: 1 }"
+    let results = test-run-raw $"run-tests --reporter terminal --path ($temp) --strategy { threads: 1, error_format: compact }"
 
     # The ordering of the suites is currently indeterminate so we need to sort lines
     assert equal ($results | sort-lines) ($"Running tests...

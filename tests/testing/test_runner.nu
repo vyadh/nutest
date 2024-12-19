@@ -12,7 +12,7 @@ def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, 
             --commands $"
                 use std/testing/runner.nu *
                 source ($this_file)
-                nutest-299792458-execute-suite { threads: 0 } ($suite) ($plan)
+                nutest-299792458-execute-suite { threads: 0, error_format: compact } ($suite) ($plan)
             "
     ) | complete
 

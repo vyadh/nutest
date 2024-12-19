@@ -293,7 +293,7 @@ def test-run [context: record]: list<record> -> list<record> {
     let suites = $in
     let reporter = $context.reporter
 
-    $suites | run-suites $reporter { threads: 1 }
+    $suites | run-suites $reporter { threads: 1, error_format: "compact" }
 
     let results = do $reporter.results
     $results | where suite in ($suites | get name)

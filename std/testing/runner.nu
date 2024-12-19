@@ -20,7 +20,7 @@
 # Note: The below commands all have a prefix to avoid possible conflicts with user test files.
 
 export def nutest-299792458-execute-suite [
-    default_strategy: record<threads: int>
+    default_strategy: record<threads: int, error_format: string>
     suite: string
     suite_data: list
 ] {
@@ -34,7 +34,7 @@ export def nutest-299792458-execute-suite [
 }
 
 def nutest-299792458-execute-suite-internal [
-    default_strategy: record<threads: int>
+    default_strategy: record<threads: int, error_format: string>
     suite_data: list
 ] {
 
@@ -67,12 +67,12 @@ def nutest-299792458-execute-suite-internal [
     } catch { |error|
         # This should only happen when strategy or before/after all fails, so mark all tests failed
         # Each test run has its own exception handling so is not expected to trigger this
-        nutest-299792458-force-error $tests $error
+        nutest-299792458-force-error $default_strategy $tests $error
     }
 }
 
 def nutest-299792458-execute-tests [
-    strategy: record<threads: int>
+    strategy: record<threads: int, error_format: string>
     context_all: record
     before_each: list
     after_each: list
@@ -84,17 +84,23 @@ def nutest-299792458-execute-tests [
         # Allow print output to be associated with specific tests by adding name to the environment
         with-env { NU_TEST_NAME: $test.name } {
             nutest-299792458-emit "start" { }
-            nutest-299792458-execute-test $context_all $before_each $after_each $test
+            nutest-299792458-execute-test $strategy $context_all $before_each $after_each $test
             nutest-299792458-emit "finish" { }
         }
     }
 }
 
-def nutest-299792458-execute-test [context_all: record, before_each: list, after_each: list, test: record] {
+def nutest-299792458-execute-test [
+    strategy: record<error_format: string>
+    context_all: record
+    before_each: list
+    after_each: list
+    test: record
+] {
     let context = try {
         $context_all | nutest-299792458-execute-before $before_each
     } catch { |error|
-        nutest-299792458-fail $error
+        nutest-299792458-fail $strategy $error
         return
     }
 
@@ -103,7 +109,7 @@ def nutest-299792458-execute-test [context_all: record, before_each: list, after
         nutest-299792458-emit "result" { status: "PASS" }
         # Note that although we have emitted PASS the after-each may still fail (see below)
     } catch { |error|
-        nutest-299792458-fail $error
+        nutest-299792458-fail $strategy $error
     }
 
     try {
@@ -112,7 +118,7 @@ def nutest-299792458-execute-test [context_all: record, before_each: list, after
         # It's possible to get a test PASS above then emit FAIL when processing after-each.
         # This needs to be handled by the reporter. We could work around it here, but since we have
         # to handle for after-all outside concurrent processing of tests anyway this is simpler.
-        nutest-299792458-fail $error
+        nutest-299792458-fail $strategy $error
     }
 }
 
@@ -126,8 +132,8 @@ def nutest-299792458-force-result [tests: list, status: string] {
     }
 }
 
-def nutest-299792458-force-error [tests: list, error: record] {
-    let formatted = (nutest-299792458-format-error $error)
+def nutest-299792458-force-error [strategy: record<error_format: string>, tests: list, error: record] {
+    let formatted = (nutest-299792458-format-error $strategy $error)
     for test in $tests {
         with-env { NU_TEST_NAME: $test.name } {
             nutest-299792458-emit "start" { }
@@ -157,12 +163,20 @@ def nutest-299792458-execute-after [items: list]: record -> nothing {
     }
 }
 
-def nutest-299792458-fail [error: record] {
+def nutest-299792458-fail [strategy: record<error_format: string>, error: record] {
     nutest-299792458-emit "result" { status: "FAIL" }
-    print -e ...(nutest-299792458-format-error $error)
+    print -e ...(nutest-299792458-format-error $strategy $error)
 }
 
-def nutest-299792458-format-error [error: record]: nothing -> list<string> {
+def nutest-299792458-format-error [
+    strategy: record<error_format: string>
+    error: record
+]: nothing -> list<string> {
+    # The rendered error has useful information for terminal mode but is much for table-based reporters
+    if $strategy.error_format == "rendered" {
+        return [$error.rendered]
+    }
+
     let json = $error.json | from json
     let message = $json.msg
     let help = $json | get help?

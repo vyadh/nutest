@@ -149,6 +149,20 @@ Will return:
 
 Output from the `print` command to stdout and stderr will be captured and shown against test results, which is useful for debugging failing tests.
 
+### Error Reporting
+
+When reporting in a table, a compacted version of errors will be shown without the source details to better fit on screen. For more detailed error messages, use the terminal reporter
+or supply the `--strategy { error_format: "rendered" }` option to the `run-tests` command.
+
+As a strategy, this can also be overwritten within a suite. For example, the following strategy will always show the full error message for all tests in the suite:
+
+```nu
+#[strategy]
+def error_format []: nothing -> record {
+  { error_format: "rendered" }
+}
+```
+
 ### CI/CD Support
 
 In normal operation the tests will be run and the results will be returned as a table with the exit code always set to 0. To avoid manually checking the results, the `--fail` flag can be used to set the exit code to 1 if any tests fail. In this mode, the test results will be printed in the default format and cannot be interrogated.
@@ -184,12 +198,10 @@ This would be beneficial in a project where most tests should run concurrently b
 ## Roadmap
 
 - Handle output from before/after all (ignore it?)
-- Show fuller error text when not a matching error
 - Test execution of external tools wrt to terminal output
   - This might need to be flagged to run in a separate process?
 - Fluent assertion module with pluggable matchers.
 - GitHub Actions for nu-test itself
-- 
 - Test report in standard format (cargo test JSON or nextest / JUnit XML)
 - Generate test coverage (in llvm-cov format to allow combining with Nushell coverage)
 

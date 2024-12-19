@@ -31,7 +31,7 @@ export def run-tests [
     --path: path           # Location of tests (defaults to current directory)
     --match-suites: string # Regular expression to match against suite names (defaults to all)
     --match-tests: string  # Regular expression to match against test names (defaults to all)
-    --strategy: record<threads: int> # Number of threads used to run tests (defaults to automatic concurrency))
+    --strategy: record     # Override test run behaviour, such as test concurrency (defaults to automatic)
     --reporter: string     # The reporter used for test result output
     --fail                 # Print results and exit with non-zero status if any tests fail (useful for CI/CD systems)
 ]: nothing -> any {
@@ -42,8 +42,9 @@ export def run-tests [
     let path = $path | default $env.PWD | check-path
     let suite = $match_suites | default ".*"
     let test = $match_tests | default ".*"
-    let strategy = $strategy | default (default-strategy)
-    let reporter = select-reporter ($reporter | default "terminal")
+    let reporter = $reporter | default "terminal"
+    let strategy = (default-strategy $reporter) | merge ($strategy | default { })
+    let reporter = select-reporter $reporter
 
     # Discovered suites are of the type:
     # list<record<name: string, path: string, tests<table<name: string, type: string>>>
@@ -69,13 +70,19 @@ export def run-tests [
     }
 }
 
-def default-strategy []: nothing -> record<threads: int> {
-    # Rather than using `sys cpu` (an expensive operation), platform-specific
-    # mechanisms, or complicating the code with different invocations of par-each,
-    # we can leverage that Rayon's default behaviour can be activated by setting
-    # the number of threads to 0. See [ThreadPoolBuilder.num_threads](https://docs.rs/rayon/latest/rayon/struct.ThreadPoolBuilder.html#method.num_threads).
-    # This is also what the par-each implementation does.
-    { threads: 0 }
+def default-strategy [reporter: string]: nothing -> record<threads: int> {
+    {
+        # Rather than using `sys cpu` (an expensive operation), platform-specific
+        # mechanisms, or complicating the code with different invocations of par-each,
+        # we can leverage that Rayon's default behaviour can be activated by setting
+        # the number of threads to 0. See [ThreadPoolBuilder.num_threads](https://docs.rs/rayon/latest/rayon/struct.ThreadPoolBuilder.html#method.num_threads).
+        # This is also what the par-each implementation does.
+        threads: 0
+
+        # Normal rendered errors have useful information for terminal mode,
+        # but don't fit well for table-based reporters
+        error_format: (if $reporter == "terminal" { "rendered" } else { "compact" })
+    }
 }
 
 def filter-tests [
