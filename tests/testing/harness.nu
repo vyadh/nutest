@@ -30,8 +30,8 @@ export def cleanup-test []: record -> nothing {
     }
 }
 
-export def run-code [
-    code: string
+export def run [
+    code: closure
     strategy: record = { }
 ]: record<reporter: record, temp_dir: string> -> record<result: string, output: string> {
 
@@ -41,7 +41,7 @@ export def run-code [
     let strategy = { threads: 1, error_format: "compact" } | merge $strategy
 
     let test = random chars
-    let suite = $code | create-suite $temp $test
+    let suite = $code | create-closure-suite $temp $test
     [$suite] | orchestrator run-suites $reporter $strategy
     let results = do $reporter.results
     let result = $results | where test == $test | first
@@ -49,13 +49,14 @@ export def run-code [
     $result
 }
 
-def create-suite [temp: string, test: string]: string -> record {
+def create-closure-suite [temp: string, test: string]: closure -> record {
     let path = $temp | path join $"suite.nu"
+    let code = view source $in
 
     $"
         use std/assert
         def ($test) [] {
-            ($in)
+            do ($code)
         }
     " | save --append $path
 

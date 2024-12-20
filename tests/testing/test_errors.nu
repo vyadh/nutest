@@ -23,9 +23,11 @@ def cleanup-temp-dir []: record -> nothing {
 
 # [test]
 def assertion-failure [] {
-    let test = "assert equal 1 2"
+    let test = {
+        assert equal 1 2
+    }
 
-    let output = $in | test-run $test
+    let output = $in | run $test
 
     assert equal ($output | trim-all) ("
         Assertion failed.
@@ -37,16 +39,18 @@ def assertion-failure [] {
 
 # [test]
 def basic-error [] {
-    let test = "error make { msg: 'some error' }"
+    let test = {
+        error make { msg: 'some error' }
+    }
 
-    let output = $in | test-run $test
+    let output = $in | run $test
 
     assert str contains $output "some error"
 }
 
 # [test]
 def rendered-error [] {
-    let test = "
+    let test = {
         let variable = 'span source'
 
         error make {
@@ -56,17 +60,23 @@ def rendered-error [] {
                 span: (metadata $variable).span
             }
             help: 'some help'
-        }"
+        }
+    }
 
-    let output = $in | test-run $test { error_format: "rendered" }
+    let strategy = { error_format: "rendered" }
+    let output = $in | run $test $strategy
 
     assert str contains $output "a decorated error"
     assert str contains $output "happened here"
     assert str contains $output "some help"
 }
 
-def test-run [code: string, strategy: record = { }]: record -> string {
-    let result = $in | harness run-code $code $strategy
+def run [code: closure, strategy: record = { }]: record -> string {
+    let result = $in | harness run $code $strategy
     assert equal $result.result "FAIL"
     $result.output
+}
+
+def trim-all []: string -> string {
+    $in | str trim | str replace --all --regex '[\n\t ]+' ' '
 }
