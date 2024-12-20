@@ -195,7 +195,8 @@ This would be beneficial in a project where most tests should run concurrently b
 
 ## Roadmap
 
-- Handle output from before/after all (ignore it?)
+- Handling of data formats and flexible rendering
+- Handle output from before/after all (ignore it? repeat for every test? custom event?)
 - Test execution of external tools wrt to terminal output
   - This might need to be flagged to run in a separate process?
 - Fluent assertion module with pluggable matchers.

@@ -1,10 +1,11 @@
-# A harness for running tests against nutest itself.
-
 use ../../std/testing/orchestrator.nu
 use ../../std/testing/reporter_table.nu
 use ../../std/testing/theme.nu
 
-export def start-tests []: nothing -> record {
+# A harness for running tests against nutest itself.
+
+# Encapsulate before-all behaviour
+export def setup-tests []: nothing -> record {
     let reporter = reporter_table create (theme none)
     do $reporter.start
     $in | merge {
@@ -12,18 +13,21 @@ export def start-tests []: nothing -> record {
     }
 }
 
-export def tests-complete []: record<reporter: record> -> nothing {
+# Encapsulate after-all behaviour
+export def cleanup-tests []: record<reporter: record> -> nothing {
     let reporter = $in.reporter
     do $reporter.complete
 }
 
-export def with-temp-dir []: record -> record {
+# Encapsulate before-each behaviour
+export def setup-test []: record -> record {
     $in | merge {
         reporter: $in.reporter
         temp_dir: (mktemp --tmpdir --directory)
     }
 }
 
+# Encapsulate after-each behaviour
 export def cleanup-test []: record -> nothing {
     if $in.temp_dir? != null {
         rm --recursive $in.temp_dir

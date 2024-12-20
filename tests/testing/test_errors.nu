@@ -2,22 +2,22 @@ use std/assert
 use harness.nu
 
 # [before-all]
-def reporter-setup []: record -> record {
-    $in | harness start-tests
+def setup-tests []: record -> record {
+    $in | harness setup-tests
 }
 
 # [after-all]
-def reporter-complete []: record -> nothing {
-    $in | harness tests-complete
+def cleanup-tests []: record -> nothing {
+    $in | harness cleanup-tests
 }
 
 # [before-each]
-def setup-temp-dir []: record -> record {
-    $in | harness with-temp-dir
+def setup-test []: record -> record {
+    $in | harness setup-test
 }
 
 # [after-each]
-def cleanup-temp-dir []: record -> nothing {
+def cleanup-test []: record -> nothing {
     $in | harness cleanup-test
 }
 
@@ -39,18 +39,18 @@ def assertion-failure [] {
 
 # [test]
 def basic-error [] {
-    let test = {
+    let code = {
         error make { msg: 'some error' }
     }
 
-    let output = $in | run $test
+    let output = $in | run $code
 
     assert str contains $output "some error"
 }
 
 # [test]
 def full-rendered-error [] {
-    let test = {
+    let code = {
         let variable = 'span source'
 
         error make {
@@ -64,7 +64,7 @@ def full-rendered-error [] {
     }
 
     let strategy = { error_format: "rendered" }
-    let output = $in | run $test $strategy
+    let output = $in | run $code $strategy
 
     assert str contains $output "a decorated error"
     assert str contains $output "happened here"
@@ -73,7 +73,7 @@ def full-rendered-error [] {
 
 # [test]
 def full-compact-error [] {
-    let test = {
+    let code = {
         let variable = 'span source'
 
         error make {
@@ -87,7 +87,7 @@ def full-compact-error [] {
     }
 
     let strategy = { error_format: "compact" }
-    let output = $in | run $test $strategy
+    let output = $in | run $code $strategy
 
     assert equal $output "a decorated error\nsome help"
 }

@@ -213,7 +213,12 @@ alias nutest-299792458-print = print
 # Override the print command to provide context for output
 export def print [--stderr (-e), --raw (-r), --no-newline (-n), ...rest: any] {
     let type = if $stderr { "error" } else { "output" }
-    nutest-299792458-emit $type { data: $rest }
+
+    # We need to encode the data to avoid newlines in output/error breaking the stream
+    # This avoids hacks to selectively remove newlines from potentially nested structures
+    let encoded = $rest | to nuon --raw | encode base64
+
+    nutest-299792458-emit $type { data: $encoded }
 }
 
 def nutest-299792458-emit [type: string, payload: record] {

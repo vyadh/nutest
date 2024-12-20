@@ -47,6 +47,7 @@ def run-suite [
 
     # Useful for understanding event stream
     #print $'($plan_data)'
+    #print $'($result)'
 
     if $result.exit_code == 0 {
         for line in ($result.stdout | lines) {
@@ -109,14 +110,19 @@ def process-event [reporter: record] {
             do $reporter.fire-result $message
         }
         { type: "output" } => {
-            let lines = $event.payload.data | into string
+            let lines = $event.payload.data | decode-data
             let message = $template | merge { type: output, lines: $lines }
             do $reporter.fire-output $message
         }
         { type: "error" } => {
-            let lines = $event.payload.data | into string
+            let lines = $event.payload.data | decode-data
             let message = $template | merge { type: error, lines: $lines }
             do $reporter.fire-output $message
         }
     }
+}
+
+def decode-data []: string -> list<string> {
+    $in | decode base64 | decode | from nuon
+        | each { |line| $"($line)" }
 }
