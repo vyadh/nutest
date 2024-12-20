@@ -178,26 +178,6 @@ def run-suite-with-failing-test [] {
 }
 
 # [test]
-def run-suite-with-custom-error [] {
-    let context = $in
-    let temp = $context.temp
-
-    let error = "error make { msg: something, label: { text: details } }"
-    let suite = $error | create-single-test-suite $temp "custom"
-    let suites = [{ name: $suite.name, path: $suite.path, tests: $suite.tests }]
-    let results = $suites | test-run $context
-
-    assert equal ($results) [
-        {
-            suite: "custom"
-            test: "custom"
-            result: "FAIL"
-            output: "something\ndetails"
-        }
-    ]
-}
-
-# [test]
 def run-suite-with-multiple-tests [] {
     let context = $in
     let temp = $context.temp

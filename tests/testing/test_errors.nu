@@ -49,7 +49,7 @@ def basic-error [] {
 }
 
 # [test]
-def rendered-error [] {
+def full-rendered-error [] {
     let test = {
         let variable = 'span source'
 
@@ -69,6 +69,27 @@ def rendered-error [] {
     assert str contains $output "a decorated error"
     assert str contains $output "happened here"
     assert str contains $output "some help"
+}
+
+# [test]
+def full-compact-error [] {
+    let test = {
+        let variable = 'span source'
+
+        error make {
+            msg: 'a decorated error'
+            label: {
+                text: 'happened here'
+                span: (metadata $variable).span
+            }
+            help: 'some help'
+        }
+    }
+
+    let strategy = { error_format: "compact" }
+    let output = $in | run $test $strategy
+
+    assert equal $output "a decorated error\nsome help"
 }
 
 def run [code: closure, strategy: record = { }]: record -> string {
