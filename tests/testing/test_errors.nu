@@ -1,31 +1,24 @@
 use std/assert
-use ../../std/testing/orchestrator.nu
-use ../../std/testing/reporter_table.nu
-use ../../std/testing/theme.nu
+use harness.nu
 
 # [before-all]
-def reporter-setup []: nothing -> record {
-    let reporter = reporter_table create (theme none)
-    do $reporter.start
-    { reporter: $reporter }
+def reporter-setup []: record -> record {
+    $in | harness start-tests
 }
 
 # [after-all]
-def reporter-complete [] {
-    let reporter = $in.reporter
-    do $reporter.complete
+def reporter-complete []: record -> nothing {
+    $in | harness tests-complete
 }
 
 # [before-each]
-def setup-temp-dir []: nothing -> record {
-    let temp = mktemp --tmpdir --directory
-    { temp: $temp }
+def setup-temp-dir []: record -> record {
+    $in | harness with-temp-dir
 }
 
 # [after-each]
-def cleanup-temp-dir [] {
-    let context = $in
-    rm --recursive $context.temp
+def cleanup-temp-dir []: record -> nothing {
+    $in | harness cleanup-test
 }
 
 # [test]
@@ -73,40 +66,7 @@ def rendered-error [] {
 }
 
 def test-run [code: string, strategy: record = { }]: record -> string {
-    let context = $in
-    let temp = $context.temp
-    let strategy = { threads: 1, error_format: "compact" } | merge $strategy
-
-    let test = random chars
-    let suite = $code | create-suite $temp $test
-    let reporter = $context.reporter
-
-    [$suite] | orchestrator run-suites $reporter $strategy
-    let results = do $reporter.results
-    let result = $results | where test == $test | first
-
+    let result = $in | harness run-code $code $strategy
     assert equal $result.result "FAIL"
-
     $result.output
-}
-
-def create-suite [temp: string, test: string]: string -> record {
-    let path = $temp | path join $"suite.nu"
-
-    $"
-        use std/assert
-        def ($test) [] {
-            ($in)
-        }
-    " | save --append $path
-
-    {
-        name: "suite"
-        path: $path
-        tests: [{ name: $test, type: "test" }]
-    }
-}
-
-def trim-all []: string -> string {
-    $in | str trim | str replace --all --regex '[\n\t ]+' ' '
 }

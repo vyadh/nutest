@@ -1,4 +1,4 @@
-# nu-test
+# Nutest
 
 A Nushell test runner.
 
@@ -16,9 +16,7 @@ Nushell 0.101.0 or later.
 
 ## Motivation
 
-Nushell doesn't currently include a test runner for Nu scripts in the standard library. As a shell language, writing the odd script is Nushell's raison d'être. Nu-test aims to encourage writing tests for those scripts by making testing more easily accessible.
-
-The hope is that this runner will be accepted into the Nushell standard library as the value of this is much diminished if the test runner needs to be obtained separately.
+Writing tests in Nushell is both powerful and expressive. Not only for testing Nushell code, but also other things, such as APIs, infrastructure, and other scripts. However, Nushell doesn't currently include a test runner for Nu scripts in the standard library. While a runner is not strictly necessary, Nutest aims to encourage writing tests for scripts by making testing more easily accessible.
 
 ## Writing Tests
 
