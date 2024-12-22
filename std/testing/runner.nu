@@ -83,9 +83,9 @@ def nutest-299792458-execute-tests [
     $tests | par-each --threads $strategy.threads { |test|
         # Allow print output to be associated with specific tests by adding name to the environment
         with-env { NU_TEST_NAME: $test.name } {
-            nutest-299792458-emit "start" { }
+            nutest-299792458-emit "start"
             nutest-299792458-execute-test $strategy $context_all $before_each $after_each $test
-            nutest-299792458-emit "finish" { }
+            nutest-299792458-emit "finish"
         }
     }
 }
@@ -125,9 +125,9 @@ def nutest-299792458-execute-test [
 def nutest-299792458-force-result [tests: list, status: string] {
     for test in $tests {
         with-env { NU_TEST_NAME: $test.name } {
-            nutest-299792458-emit "start" { }
+            nutest-299792458-emit "start"
             nutest-299792458-emit "result" { status: $status }
-            nutest-299792458-emit "finish" { }
+            nutest-299792458-emit "finish"
         }
     }
 }
@@ -136,10 +136,10 @@ def nutest-299792458-force-error [strategy: record<error_format: string>, tests:
     let formatted = (nutest-299792458-format-error $strategy $error)
     for test in $tests {
         with-env { NU_TEST_NAME: $test.name } {
-            nutest-299792458-emit "start" { }
+            nutest-299792458-emit "start"
             nutest-299792458-emit "result" { status: "FAIL" }
             print -e ...$formatted
-            nutest-299792458-emit "finish" { }
+            nutest-299792458-emit "finish"
         }
     }
 }
@@ -212,16 +212,24 @@ alias nutest-299792458-print = print
 
 # Override the print command to provide context for output
 export def print [--stderr (-e), --raw (-r), --no-newline (-n), ...rest: any] {
-    let type = if $stderr { "error" } else { "output" }
+    # Capture the stream type to allow downstream rendering in the reporters
+    let stream = if $stderr { "error" } else { "output" }
 
-    # We need to encode the data to avoid newlines in output/error breaking the stream
-    # This avoids hacks to selectively remove newlines from potentially nested structures
-    let encoded = $rest | to nuon --raw | encode base64
+    # Associate the stream type with the list of data items being output
+    let output = {
+        stream: $stream
+        items: $rest
+    }
 
-    nutest-299792458-emit $type { data: $encoded }
+    # Encode to nuon to preserve datatypes of what is being printed for reporter-specific rendering
+    # Encode to base64 to avoid newlines in any strings breaking the line-based protocol
+    let encoded = $output | to nuon --raw | encode base64
+
+    nutest-299792458-emit output { data: $encoded }
 }
 
-def nutest-299792458-emit [type: string, payload: record] {
+# TODO make payload multi-typed to avoid unnecessary record construction
+def nutest-299792458-emit [type: string, payload: record = { }] {
     let event = {
         timestamp: (date now | format date "%+")
         suite: $env.NU_TEST_SUITE_NAME?
@@ -230,9 +238,7 @@ def nutest-299792458-emit [type: string, payload: record] {
         payload: $payload
     }
 
-    # We need to encode the event to avoid newlines in output/error breaking the stream
-    # This avoids hacks to selectively remove newlines from potentially nested structures
-    let packet = $event | to nuon --raw | encode base64
+    let packet = $event | to nuon --raw
 
     nutest-299792458-print $packet
 }

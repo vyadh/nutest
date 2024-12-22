@@ -16,8 +16,7 @@ export def create [] {
         CREATE TABLE nu_test_output (
             suite TEXT NOT NULL,
             test TEXT NOT NULL,
-            type TEXT NOT NULL,
-            line TEST
+            data TEXT
         )
     "
 
@@ -47,12 +46,9 @@ export def insert-result [ row: record<suite: string, test: string, result: stri
     }
 }
 
-export def insert-output [ row: record<suite: string, test: string, type: string, lines: list<string>> ] {
+export def insert-output [ row: record<suite: string, test: string, data: string> ] {
     retry-on-lock "nu_test_output" {
-        $row
-            | reject lines
-            | merge { line: ($row.lines | str join "\n") }
-            | stor insert --table-name nu_test_output
+        $row | stor insert --table-name nu_test_output
     }
 }
 
@@ -96,24 +92,21 @@ export def success []: nothing -> bool {
     not $has_failures
 }
 
-export def query []: nothing -> table<suite: string, test: string, result: string, output: string> {
+export def query []: nothing -> table<suite: string, test: string, result: string, output: table<stream: string, items: list<any>>> {
     let db = stor open
     $db | query db "
         SELECT suite, test, result
         FROM nu_test_results
         ORDER BY suite, test
     " | insert output { |row|
-        $db | query db (query-output) --params {
-            suite: $row.suite
-            test: $row.test
-        } | get output | default [] | str join "\n"
+        query-output $db $row.suite $row.test
     }
 }
 
 export def query-test [
     suite: string
     test: string
-]: nothing -> table<suite: string, test: string, result: string, output: string> {
+]: nothing -> table<suite: string, test: string, result: string, output: table<stream: string, items: list<any>>> {
 
     let db = stor open
     $db | query db "
@@ -124,21 +117,22 @@ export def query-test [
         suite: $suite
         test: $test
     } | insert output { |row|
-        $db | query db (query-output) --params {
-            suite: $suite
-            test: $test
-        } | get output | default [] | str join "\n"
+        query-output $db $row.suite $row.test
     }
 }
 
-def query-output []: nothing -> string {
-    "
-        -- Combine the output and error lines into a single column with errors highlighted
-        SELECT
-            suite,
-            test,
-            COALESCE(GROUP_CONCAT(line, char(10)), '') AS output
-        FROM nu_test_output
-        WHERE suite = :suite AND test = :test
-    "
+def query-output [
+    db
+    suite: string
+    test: string
+]: nothing -> table<stream: string, items: list<any>> {
+
+    $db | query db "
+            SELECT data
+            FROM nu_test_output
+            WHERE suite = :suite AND test = :test
+        " --params { suite: $suite test: $test }
+        | get data # The column name
+        | each { $in | from nuon }
+        | flatten # Unwrap the multiple calls to `print`
 }

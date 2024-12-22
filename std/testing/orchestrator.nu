@@ -45,13 +45,16 @@ def run-suite [
             "
     ) | complete
 
-    # Useful for understanding event stream
+    # Useful for understanding plan
     #print $'($plan_data)'
-    #print $'($result)'
 
     if $result.exit_code == 0 {
         for line in ($result.stdout | lines) {
-            let event = $line | decode-event
+            let event = $line | from nuon
+
+            # Useful for understanding event stream
+            #print ($event | table --expand)
+
             $event | process-event $reporter
         }
     } else {
@@ -76,10 +79,6 @@ def runner-module []: nothing -> string {
         const runner_nu = path self "runner.nu"
         $runner_nu
     }
-}
-
-def decode-event []: string -> record {
-    $in | decode base64 | decode | from nuon
 }
 
 export def create-suite-plan-data [tests: table<name: string, type: string>]: nothing -> string {
@@ -110,19 +109,9 @@ def process-event [reporter: record] {
             do $reporter.fire-result $message
         }
         { type: "output" } => {
-            let lines = $event.payload.data | decode-data
-            let message = $template | merge { type: output, lines: $lines }
-            do $reporter.fire-output $message
-        }
-        { type: "error" } => {
-            let lines = $event.payload.data | decode-data
-            let message = $template | merge { type: error, lines: $lines }
+            let decoded = $event.payload.data | decode base64 | decode
+            let message = $template | merge { data: $decoded }
             do $reporter.fire-output $message
         }
     }
-}
-
-def decode-data []: string -> list<string> {
-    $in | decode base64 | decode | from nuon
-        | each { |line| $"($line)" }
 }

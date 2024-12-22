@@ -54,7 +54,8 @@ def complete-test [theme: closure, event: record]: nothing -> nothing {
     let formatted = (format-result $row.result $theme)
 
     if ($row.output | is-not-empty) {
-        print $"($formatted) ($suite) ($test)\n(indent $row.output)"
+        let output = $row.output | render $theme
+        print $"($formatted) ($suite) ($test)\n($output)"
     } else {
         print $"($formatted) ($suite) ($test)"
     }
@@ -69,15 +70,23 @@ def format-result [result: string, theme: closure]: nothing -> string {
     }
 }
 
-def indent [output: string]: nothing -> string {
-    "  " + ($output | str replace --all "\n" "\n  ")
+def render [theme: closure]: table<stream: string, items: list<any>> -> string {
+    let r = $in
+        | each { |row| $row.items }
+        | flatten
+        | str join "\n"
+        | indent
+}
+
+def indent []: string -> string {
+    "  " + ($in | str replace --all "\n" "\n  ")
 }
 
 def fire-result [row: record<suite: string, test: string, result: string>] {
     store insert-result $row
 }
 
-def fire-output [row: record<suite: string, test: string, type: string, lines: list<string>>] {
+def fire-output [row: record<suite: string, test: string, data: string>] {
     store insert-output $row
 }
 

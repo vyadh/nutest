@@ -196,6 +196,8 @@ This would be beneficial in a project where most tests should run concurrently b
 ## Roadmap
 
 - Handling of data formats and flexible rendering
+  - Allow testing output as list<any> rather than just lines
+  - This implies rendering is a very-last stage process
 - Handle output from before/after all (ignore it? repeat for every test? custom event?)
 - Test execution of external tools wrt to terminal output
   - This might need to be flagged to run in a separate process?
@@ -238,11 +240,15 @@ Both of these runners work on modules and so cannot be used for testing independ
 
 Nutest discovers tests by scanning matching files in the path, sourcing that code and collecting test annotations on methods via `scope commands`. The file patterns currently detected are only `test_*.nu` and `*_test.nu` for performance of the test discovery. The latter pattern is useful when you're using Nushell to test other things so the file is alphabetically ordered close to the files being tested.
 
-For each file with tests (a suite), dispatch the suite to run on a single Nu subshell.
+Each test file, which include multiple tests (a suite) is dispatched to run on a single Nu subshell.
 
-Capture test success and failure as well as any output (by overriding print command) and stream as test events on stdout.
+Test results are captured using encoded events written to stdout (one event per line), which carry all the required context indicating what suite and test it is associated with, allowing tests to be run in parallel.
 
-Collate all events for all suites and tests being run print the test results table.
+Success and failure events are implied by an error being thrown, such as an assertion failure.
+
+Output from tests is captured by aliasing the print command. This may include structured data, which is preserved in the event data. This is achieved by converting each item sent to a print command as nuon and then encoding as base64, which ensures a single line event is emitted even if it contains multi-line text.
+
+All events for all suites and tests being run are then collated, ready to use within a reporter to present to the user with flexible output and rendering.
 
 ### Concurrency
 

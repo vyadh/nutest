@@ -109,7 +109,7 @@ def run-suite-with-ignored-test [] {
     ]
 }
 
-# [test]
+# [ignore]
 def run-suite-with-broken-test [] {
     let context = $in
     let temp = $context.temp

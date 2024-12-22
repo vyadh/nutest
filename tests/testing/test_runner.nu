@@ -26,6 +26,14 @@ def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, 
             | each { $in | decode base64 | decode | from nuon }
             | sort-by suite test
             | reject timestamp
+            | update payload { |row|
+                if ($row.type in ["output", "error"]) {
+                    # Decode output to testable data format
+                    { data: ($row.payload.data | decode base64 | decode | from nuon) }
+                } else {
+                    $row.payload
+                }
+            }
     )
 }
 
@@ -90,6 +98,7 @@ def execute-plan-tests [] {
     ] | sort-by suite test)
 }
 
+# TODO move into test_output.nu
 #[test]
 def execute-test-types-basic [] {
     let plan = [
@@ -114,6 +123,7 @@ def execute-test-types-basic [] {
     ]
 }
 
+# TODO move into test_output.nu
 #[test]
 def execute-test-types-structured [] {
     let plan = [

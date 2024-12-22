@@ -28,103 +28,104 @@ def cleanup-test []: record -> nothing {
 def nulls [] {
     let code = { print null }
     let output = $in | run $code
-    assert equal $output ""
+    assert equal $output []
 
     let code = { print null null null}
     let output = $in | run $code
-    assert equal $output "\n\n"
+    assert equal $output []
 }
 
 # [test]
 def numbers [] {
     let code = { print 1 }
     let output = $in | run $code
-    assert equal $output "1"
+    assert equal $output [1]
 
     let code = { print 1 2 3}
     let output = $in | run $code
-    assert equal $output "1\n2\n3"
+    assert equal $output [1, 2, 3]
 }
 
 # [test]
 def strings [] {
     let code = { print "str" }
     let output = $in | run $code
-    assert equal $output "str"
+    assert equal $output ["str"]
 
     let code = { print "one" "two" "three" }
     let output = $in | run $code
-    assert equal $output "one\ntwo\nthree"
+    assert equal $output ["one", "two", "three"]
 }
 
 # [test]
 def durations [] {
     let code = { print 2min }
     let output = $in | run $code
-    assert equal $output "2min"
+    assert equal $output [2min]
 }
 
 # [test]
 def lists [] {
     let code = { print [] }
     let output = $in | run $code
-    assert equal $output "[]"
+    assert equal $output [[]]
 
     let code = { print [1, "two", 3] }
     let output = $in | run $code
-    assert equal $output "[1, two, 3]"
+    assert equal $output [[1, two, 3]]
 
     let code = { print [1, "two", 3] [4, "five", 6] }
     let output = $in | run $code
-    assert equal $output "[1, two, 3]\n[4, five, 6]"
+    assert equal $output [[1, two, 3], [4, five, 6]]
 }
 
 # [test]
 def records [] {
     let code = { print {} }
     let output = $in | run $code
-    assert equal $output "{}"
+    assert equal $output [{}]
 
     let code = { print { a: 1, b: "two" } }
     let output = $in | run $code
-    assert equal $output "{a: 1, b: two}"
+    assert equal $output [{a: 1, b: two}]
 
     let code = { print { a: 1, b: "two" } { c: 3, d: "four" } }
     let output = $in | run $code
-    assert equal $output "{a: 1, b: two}\n{c: 3, d: four}"
+    assert equal $output [{a: 1, b: "two"}, {c: 3, d: "four"}]
 }
 
 # [test]
 def tables [] {
     let code = { print ([[a, b, c]; [1, 2, 3]] | take 0) }
     let output = $in | run $code
-    assert equal $output "[]"
+    assert equal $output [[]]
 
     let code = { print [[a, b, c]; [1, "two", 3], [4, "five", 6]] }
     let output = $in | run $code
-    assert equal $output "[{a: 1, b: two, c: 3}, {a: 4, b: five, c: 6}]"
+    assert equal $output [ [{a: 1, b: two, c: 3}, {a: 4, b: five, c: 6}] ]
 
     let code = { print [[a, b, c]; [1, "two", 3]] [[d, e, f]; [4, "five", 6]] }
     let output = $in | run $code
-    assert equal $output "[{a: 1, b: two, c: 3}]\n[{d: 4, e: five, f: 6}]"
+    assert equal $output [ [{a: 1, b: two, c: 3}], [{d: 4, e: five, f: 6}] ]
 }
 
 # [test]
 def table_in_record [] {
     let code = { print { a: 1, b: [[c, d]; [1, 2]] } }
     let output = $in | run $code
-    assert equal $output "{a: 1, b: [{c: 1, d: 2}]}"
+    assert equal $output [{a: 1, b: [{c: 1, d: 2}]}]
 }
 
 # [test]
 def record_in_table [] {
     let code = { print [[a, b]; [1, {c: 2, d: 3}]] }
     let output = $in | run $code
-    assert equal $output "[{a: 1, b: {c: 2, d: 3}}]"
+    assert equal $output [ [[a, b]; [1, {c: 2, d: 3}]] ]
 }
 
 def run [code: closure]: record -> string {
     let result = $in | harness run $code
     assert equal $result.result "PASS"
     $result.output
+        | each { |row| $row.items } # Unpack from stream record
 }
