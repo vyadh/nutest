@@ -18,7 +18,7 @@ export def create []: nothing -> record {
 }
 
 def query-summary []: nothing -> record<total: int, passed: int, failed: int, skipped: int> {
-    let results = store query (theme none)
+    let results = store query
     let by_result = $results | group-by result
 
     {

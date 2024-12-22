@@ -22,7 +22,7 @@ def start-suite []: nothing -> nothing {
 }
 
 def complete-suite []: nothing -> nothing {
-    let results = store query (theme none)
+    let results = store query
     let by_result = $results | group-by result
 
     let total = $results | length
@@ -50,7 +50,7 @@ def complete-test [theme: closure, event: record]: nothing -> nothing {
     let suite = { type: "suite", text: $event.suite } | do $theme
     let test = { type: "test", text: $event.test } | do $theme
 
-    let row = store query-test $event.suite $event.test $theme | first
+    let row = store query-test $event.suite $event.test | first
     let formatted = (format-result $row.result $theme)
 
     if ($row.output | is-not-empty) {

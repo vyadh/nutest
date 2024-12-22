@@ -96,7 +96,7 @@ export def success []: nothing -> bool {
     not $has_failures
 }
 
-export def query [theme: closure]: nothing -> table<suite: string, test: string, result: string, output: string> {
+export def query []: nothing -> table<suite: string, test: string, result: string, output: string> {
     let db = stor open
     $db | query db "
         SELECT suite, test, result
@@ -106,8 +106,6 @@ export def query [theme: closure]: nothing -> table<suite: string, test: string,
         $db | query db (query-output) --params {
             suite: $row.suite
             test: $row.test
-            error_prefix: ({ prefix: "stderr" } | do $theme)
-            error_suffix: ({ suffix: "stderr" } | do $theme)
         } | get output | default [] | str join "\n"
     }
 }
@@ -115,7 +113,6 @@ export def query [theme: closure]: nothing -> table<suite: string, test: string,
 export def query-test [
     suite: string
     test: string
-    theme: closure
 ]: nothing -> table<suite: string, test: string, result: string, output: string> {
 
     let db = stor open
@@ -130,8 +127,6 @@ export def query-test [
         $db | query db (query-output) --params {
             suite: $suite
             test: $test
-            error_prefix: ({ prefix: "stderr" } | do $theme)
-            error_suffix: ({ suffix: "stderr" } | do $theme)
         } | get output | default [] | str join "\n"
     }
 }
@@ -142,13 +137,7 @@ def query-output []: nothing -> string {
         SELECT
             suite,
             test,
-            COALESCE(GROUP_CONCAT(
-                CASE
-                    WHEN type = 'error' THEN :error_prefix || line || :error_suffix
-                    ELSE line
-                END,
-                char(10)
-            ), '') AS output
+            COALESCE(GROUP_CONCAT(line, char(10)), '') AS output
         FROM nu_test_output
         WHERE suite = :suite AND test = :test
     "

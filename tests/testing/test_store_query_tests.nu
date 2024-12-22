@@ -27,7 +27,7 @@ def delete-store [] {
 
 # [test]
 def query-tests [] {
-    let results = query (theme none)
+    let results = query
 
     assert equal $results [
         { suite: "suite1", test: "pass1", result: "PASS", output: "" }
@@ -39,7 +39,7 @@ def query-tests [] {
 
 # [test]
 def query-for-specific-test [] {
-    let results = query-test "suite2" "fail1" (theme none)
+    let results = query-test "suite2" "fail1"
 
     assert equal $results [
         { suite: "suite2", test: "fail1", result: "FAIL", output: "line" }

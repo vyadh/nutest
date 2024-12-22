@@ -17,7 +17,7 @@ export def create [theme: closure]: nothing -> record {
 }
 
 def query-results [theme: closure]: nothing -> table<suite: string, test: string, result: string, output: string> {
-    store query $theme | each { |row|
+    store query | each { |row|
         {
             suite: ({ type: "suite", text: $row.suite } | do $theme)
             test: ({ type: "test", text: $row.test } | do $theme)
