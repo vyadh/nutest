@@ -97,61 +97,59 @@ export def success []: nothing -> bool {
 }
 
 export def query [theme: closure]: nothing -> table<suite: string, test: string, result: string, output: string> {
-    let query = $"
-        (query-string)
-        ORDER BY r.suite, r.test
-    "
-    stor open
-        | query db $query --params {
+    let db = stor open
+    $db | query db "
+        SELECT suite, test, result
+        FROM nu_test_results
+        ORDER BY suite, test
+    " | insert output { |row|
+        $db | query db (query-output) --params {
+            suite: $row.suite
+            test: $row.test
             error_prefix: ({ prefix: "stderr" } | do $theme)
             error_suffix: ({ suffix: "stderr" } | do $theme)
-        }
+        } | get output | default [] | str join "\n"
+    }
 }
 
-export def query-test [suite: string, test: string, theme: closure]: nothing -> table<suite: string, test: string, result: string, output: string> {
-    let query = $"
-        (query-string)
-        WHERE r.suite = :suite AND r.test = :test
-        ORDER BY r.suite, r.test
-    "
-    stor open
-        | query db $query --params {
-            error_prefix: ({ prefix: "stderr" } | do $theme)
-            error_suffix: ({ suffix: "stderr" } | do $theme)
+export def query-test [
+    suite: string
+    test: string
+    theme: closure
+]: nothing -> table<suite: string, test: string, result: string, output: string> {
+
+    let db = stor open
+    $db | query db "
+        SELECT suite, test, result
+        FROM nu_test_results
+        WHERE suite = :suite AND test = :test
+    " --params {
+        suite: $suite
+        test: $test
+    } | insert output { |row|
+        $db | query db (query-output) --params {
             suite: $suite
             test: $test
-        }
+            error_prefix: ({ prefix: "stderr" } | do $theme)
+            error_suffix: ({ suffix: "stderr" } | do $theme)
+        } | get output | default [] | str join "\n"
+    }
 }
 
-# SQL doesn't have backslash escapes so we use `char(10)`, being newline (\n)
-def query-string []: nothing -> string {
+def query-output []: nothing -> string {
     "
-        WITH
-            -- Combine the output and error lines into a single column with errors highlighted
-            stream AS (
-                SELECT
-                    suite,
-                    test,
-                    GROUP_CONCAT(
-                        CASE
-                            WHEN type = 'error' THEN :error_prefix || line || :error_suffix
-                            ELSE line
-                        END,
-                        char(10)
-                    ) AS output
-                FROM nu_test_output
-                GROUP BY suite, test
-            )
-
+        -- Combine the output and error lines into a single column with errors highlighted
         SELECT
-            r.suite,
-            r.test,
-            r.result,
-            COALESCE(s.output, '') AS output
-
-        FROM nu_test_results AS r
-
-        LEFT JOIN stream AS s
-        ON r.suite = s.suite AND r.test = s.test
+            suite,
+            test,
+            COALESCE(GROUP_CONCAT(
+                CASE
+                    WHEN type = 'error' THEN :error_prefix || line || :error_suffix
+                    ELSE line
+                END,
+                char(10)
+            ), '') AS output
+        FROM nu_test_output
+        WHERE suite = :suite AND test = :test
     "
 }
