@@ -1,16 +1,29 @@
 
+# We use `query db` here rather than `stor create` as we need full SQLite features
 export def create [] {
-    stor create --table-name nu_test_results --columns {
-        suite: str
-        test: str
-        result: str
-    }
-    stor create --table-name nu_test_output --columns {
-        suite: str
-        test: str
-        type: str
-        line: str
-    }
+    let db = stor open
+
+    $db | query db "
+        CREATE TABLE nu_test_results (
+            suite TEXT NOT NULL,
+            test TEXT NOT NULL,
+            result TEXT,
+            PRIMARY KEY (suite, test)
+        )
+    "
+
+    $db | query db "
+        CREATE TABLE nu_test_output (
+            suite TEXT NOT NULL,
+            test TEXT NOT NULL,
+            type TEXT NOT NULL,
+            line TEST
+        )
+    "
+
+    $db | query db "
+        CREATE INDEX idx_suite_test ON nu_test_output (suite, test)
+    "
 }
 
 # We close the store so tests of this do not open the store multiple times
@@ -21,7 +34,16 @@ export def delete [] {
 
 export def insert-result [ row: record<suite: string, test: string, result: string> ] {
     retry-on-lock "nu_test_results" {
-        $row | stor insert --table-name nu_test_results
+        stor open | query db "
+            INSERT INTO nu_test_results (suite, test, result)
+            VALUES (:suite, :test, :result)
+            ON CONFLICT(suite, test)
+            DO UPDATE SET result = excluded.result
+        " --params {
+            suite: $row.suite
+            test: $row.test
+            result: $row.result
+        }
     }
 }
 
@@ -75,17 +97,25 @@ export def success []: nothing -> bool {
 }
 
 export def query [theme: closure]: nothing -> table<suite: string, test: string, result: string, output: string> {
+    let query = $"
+        (query-string)
+        ORDER BY r.suite, r.test
+    "
     stor open
-        | query db (query-string) --params {
+        | query db $query --params {
             error_prefix: ({ prefix: "stderr" } | do $theme)
             error_suffix: ({ suffix: "stderr" } | do $theme)
         }
 }
 
 export def query-test [suite: string, test: string, theme: closure]: nothing -> table<suite: string, test: string, result: string, output: string> {
-    let condition = "AND r.suite = :suite AND r.test = :test"
+    let query = $"
+        (query-string)
+        WHERE r.suite = :suite AND r.test = :test
+        ORDER BY r.suite, r.test
+    "
     stor open
-        | query db (query-string $condition) --params {
+        | query db $query --params {
             error_prefix: ({ prefix: "stderr" } | do $theme)
             error_suffix: ({ suffix: "stderr" } | do $theme)
             suite: $suite
@@ -94,7 +124,7 @@ export def query-test [suite: string, test: string, theme: closure]: nothing -> 
 }
 
 # SQL doesn't have backslash escapes so we use `char(10)`, being newline (\n)
-def query-string [condition: string = ""]: nothing -> string {
+def query-string []: nothing -> string {
     "
         WITH
             -- Combine the output and error lines into a single column with errors highlighted
@@ -111,17 +141,6 @@ def query-string [condition: string = ""]: nothing -> string {
                     ) AS output
                 FROM nu_test_output
                 GROUP BY suite, test
-            ),
-
-            -- A test can pass and then fail due to after-all post-processing
-            -- Below extracts only the last result reported based on insertion order
-            results AS (
-                SELECT
-                    suite,
-                    test,
-                    result,
-                    ROW_NUMBER() OVER (PARTITION BY suite, test ORDER BY rowid DESC) AS row
-                FROM nu_test_results
             )
 
         SELECT
@@ -130,15 +149,9 @@ def query-string [condition: string = ""]: nothing -> string {
             r.result,
             COALESCE(s.output, '') AS output
 
-        FROM results AS r
+        FROM nu_test_results AS r
 
         LEFT JOIN stream AS s
         ON r.suite = s.suite AND r.test = s.test
-
-        -- Firstly take the last result for each test given tests can pass then fail
-        -- Secondly a condition is optionally used to filter the results
-        WHERE r.row = 1 $condition
-
-        ORDER BY r.suite, r.test
-    " | str replace "$condition" $condition
+    "
 }
