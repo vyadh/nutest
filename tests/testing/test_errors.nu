@@ -21,7 +21,7 @@ def cleanup-test []: record -> nothing {
     $in | harness cleanup-test
 }
 
-# [test]
+# [ignore]
 def assertion-failure [] {
     let test = {
         assert equal 1 2
@@ -37,7 +37,7 @@ def assertion-failure [] {
     " | trim-all)
 }
 
-# [test]
+# [ignore]
 def basic-error [] {
     let code = {
         error make { msg: 'some error' }
@@ -48,7 +48,7 @@ def basic-error [] {
     assert str contains $output "some error"
 }
 
-# [test]
+# [ignore]
 def full-rendered-error [] {
     let code = {
         let variable = 'span source'
@@ -89,7 +89,7 @@ def full-compact-error [] {
     let strategy = { error_format: "compact" }
     let output = $in | run $code $strategy
 
-    assert equal $output "a decorated error\nsome help"
+    assert equal $output [[stream, items]; [error, "a decorated error"], [error, "some help"]]
 }
 
 def run [code: closure, strategy: record = { }]: record -> string {

@@ -71,11 +71,12 @@ def format-result [result: string, theme: closure]: nothing -> string {
 }
 
 def render [theme: closure]: table<stream: string, items: list<any>> -> string {
-    let r = $in
-        | each { |row| $row.items }
-        | flatten
-        | str join "\n"
-        | indent
+    $in | table --expand
+    #let r = $in
+        #| each { |row| $row.items }
+        #| flatten
+        #| str join "\n"
+        #| indent
 }
 
 def indent []: string -> string {

@@ -17,8 +17,8 @@ def delete-store [] {
 # [ignore]
 def theme-is-used-for-stderr [] {
     insert-result { suite: "suite", test: "test", result: "PASS" }
-    insert-output { suite: "suite", test: "test", type: "output", lines: ["normal", "message"] }
-    insert-output { suite: "suite", test: "test", type: "error", lines: ["error", "text"] }
+    insert-output { suite: "suite2", test: "test", data: ([{stream: "output", items: ["normal", "message"]}] | to nuon) }
+    insert-output { suite: "suite2", test: "test", data: ([{stream: "error", items: ["error", "text"]}] | to nuon) }
 
     # TODO need to support in renders
     #let results = query { stderr-prefixing-theme }
