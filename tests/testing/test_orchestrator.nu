@@ -6,6 +6,7 @@ use ../../std/testing/orchestrator.nu [
 use ../../std/testing/store.nu
 use ../../std/testing/reporter_table.nu
 use ../../std/testing/theme.nu
+use ../../std/testing/formatter.nu
 
 #[test]
 def validate-test-plan [] {
@@ -34,7 +35,7 @@ def trim []: string -> string {
 # Since we only have one database it needs to be created once before all tests.
 # We also need to ensure we narrow down results to the unique ones used in each test.
 def reporter-setup []: nothing -> record {
-    let reporter = reporter_table create (theme none)
+    let reporter = reporter_table create (theme none) (formatter preserve)
     do $reporter.start
     { reporter: $reporter }
 }

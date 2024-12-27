@@ -3,12 +3,12 @@
 use store.nu
 use formatter.nu
 
-export def create [theme: closure]: nothing -> record {
+export def create [theme: closure, formatter: closure]: nothing -> record {
     {
         start: { store create }
         complete: { store delete }
         success: { store success }
-        results: { query-results $theme }
+        results: { query-results $theme $formatter }
         has-return-value: true
         fire-start: { |row| }
         fire-finish: { |row| }
@@ -17,14 +17,17 @@ export def create [theme: closure]: nothing -> record {
     }
 }
 
-def query-results [theme: closure]: nothing -> table<suite: string, test: string, result: string, output: string> {
+def query-results [
+    theme: closure
+    formatter: closure
+]: nothing -> table<suite: string, test: string, result: string, output: string> {
+
     store query | each { |row|
         {
             suite: ({ type: "suite", text: $row.suite } | do $theme)
             test: ({ type: "test", text: $row.test } | do $theme)
             result: (format-result $row.result $theme)
-            # TODO push in
-            output: ($row.output | do (formatter preserve))
+            output: ($row.output | do $formatter)
         }
     }
 }

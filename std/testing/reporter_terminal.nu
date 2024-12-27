@@ -50,7 +50,8 @@ def complete-test [theme: closure, event: record]: nothing -> nothing {
     let suite = { type: "suite", text: $event.suite } | do $theme
     let test = { type: "test", text: $event.test } | do $theme
 
-    let row = store query-test $event.suite $event.test | first
+    let result = store query-test $event.suite $event.test
+    let row = $result | first
     let formatted = (format-result $row.result $theme)
 
     if ($row.output | is-not-empty) {

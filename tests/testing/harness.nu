@@ -1,12 +1,13 @@
 use ../../std/testing/orchestrator.nu
 use ../../std/testing/reporter_table.nu
 use ../../std/testing/theme.nu
+use ../../std/testing/formatter.nu
 
 # A harness for running tests against nutest itself.
 
 # Encapsulate before-all behaviour
 export def setup-tests []: nothing -> record {
-    let reporter = reporter_table create (theme none)
+    let reporter = reporter_table create (theme none) (formatter preserve)
     do $reporter.start
     $in | merge {
         reporter: $reporter

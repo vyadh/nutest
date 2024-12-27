@@ -136,15 +136,23 @@ def select-reporter [reporter: string]: nothing -> record<start: closure, comple
     match $reporter {
         "table-pretty" => {
             use theme.nu
+            use formatter.nu
             use reporter_table.nu
 
-            reporter_table create (theme standard)
+            let theme = theme standard
+            let formatter = formatter string $theme
+
+            reporter_table create $theme $formatter
         }
         "table" => {
             use theme.nu
+            use formatter.nu
             use reporter_table.nu
 
-            reporter_table create (theme none)
+            let theme = theme none
+            let formatter = formatter preserve
+
+            reporter_table create $theme $formatter
         }
         "summary" => {
             use reporter_summary.nu
