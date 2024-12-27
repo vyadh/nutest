@@ -1,11 +1,11 @@
 
-# A renderer that preserves the data as-is, including stream metadata, useful for querying.
-export def preserve-all []: list<record<stream: string, items: list<any>>> -> closure {
+# A formatter that preserves the data as-is, including stream metadata, useful for tests.
+export def preserve []: list<record<stream: string, items: list<any>>> -> closure {
     { $in }
 }
 
-# A renderer that preserves the data only, useful for querying.
-export def preserve []: list<record<stream: string, items: list<any>>> -> closure {
+# A formatter that preserves the data only, useful for querying.
+export def unformatted []: list<record<stream: string, items: list<any>>> -> closure {
     {
         $in
             | each { |message| $message.items }
@@ -13,7 +13,7 @@ export def preserve []: list<record<stream: string, items: list<any>>> -> closur
     }
 }
 
-# A renderer that formats items as a string against a theme
+# A formatter that formats items as a string against a theme
 export def string [theme: closure]: list<record<stream: string, items: list<any>>> -> closure {
     {
         let events  = $in

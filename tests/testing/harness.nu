@@ -48,9 +48,13 @@ export def run [
     let suite = $code | create-closure-suite $temp $test
     [$suite] | orchestrator run-suites $reporter $strategy
     let results = do $reporter.results
-    let result = $results | where test == $test | first
 
-    $result
+    let result = $results | where test == $test
+    if ($result | is-empty) {
+        $result
+    } else {
+        $result | first
+    }
 }
 
 def create-closure-suite [temp: string, test: string]: closure -> record {

@@ -208,6 +208,7 @@ This would be beneficial in a project where most tests should run concurrently b
 
 ## Future Ideas
 
+- Detect flaky tests by re-running failed tests a few times.
 - More sophisticated change display rather than simple assertion module output, e.g. differences in records and tables, perhaps displayed as tables
   - Perhaps highlight differences in output using background colours like a diff tool.
 - Allow custom reporters

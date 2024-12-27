@@ -1,6 +1,7 @@
 # A reporter that collects results into a table
 
 use store.nu
+use formatter.nu
 
 export def create [theme: closure]: nothing -> record {
     {
@@ -22,7 +23,8 @@ def query-results [theme: closure]: nothing -> table<suite: string, test: string
             suite: ({ type: "suite", text: $row.suite } | do $theme)
             test: ({ type: "test", text: $row.test } | do $theme)
             result: (format-result $row.result $theme)
-            output: ($row.output | render $theme)
+            # TODO push in
+            output: ($row.output | do (formatter preserve))
         }
     }
 }
@@ -34,10 +36,4 @@ def format-result [result: string, theme: closure]: nothing -> string {
         "FAIL" => ({ type: "fail", text: $result } | do $theme)
         _ => $result
     }
-}
-
-def render [theme: closure]: table<stream: string, items: list<any>> -> string {
-    $in
-        #| each { |row| $row.items } # Skip theme for now
-        #| str join "\n" # Render as lines
 }

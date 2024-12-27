@@ -54,7 +54,7 @@ def complete-test [theme: closure, event: record]: nothing -> nothing {
     let formatted = (format-result $row.result $theme)
 
     if ($row.output | is-not-empty) {
-        let output = $row.output | render $theme
+        let output = $row.output | formatter $theme
         print $"($formatted) ($suite) ($test)\n($output)"
     } else {
         print $"($formatted) ($suite) ($test)"
@@ -70,7 +70,7 @@ def format-result [result: string, theme: closure]: nothing -> string {
     }
 }
 
-def render [theme: closure]: table<stream: string, items: list<any>> -> string {
+def formatter [theme: closure]: table<stream: string, items: list<any>> -> string {
     $in | table --expand
     #let r = $in
         #| each { |row| $row.items }
