@@ -114,7 +114,7 @@ def with-specific-suite [] {
     ]
 }
 
-#[ignore]
+#[test]
 def exit-on-fail-with-passing-tests [] {
     let temp = $in.temp
 
@@ -123,16 +123,16 @@ def exit-on-fail-with-passing-tests [] {
             --no-config-file
             --commands $"
                 use std/testing *
-                run-tests --path ($temp) --reporter table --fail
+                run-tests --path ($temp) --reporter table --formatter pretty --fail
             "
     ) | complete
-    let output = $result.stdout | from nuon
 
+    let output = $result.stdout
     assert equal $result.exit_code 0 "Exit code is 0"
-    assert ($output =~ "test_1[ │]+test_foo[ │]+PASS[ │]+oof") "Tests are output"
+    assert ($output =~ "test_1[ │]+test_foo[ │]+PASS[ │]+oof") "Tests    are output"
 }
 
-#[ignore]
+#[test]
 def exit-on-fail-with-failing-tests [] {
     let temp = $in.temp
     let test_file_3 = $temp | path join "test_3.nu"
@@ -146,7 +146,7 @@ def exit-on-fail-with-failing-tests [] {
             --no-config-file
             --commands $"
                 use std/testing *
-                run-tests --path ($temp) --reporter table --fail --strategy { error_format: compact }
+                run-tests --path ($temp) --reporter table --formatter pretty --fail --strategy { error_format: compact }
             "
     ) | complete
 
@@ -213,8 +213,7 @@ def list-tests-as-table [] {
     ]
 }
 
-#[ignore]
-# TODO Fix error colouring
+#[test]
 def with-terminal-reporter [] {
     let temp = $in.temp
     let test_file_3 = $temp | path join "test_3.nu"

@@ -202,7 +202,7 @@ def run-suite-with-multiple-tests [] {
     ]
 }
 
-# [ignore]
+# [test]
 def run-multiple-suites [] {
     let context = $in
     let temp = $context.temp

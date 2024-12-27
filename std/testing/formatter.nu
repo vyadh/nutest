@@ -1,5 +1,6 @@
 
 # A formatter that preserves the data as-is, including stream metadata, useful for tests.
+# todo 'preserved' more consistent?
 export def preserve []: list<record<stream: string, items: list<any>>> -> closure {
     { $in }
 }

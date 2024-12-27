@@ -181,12 +181,13 @@ def select-reporter [
 def select-formatter [theme: closure]: string -> closure {
     use formatter.nu
 
-    match $in {
+    let option = $in
+    match $option {
         "preserve" => (formatter preserve)
         "unformatted" => (formatter unformatted)
         "pretty" => (formatter string $theme)
         _ => {
-            error make { msg: $"Unknown formatter: ($in)" }
+            error make { msg: $"Unknown formatter: ($option)" }
         }
     }
 }
