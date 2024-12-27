@@ -14,6 +14,7 @@ export def unformatted []: list<record<stream: string, items: list<any>>> -> clo
 }
 
 # A formatter that formats items as a string against a theme
+# todo rename pretty
 export def string [theme: closure]: list<record<stream: string, items: list<any>>> -> closure {
     {
         let events  = $in

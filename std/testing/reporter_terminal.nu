@@ -2,7 +2,7 @@
 
 use store.nu
 
-export def create [theme: closure]: nothing -> record {
+export def create [theme: closure, formatter: closure]: nothing -> record {
     {
         start: { start-suite }
         complete: { complete-suite }
@@ -10,7 +10,7 @@ export def create [theme: closure]: nothing -> record {
         results: { [] }
         has-return-value: false
         fire-start: { |row| start-test $row }
-        fire-finish: { |row| complete-test $theme $row }
+        fire-finish: { |row| $row | complete-test $theme $formatter }
         fire-result: { |row| fire-result $row }
         fire-output: { |row| fire-output $row }
     }
@@ -46,16 +46,17 @@ def count [key: string]: list -> int {
 def start-test [row: record]: nothing -> nothing {
 }
 
-def complete-test [theme: closure, event: record]: nothing -> nothing {
+def complete-test [theme: closure, formatter: closure]: record -> nothing {
+    let event = $in
     let suite = { type: "suite", text: $event.suite } | do $theme
     let test = { type: "test", text: $event.test } | do $theme
 
     let result = store query-test $event.suite $event.test
     let row = $result | first
-    let formatted = (format-result $row.result $theme)
+    let formatted = format-result $row.result $theme
 
     if ($row.output | is-not-empty) {
-        let output = $row.output | formatter $theme
+        let output = ($row.output | do $formatter $theme) | indent
         print $"($formatted) ($suite) ($test)\n($output)"
     } else {
         print $"($formatted) ($suite) ($test)"
@@ -69,15 +70,6 @@ def format-result [result: string, theme: closure]: nothing -> string {
         "FAIL" => ({ type: "fail", text: $result } | do $theme)
         _ => $result
     }
-}
-
-def formatter [theme: closure]: table<stream: string, items: list<any>> -> string {
-    $in | table --expand
-    #let r = $in
-        #| each { |row| $row.items }
-        #| flatten
-        #| str join "\n"
-        #| indent
 }
 
 def indent []: string -> string {

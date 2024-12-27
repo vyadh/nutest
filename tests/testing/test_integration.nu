@@ -39,10 +39,24 @@ def cleanup [] {
 }
 
 #[test]
-def with-default-options [] {
+def with-default-table-options [] {
     let temp = $in.temp
 
-    let results = test-run $"run-tests --reporter table --path '($temp)'"
+    let results = test-run $"run-tests --path '($temp)' --reporter table"
+
+    assert equal $results [
+        { suite: test_1, test: test_bar, result: "PASS", output: ["rab"] }
+        { suite: test_1, test: test_foo, result: "PASS", output: ["oof"] }
+        { suite: test_2, test: test_baz, result: "PASS", output: ["zab"] }
+        { suite: test_2, test: test_qux, result: "SKIP", output: [] }
+    ]
+}
+
+#[test]
+def with-different-formatter [] {
+    let temp = $in.temp
+
+    let results = test-run $"run-tests --path '($temp)' --reporter table --formatter preserve"
 
     assert equal $results [
         { suite: test_1, test: test_bar, result: "PASS", output: [{stream: "error", items: "rab"}] }
@@ -57,10 +71,10 @@ def with-specific-file [] {
     let temp = $in.temp
     let path = $temp | path join "test_2.nu"
 
-    let results = test-run $"run-tests --reporter table --path ($path)"
+    let results = test-run $"run-tests --path '($path)' --reporter table"
 
     assert equal $results [
-        { suite: test_2, test: test_baz, result: "PASS", output: [{stream: "output", items: "zab"}] }
+        { suite: test_2, test: test_baz, result: "PASS", output: ["zab"] }
         { suite: test_2, test: test_qux, result: "SKIP", output: [] }
     ]
 }
@@ -69,10 +83,10 @@ def with-specific-file [] {
 def with-specific-test [] {
     let temp = $in.temp
 
-    let results = test-run $"run-tests --reporter table --path ($temp) --match-tests test_foo"
+    let results = test-run $"run-tests --path '($temp)' --reporter table --match-tests test_foo"
 
     assert equal $results [
-        { suite: test_1, test: test_foo, result: "PASS", output: [[stream, items]; ["output", "oof"]] }
+        { suite: test_1, test: test_foo, result: "PASS", output: ["oof"] }
     ]
 }
 
@@ -80,11 +94,11 @@ def with-specific-test [] {
 def with-test-pattern [] {
     let temp = $in.temp
 
-    let results = test-run $"run-tests --reporter table --path ($temp) --match-tests 'test_ba[rz]'"
+    let results = test-run $"run-tests --path '($temp)' --reporter table --match-tests 'test_ba[rz]'"
 
     assert equal $results [
-        { suite: test_1, test: test_bar, result: "PASS", output: [{stream: "error", items: "rab"}] }
-        { suite: test_2, test: test_baz, result: "PASS", output: [{stream: "output", items: "zab"}] }
+        { suite: test_1, test: test_bar, result: "PASS", output: ["rab"] }
+        { suite: test_2, test: test_baz, result: "PASS", output: ["zab"] }
     ]
 }
 
@@ -92,11 +106,11 @@ def with-test-pattern [] {
 def with-specific-suite [] {
     let temp = $in.temp
 
-    let results = test-run $"run-tests --reporter table --path ($temp) --match-suites test_1"
+    let results = test-run $"run-tests --path '($temp)' --reporter table --match-suites test_1"
 
     assert equal $results [
-        { suite: test_1, test: test_bar, result: "PASS", output: [{stream: "error", items: "rab"}] }
-        { suite: test_1, test: test_foo, result: "PASS", output: [{stream: "output", items: "oof"}] }
+        { suite: test_1, test: test_bar, result: "PASS", output: ["rab"] }
+        { suite: test_1, test: test_foo, result: "PASS", output: ["oof"] }
     ]
 }
 
@@ -109,7 +123,7 @@ def exit-on-fail-with-passing-tests [] {
             --no-config-file
             --commands $"
                 use std/testing *
-                run-tests --reporter table --path ($temp) --fail
+                run-tests --path ($temp) --reporter table --fail
             "
     ) | complete
     let output = $result.stdout | from nuon
@@ -132,7 +146,7 @@ def exit-on-fail-with-failing-tests [] {
             --no-config-file
             --commands $"
                 use std/testing *
-                run-tests --reporter table --path ($temp) --fail --strategy { error_format: compact }
+                run-tests --path ($temp) --reporter table --fail --strategy { error_format: compact }
             "
     ) | complete
 
@@ -167,7 +181,7 @@ def with-summary-reporter [] {
     def test_oof [] { }
     " | save $test_file_3
 
-    let results = test-run $"run-tests --reporter summary --path ($temp)"
+    let results = test-run $"run-tests --path '($temp)' --reporter summary"
 
     assert equal $results {
         total: 6
@@ -211,7 +225,7 @@ def with-terminal-reporter [] {
     def test_oof [] { }
     " | save $test_file_3
 
-    let results = test-run-raw $"run-tests --reporter terminal --path ($temp) --strategy { threads: 1, error_format: compact }"
+    let results = test-run-raw $"run-tests --path '($temp)' --reporter terminal --strategy { threads: 1, error_format: compact }"
 
     # The ordering of the suites is currently indeterminate so we need to sort lines
     assert equal ($results | sort-lines) ($"Running tests...

@@ -37,6 +37,10 @@ def nulls [] {
 
 # [test]
 def numbers [] {
+    print test
+    print -e "error"
+    print "and output"
+
     let code = { print 1 }
     let output = $in | run $code
     assert equal $output [1]
