@@ -56,7 +56,7 @@ def complete-test [theme: closure, formatter: closure]: record -> nothing {
     let formatted = format-result $row.result $theme
 
     if ($row.output | is-not-empty) {
-        let output = ($row.output | do $formatter $theme) | indent
+        let output = $row.output | format-output $formatter
         print $"($formatted) ($suite) ($test)\n($output)"
     } else {
         print $"($formatted) ($suite) ($test)"
@@ -69,6 +69,17 @@ def format-result [result: string, theme: closure]: nothing -> string {
         "SKIP" => ({ type: "skip", text: $result } | do $theme)
         "FAIL" => ({ type: "fail", text: $result } | do $theme)
         _ => $result
+    }
+}
+
+def format-output [formatter: closure]: table<stream: string, items: list<any>> -> string {
+    let output = $in
+    let formatted = $output | do $formatter
+    # todo shouldn't need 'if' will table formatting
+    if ($formatted | describe) == "string" {
+        $formatted | indent
+    } else {
+        $formatted
     }
 }
 

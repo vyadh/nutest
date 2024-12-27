@@ -4,39 +4,6 @@ const success_message = "I'd much rather be happy than right any day"
 const warning_message = "Don't Panic"
 const failure_message = "No tea"
 
-def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, type, payload> {
-    const this_file = path self
-    let result = (
-        ^$nu.current-exe
-            --no-config-file
-            --commands $"
-                use std/testing/runner.nu *
-                source ($this_file)
-                nutest-299792458-execute-suite { threads: 0, error_format: compact } ($suite) ($plan)
-            "
-    ) | complete
-
-    if $result.exit_code != 0 {
-        error make { msg: $result.stderr }
-    }
-
-    (
-        $result.stdout
-            | lines
-            | each { $in | from nuon }
-            | sort-by suite test
-            | reject timestamp
-            | update payload { |row|
-                if ($row.type in ["output", "error"]) {
-                    # Decode output to testable data format
-                    { data: ($row.payload.data | decode base64 | decode | from nuon) }
-                } else {
-                    $row.payload
-                }
-            }
-    )
-}
-
 #[test]
 def execute-plan-empty [] {
     let plan = []
@@ -473,7 +440,7 @@ def signature-after-that-accepts-non-record [] {
             "suite"
             "test"
             "output"
-            { data: { stream: "error", items: ["Can't convert to Closure.", "can't convert record to Closure"] }}
+            { data: { stream: "error", items: ["Can't convert to Closure."] }}
         ]
     ]
 }
@@ -544,4 +511,68 @@ def fc-after-each []: record -> nothing {
 
 def fc-after-all []: record -> nothing {
     print "aa"
+}
+
+def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, type, payload> {
+    const this_file = path self
+    let result = (
+        ^$nu.current-exe
+            --no-config-file
+            --commands $"
+                use std/testing/runner.nu *
+                source ($this_file)
+                nutest-299792458-execute-suite { threads: 0, error_format: compact } ($suite) ($plan)
+            "
+    ) | complete
+
+    if $result.exit_code != 0 {
+        error make { msg: $result.stderr }
+    }
+
+    (
+        $result.stdout
+            | lines
+            | each { $in | from nuon }
+            | sort-by suite test
+            | reject timestamp
+            | update payload { |row|
+                if ($row.type in ["output", "error"]) {
+                    # Decode output to testable data format
+                    { data: ($row.payload.data | decode-output ) }
+                } else {
+                    $row.payload
+                }
+            }
+    )
+}
+
+def decode-output []: string -> table<stream: string, items: list<any>> {
+    $in | decode base64 | decode | from nuon | decode-output-events
+    # todo use formatter here once it's supports errors
+}
+
+def decode-output-events []: table<stream: string, items: list<any>> -> table<stream: string, items: list<any>> {
+    $in | each { $in | decode-output-event }
+}
+
+def decode-output-event []: record<stream: string, items: list<any>> -> record<stream: string, items: list<any>> {
+    $in | update items { |event|
+        $event.items | each { |item|
+            if ($item | looks-like-error) {
+                $item | get msg
+            } else {
+                $item
+            }
+        }
+    }
+}
+
+def looks-like-error []: any -> bool {
+    let value = $in
+    if ($value | describe | str starts-with "record") {
+        let columns = $value | columns
+        ("msg" in $columns) and ("rendered" in $columns) and ("json" in $columns)
+    } else {
+        false
+    }
 }

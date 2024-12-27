@@ -163,11 +163,14 @@ def nutest-299792458-execute-after [items: list]: record -> nothing {
     }
 }
 
+# todo remove strategy and up from callers
 def nutest-299792458-fail [strategy: record<error_format: string>, error: record] {
     nutest-299792458-emit "result" { status: "FAIL" }
-    print -e ...(nutest-299792458-format-error $strategy $error)
+    # Exclude raw so it can be convered to Nuon
+    print -e ($error | reject raw)
 }
 
+# todo move to formatter
 def nutest-299792458-format-error [
     strategy: record<error_format: string>
     error: record

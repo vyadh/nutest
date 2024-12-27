@@ -122,9 +122,9 @@ This will run all files that include `api` in the name and tests that contain `t
 
 By default, there is the terminal reporter that outputs the test results as they complete. This is useful for long-running tests where you want to see the results as they happen.
 
-It is also possible to emit test results as a normal data table that can be processed like other Nushell data. For example, you can filter the results to show only failed tests using:
+It is also possible to emit test results as a normal data table that can be processed like other Nushell data. For example, you can filter the results to show only tests that need attention using:
 ```nu
-run-tests --reporter table | where result == FAIL
+run-tests --reporter table | where result in [SKIP, FAIL]
 ```
 
 See screenshots above for examples of the output (in that case using `--reporter table-pretty`).
