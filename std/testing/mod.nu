@@ -145,7 +145,8 @@ def select-reporter [
             use reporter_table.nu
 
             let theme = theme standard
-            let formatter = $formatter_option | default "pretty" | select-formatter $theme
+            let error_format = "compact"
+            let formatter = $formatter_option | default "pretty" | select-formatter $theme $error_format
 
             reporter_table create $theme $formatter
         }
@@ -154,7 +155,8 @@ def select-reporter [
             use reporter_table.nu
 
             let theme = theme none
-            let formatter = $formatter_option | default "unformatted" | select-formatter $theme
+            let error_format = "record" # todo not actually used, needs to flow in (maybe not needed as error already record? use json form?)
+            let formatter = $formatter_option | default "unformatted" | select-formatter $theme $error_format
 
             reporter_table create $theme $formatter
         }
@@ -168,7 +170,8 @@ def select-reporter [
             use reporter_terminal.nu
 
             let theme = theme standard
-            let formatter = $formatter_option | default "pretty" | select-formatter $theme
+            let error_format = "rendered"
+            let formatter = $formatter_option | default "pretty" | select-formatter $theme $error_format
 
             reporter_terminal create $theme $formatter
         }
@@ -178,14 +181,14 @@ def select-reporter [
     }
 }
 
-def select-formatter [theme: closure]: string -> closure {
+def select-formatter [theme: closure, error_format: string]: string -> closure {
     use formatter.nu
 
     let option = $in
     match $option {
         "preserve" => (formatter preserve)
         "unformatted" => (formatter unformatted)
-        "pretty" => (formatter string $theme)
+        "pretty" => (formatter pretty $theme $error_format)
         _ => {
             error make { msg: $"Unknown formatter: ($option)" }
         }

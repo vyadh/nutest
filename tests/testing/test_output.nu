@@ -1,12 +1,13 @@
 use std/assert
 use harness.nu
+use ../../std/testing/formatter.nu
 
 # This suite ensures that various printed outputs are represented as would be
 # expected if the test code was being run directly and interactively.
 
 # [before-all]
 def setup-tests []: record -> record {
-    $in | harness setup-tests
+    $in | harness setup-tests (formatter preserve)
 }
 
 # [after-all]
@@ -127,9 +128,9 @@ def record_in_table [] {
     assert equal $output [ [[a, b]; [1, {c: 2, d: 3}]] ]
 }
 
-def run [code: closure]: record -> string {
+def run [code: closure]: record -> list<any> {
     let result = $in | harness run $code
     assert equal $result.result "PASS"
-    $result.output
-        | each { |row| $row.items } # Unpack from stream record
+    # We are using the "no-op" formatter here to avoid an implicit dependency (see setup-tests)
+    $result.output | each { |row| $row.items } # Unpack from stream record
 }

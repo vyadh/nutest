@@ -147,19 +147,6 @@ Will return:
 
 Output from the `print` command to stdout and stderr will be captured and shown against test results, which is useful for debugging failing tests.
 
-### Error Reporting
-
-When reporting in a table, a compacted version of errors will be shown without the source details to better fit on screen. For more detailed error messages, use the terminal reporter
-or supply the `--strategy { error_format: "rendered" }` option to the `run-tests` command.
-
-As a strategy, this can also be overwritten within a suite. For example, the following strategy will always show the full error message for all tests in the suite:
-
-```nu
-#[strategy]
-def error_format []: nothing -> record {
-  { error_format: "rendered" }
-}
-```
 
 ### CI/CD Support
 

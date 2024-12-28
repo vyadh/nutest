@@ -20,11 +20,10 @@
 # Note: The below commands all have a prefix to avoid possible conflicts with user test files.
 
 export def nutest-299792458-execute-suite [
-    default_strategy: record<threads: int, error_format: string>
+    default_strategy: record<threads: int>
     suite: string
     suite_data: list
 ] {
-
     with-env { NU_TEST_SUITE_NAME: $suite } {
         nutest-299792458-execute-suite-internal $default_strategy $suite_data
     }
@@ -34,7 +33,7 @@ export def nutest-299792458-execute-suite [
 }
 
 def nutest-299792458-execute-suite-internal [
-    default_strategy: record<threads: int, error_format: string>
+    default_strategy: record<threads: int>
     suite_data: list
 ] {
 
@@ -67,12 +66,12 @@ def nutest-299792458-execute-suite-internal [
     } catch { |error|
         # This should only happen when strategy or before/after all fails, so mark all tests failed
         # Each test run has its own exception handling so is not expected to trigger this
-        nutest-299792458-force-error $default_strategy $tests $error
+        nutest-299792458-force-error $tests $error
     }
 }
 
 def nutest-299792458-execute-tests [
-    strategy: record<threads: int, error_format: string>
+    strategy: record<threads: int>
     context_all: record
     before_each: list
     after_each: list
@@ -84,14 +83,13 @@ def nutest-299792458-execute-tests [
         # Allow print output to be associated with specific tests by adding name to the environment
         with-env { NU_TEST_NAME: $test.name } {
             nutest-299792458-emit "start"
-            nutest-299792458-execute-test $strategy $context_all $before_each $after_each $test
+            nutest-299792458-execute-test $context_all $before_each $after_each $test
             nutest-299792458-emit "finish"
         }
     }
 }
 
 def nutest-299792458-execute-test [
-    strategy: record<error_format: string>
     context_all: record
     before_each: list
     after_each: list
@@ -100,7 +98,7 @@ def nutest-299792458-execute-test [
     let context = try {
         $context_all | nutest-299792458-execute-before $before_each
     } catch { |error|
-        nutest-299792458-fail $strategy $error
+        nutest-299792458-fail $error
         return
     }
 
@@ -109,7 +107,7 @@ def nutest-299792458-execute-test [
         nutest-299792458-emit "result" { status: "PASS" }
         # Note that although we have emitted PASS the after-each may still fail (see below)
     } catch { |error|
-        nutest-299792458-fail $strategy $error
+        nutest-299792458-fail $error
     }
 
     try {
@@ -118,7 +116,7 @@ def nutest-299792458-execute-test [
         # It's possible to get a test PASS above then emit FAIL when processing after-each.
         # This needs to be handled by the reporter. We could work around it here, but since we have
         # to handle for after-all outside concurrent processing of tests anyway this is simpler.
-        nutest-299792458-fail $strategy $error
+        nutest-299792458-fail $error
     }
 }
 
@@ -132,13 +130,11 @@ def nutest-299792458-force-result [tests: list, status: string] {
     }
 }
 
-def nutest-299792458-force-error [strategy: record<error_format: string>, tests: list, error: record] {
-    let formatted = (nutest-299792458-format-error $strategy $error)
+def nutest-299792458-force-error [tests: list, error: record] {
     for test in $tests {
         with-env { NU_TEST_NAME: $test.name } {
             nutest-299792458-emit "start"
-            nutest-299792458-emit "result" { status: "FAIL" }
-            print -e ...$formatted
+            nutest-299792458-fail $error
             nutest-299792458-emit "finish"
         }
     }
@@ -163,51 +159,10 @@ def nutest-299792458-execute-after [items: list]: record -> nothing {
     }
 }
 
-# todo remove strategy and up from callers
-def nutest-299792458-fail [strategy: record<error_format: string>, error: record] {
+def nutest-299792458-fail [error: record] {
     nutest-299792458-emit "result" { status: "FAIL" }
     # Exclude raw so it can be convered to Nuon
     print -e ($error | reject raw)
-}
-
-# todo move to formatter
-def nutest-299792458-format-error [
-    strategy: record<error_format: string>
-    error: record
-]: nothing -> list<string> {
-    # The rendered error has useful information for terminal mode but is much for table-based reporters
-    if $strategy.error_format == "rendered" {
-        return [$error.rendered]
-    }
-
-    let json = $error.json | from json
-    let message = $json.msg
-    let help = $json | get help?
-    let labels = $json | get labels?
-
-    if $help != null {
-        [$message, $help]
-    } else if ($labels != null) {
-        let detail = $labels | each { |label|
-            | get text
-            # Not sure why this is in the middle of the error json...
-            | str replace --all "originates from here" ''
-        } | str join "\n"
-
-        if ($message | str contains "Assertion failed") {
-            let formatted = ($detail
-                | str replace --all --regex '\n[ ]+Left' "|>Left"
-                | str replace --all --regex '\n[ ]+Right' "|>Right"
-                | str replace --all --regex '[\n\r]+' '\n'
-                | str replace --all "|>" "\n|>")
-                | str join ""
-            [$message, ...($formatted | lines)]
-         } else {
-            [$message, ...($detail | lines)]
-         }
-    } else {
-        [$message]
-    }
 }
 
 # Keep a reference to the internal print command

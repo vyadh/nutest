@@ -35,8 +35,8 @@ def data-only [] {
 }
 
 #[test]
-def string-with-theme-none [] {
-    let formatter = formatter string (theme none)
+def pretty-with-theme-none [] {
+    let formatter = formatter pretty (theme none) "compact"
 
     assert equal ([] | do $formatter) ""
 
@@ -53,8 +53,8 @@ def string-with-theme-none [] {
 }
 
 #[test]
-def string-with-theme-standard [] {
-    let formatter = formatter string (theme standard)
+def pretty-with-theme-standard [] {
+    let formatter = formatter pretty (theme standard) "compact"
 
     assert equal ([] | do $formatter) ""
 

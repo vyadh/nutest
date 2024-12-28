@@ -1,9 +1,13 @@
 use std/assert
 use harness.nu
+use ../../std/testing/formatter.nu
+use ../../std/testing/theme.nu
+use ../../std/testing/reporter_table.nu
 
 # [before-all]
 def setup-tests []: record -> record {
-    $in | harness setup-tests
+    let formatter = formatter pretty (theme none) "compact" # Unless overridden
+    $in | harness setup-tests $formatter
 }
 
 # [after-all]
@@ -37,7 +41,7 @@ def assertion-failure [] {
     " | trim-all)
 }
 
-# [ignore]
+# [test]
 def basic-error [] {
     let code = {
         error make { msg: 'some error' }
@@ -45,10 +49,10 @@ def basic-error [] {
 
     let output = $in | run $code
 
-    assert str contains $output "some error"
+    assert equal $output "some error"
 }
 
-# [ignore]
+# [test]
 def full-rendered-error [] {
     let code = {
         let variable = 'span source'
@@ -63,8 +67,11 @@ def full-rendered-error [] {
         }
     }
 
-    let strategy = { error_format: "rendered" }
-    let output = $in | run $code $strategy
+    # Use a pretty-printing formatter
+    let formatter = formatter pretty (theme none) "rendered"
+    let reporter = reporter_table create (theme none) $formatter
+    let context = $in | merge { reporter: $reporter }
+    let output = $context | run $code
 
     assert str contains $output "a decorated error"
     assert str contains $output "happened here"
@@ -86,14 +93,17 @@ def full-compact-error [] {
         }
     }
 
-    let strategy = { error_format: "compact" }
-    let output = $in | run $code $strategy
+    # Use a compact-printing formatter
+    let formatter = formatter pretty (theme none) "compact"
+    let reporter = reporter_table create (theme none) $formatter
+    let context = $in | merge { reporter: $reporter }
+    let output = $context | run $code
 
-    assert equal $output [[stream, items]; [error, "a decorated error"], [error, "some help"]]
+    assert equal $output "a decorated error\nsome help"
 }
 
-def run [code: closure, strategy: record = { }]: record -> string {
-    let result = $in | harness run $code $strategy
+def run [code: closure]: record -> string {
+    let result = $in | harness run $code
     assert equal $result.result "FAIL"
     $result.output
 }

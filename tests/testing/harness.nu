@@ -6,8 +6,9 @@ use ../../std/testing/formatter.nu
 # A harness for running tests against nutest itself.
 
 # Encapsulate before-all behaviour
-export def setup-tests []: nothing -> record {
-    let reporter = reporter_table create (theme none) (formatter preserve)
+export def setup-tests [formatter?: closure]: nothing -> record {
+    let formatter = $formatter | default (formatter preserve)
+    let reporter = reporter_table create (theme none) $formatter
     do $reporter.start
     $in | merge {
         reporter: $reporter
@@ -43,7 +44,7 @@ export def run [
     let context = $in
     let temp = $context.temp_dir
     let reporter = $context.reporter
-    let strategy = { threads: 1, error_format: "compact" } | merge $strategy
+    let strategy = { threads: 1 } | merge $strategy
 
     let test = random chars
     let suite = $code | create-closure-suite $temp $test

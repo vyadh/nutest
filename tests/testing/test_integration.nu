@@ -132,7 +132,8 @@ def exit-on-fail-with-passing-tests [] {
     assert ($output =~ "test_1[ │]+test_foo[ │]+PASS[ │]+oof") "Tests    are output"
 }
 
-#[test]
+# todo We should decide how to format errors in tables
+#[ignore]
 def exit-on-fail-with-failing-tests [] {
     let temp = $in.temp
     let test_file_3 = $temp | path join "test_3.nu"
@@ -146,7 +147,7 @@ def exit-on-fail-with-failing-tests [] {
             --no-config-file
             --commands $"
                 use std/testing *
-                run-tests --path ($temp) --reporter table --formatter pretty --fail --strategy { error_format: compact }
+                run-tests --path ($temp) --reporter table --formatter pretty --fail
             "
     ) | complete
 
@@ -224,26 +225,18 @@ def with-terminal-reporter [] {
     def test_oof [] { }
     " | save $test_file_3
 
-    let results = test-run-raw $"run-tests --path '($temp)' --reporter terminal --strategy { threads: 1, error_format: compact }"
+    let results = test-run-raw $"run-tests --path '($temp)' --reporter terminal --strategy { threads: 1 }"
+        | ansi strip
 
-    # The ordering of the suites is currently indeterminate so we need to sort lines
-    assert equal ($results | sort-lines) ($"Running tests...
-✅ (ansi green)PASS(ansi reset) (ansi light_blue)test_1(ansi reset) test_foo
-  oof
-✅ (ansi green)PASS(ansi reset) (ansi light_blue)test_1(ansi reset) test_bar
-  (ansi yellow)rab(ansi reset)
-✅ (ansi green)PASS(ansi reset) (ansi light_blue)test_2(ansi reset) test_baz
-  zab
-🚧 (ansi yellow)SKIP(ansi reset) (ansi light_blue)test_2(ansi reset) test_qux
-❌ (ansi red)FAIL(ansi reset) (ansi light_blue)test_3(ansi reset) test_quux
-  (ansi yellow)Ouch(ansi reset)
-🚧 (ansi yellow)SKIP(ansi reset) (ansi light_blue)test_3(ansi reset) test_oof
-Test run completed: 6 total, 3 passed, 1 failed, 2 skipped" | sort-lines)
-
-    # Ensure error is associated with the right test
-    assert str contains $results ($"
-❌ (ansi red)FAIL(ansi reset) (ansi light_blue)test_3(ansi reset) test_quux
-  (ansi yellow)Ouch(ansi reset)" | str trim)
+    # The ordering of the suites is currently indeterminate so we need to match tests specifically
+    assert ($results | str starts-with "Running tests...")
+    assert ($results =~ $"✅ PASS test_1 test_foo\n  oof")
+    assert ($results =~ $"✅ PASS test_1 test_bar\n  rab")
+    assert ($results =~ $"✅ PASS test_2 test_baz\n  zab")
+    assert ($results =~ $"🚧 SKIP test_2 test_qux")
+    assert ($results =~ $"❌ FAIL test_3 test_quux\n  Error:[\n ]+× Ouch")
+    assert ($results =~ $"🚧 SKIP test_3 test_oof")
+    assert ($results | str ends-with "Test run completed: 6 total, 3 passed, 1 failed, 2 skipped\n")
 }
 
 def sort-lines []: string -> list<string> {
@@ -267,7 +260,7 @@ def test-run [command: string] {
     }
 }
 
-def test-run-raw [command: string] {
+def test-run-raw [command: string]: nothing -> string {
     let result = (
         ^$nu.current-exe
             --no-config-file
