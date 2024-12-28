@@ -25,7 +25,7 @@ def cleanup-test []: record -> nothing {
     $in | harness cleanup-test
 }
 
-# [ignore]
+# [test]
 def assertion-failure [] {
     let test = {
         assert equal 1 2

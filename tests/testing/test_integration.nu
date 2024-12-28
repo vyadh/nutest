@@ -132,8 +132,7 @@ def exit-on-fail-with-passing-tests [] {
     assert ($output =~ "test_1[ │]+test_foo[ │]+PASS[ │]+oof") "Tests    are output"
 }
 
-# todo We should decide how to format errors in tables
-#[ignore]
+#[test]
 def exit-on-fail-with-failing-tests [] {
     let temp = $in.temp
     let test_file_3 = $temp | path join "test_3.nu"
@@ -152,7 +151,7 @@ def exit-on-fail-with-failing-tests [] {
     ) | complete
 
     assert equal $result.exit_code 1
-    assert ($result.stdout =~ "test_3[ │]+test_quux[ │]+FAIL[ │]+Ouch") "Tests are output"
+    assert ($result.stdout =~ "test_3[ │]+test_quux[ │]+FAIL[ │]+{msg: Ouch") "Tests are output"
 }
 
 #[test]
@@ -227,6 +226,8 @@ def with-terminal-reporter [] {
 
     let results = test-run-raw $"run-tests --path '($temp)' --reporter terminal --strategy { threads: 1 }"
         | ansi strip
+
+        print $results
 
     # The ordering of the suites is currently indeterminate so we need to match tests specifically
     assert ($results | str starts-with "Running tests...")

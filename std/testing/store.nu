@@ -134,5 +134,8 @@ def query-output [
         " --params { suite: $suite test: $test }
         | get data # The column name
         | each { $in | from nuon }
-        | flatten # Unwrap the multiple calls to `print`
+        | flatten
+
+    # Note the flatten unwraps multiple calls to `print`
+    # This is simpler, but prevents implementing things like `print --no-newline`
 }

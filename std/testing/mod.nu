@@ -155,8 +155,7 @@ def select-reporter [
             use reporter_table.nu
 
             let theme = theme none
-            let error_format = "record" # todo not actually used, needs to flow in (maybe not needed as error already record? use json form?)
-            let formatter = $formatter_option | default "unformatted" | select-formatter $theme $error_format
+            let formatter = $formatter_option | default "unformatted" | select-formatter $theme
 
             reporter_table create $theme $formatter
         }
@@ -181,7 +180,7 @@ def select-reporter [
     }
 }
 
-def select-formatter [theme: closure, error_format: string]: string -> closure {
+def select-formatter [theme: closure, error_format: string = "record"]: string -> closure {
     use formatter.nu
 
     let option = $in

@@ -110,7 +110,7 @@ def run-suite-with-ignored-test [] {
     ]
 }
 
-# [ignore]
+# [test]
 def run-suite-with-broken-test [] {
     let context = $in
     let temp = $context.temp
@@ -129,8 +129,9 @@ def run-suite-with-broken-test [] {
         }
     ]
 
-    let output = $results | get output | first
+    let output = $results | get output | str join "\n"
     assert str contains $output "Missing required positional argument"
+    assert str contains $output "def broken-test"
 }
 
 # [test]
@@ -223,7 +224,7 @@ def run-multiple-suites [] {
     ] | sort-by suite test)
 }
 
-# [ignore]
+# [test]
 def run-test-with-output-and-error-lines [] {
     let context = $in
     let temp = $context.temp
@@ -237,7 +238,8 @@ def run-test-with-output-and-error-lines [] {
             suite: "output"
             test: "test"
             result: "PASS"
-            output: [[stream, items]; ["output", [1, 2]], ["error", [3, 4]]]
+            # The items are not grouped due to the flatten when querying output in store.nu
+            output: [[stream, items]; ["output", 1], ["output", 2], ["error", 3], ["error", 4]]
         }
     ]
 }

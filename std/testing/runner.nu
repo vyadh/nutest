@@ -162,7 +162,8 @@ def nutest-299792458-execute-after [items: list]: record -> nothing {
 def nutest-299792458-fail [error: record] {
     nutest-299792458-emit "result" { status: "FAIL" }
     # Exclude raw so it can be convered to Nuon
-    print -e ($error | reject raw)
+    # Exclude debug as it reduces noise in the output
+    print -e ($error | reject raw debug)
 }
 
 # Keep a reference to the internal print command

@@ -182,9 +182,6 @@ This would be beneficial in a project where most tests should run concurrently b
 
 ## Roadmap
 
-- Handling of data formats and flexible rendering
-  - Allow testing output as list<any> rather than just lines
-  - This implies rendering is a very-last stage process
 - Handle output from before/after all (ignore it? repeat for every test? custom event?)
 - Test execution of external tools wrt to terminal output
   - This might need to be flagged to run in a separate process?
