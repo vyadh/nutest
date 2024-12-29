@@ -24,7 +24,7 @@ def execute-plan-test [] {
     assert equal $results [
         [suite test type payload];
         [ "suite", "testing", "start", {} ]
-        [ "suite", "testing", "output", { data: { stream: "output", items: [$success_message] }} ]
+        [ "suite", "testing", "output", { stream: "output", items: [$success_message] } ]
         [ "suite", "testing", "result", { status: "PASS" } ]
         [ "suite", "testing", "finish", {} ]
     ]
@@ -44,23 +44,23 @@ def execute-plan-tests [] {
     assert equal $results ([
         [suite test type payload];
         [ "suite", "test_success", "start", {} ]
-        [ "suite", "test_success", "output", { data: { stream: "output", items: [$success_message] }} ]
+        [ "suite", "test_success", "output", { stream: "output", items: [$success_message] } ]
         [ "suite", "test_success", "result", { status: "PASS" } ]
         [ "suite", "test_success", "finish", {} ]
         [ "suite", "test_success_warning", "start", {} ]
-        [ "suite", "test_success_warning", "output", { data: { stream: "error", items: [$warning_message] }} ]
-        [ "suite", "test_success_warning", "output", { data: { stream: "output", items: [$success_message] }} ]
+        [ "suite", "test_success_warning", "output", { stream: "error", items: [$warning_message] } ]
+        [ "suite", "test_success_warning", "output", { stream: "output", items: [$success_message] } ]
         [ "suite", "test_success_warning", "result", { status: "PASS" } ]
         [ "suite", "test_success_warning", "finish", {} ]
         [ "suite", "test_failure", "start", {} ]
         [ "suite", "test_failure", "result", { status: "FAIL" } ]
-        [ "suite", "test_failure", "output", { data: { stream: "error", items: [$failure_message] }} ]
+        [ "suite", "test_failure", "output", { stream: "error", items: [$failure_message] } ]
         [ "suite", "test_failure", "finish", {} ]
         [ "suite", "test_half_failure", "start", {} ]
-        [ "suite", "test_half_failure", "output", { data: { stream: "output", items: [$success_message] }} ]
-        [ "suite", "test_half_failure", "output", { data: { stream: "error", items: [$warning_message] }} ]
+        [ "suite", "test_half_failure", "output", { stream: "output", items: [$success_message] } ]
+        [ "suite", "test_half_failure", "output", { stream: "error", items: [$warning_message] } ]
         [ "suite", "test_half_failure", "result", { status: "FAIL" } ]
-        [ "suite", "test_half_failure", "output", { data: { stream: "error", items: [$failure_message] }} ]
+        [ "suite", "test_half_failure", "output", { stream: "error", items: [$failure_message] } ]
         [ "suite", "test_half_failure", "finish", {} ]
     ] | sort-by suite test)
 }
@@ -81,12 +81,12 @@ def execute-test-types-basic [] {
 
     assert equal $results [
         [suite test type payload];
-        [ "types", "bool", "output", { data: { stream: "output", items: [true] }} ]
-        [ "types", "datetime", "output", { data: { stream: "output", items: [2022-02-02T14:30:00+05:00] }} ]
-        [ "types", "duration", "output", { data: { stream: "output", items: [2min] }} ]
-        [ "types", "filesize", "output", { data: { stream: "output", items: [8KiB] }} ]
-        [ "types", "float", "output", { data: { stream: "output", items: [0.5] }} ]
-        [ "types", "int", "output", { data: { stream: "output", items: [1] }} ]
+        [ "types", "bool", "output", { stream: "output", items: [true] } ]
+        [ "types", "datetime", "output", { stream: "output", items: [2022-02-02T14:30:00+05:00] } ]
+        [ "types", "duration", "output", { stream: "output", items: [2min] } ]
+        [ "types", "filesize", "output", { stream: "output", items: [8KiB] } ]
+        [ "types", "float", "output", { stream: "output", items: [0.5] } ]
+        [ "types", "int", "output", { stream: "output", items: [1] } ]
     ]
 }
 
@@ -102,9 +102,9 @@ def execute-test-types-structured [] {
 
     assert equal $results [
         [suite test type payload];
-        [ "types", "list", "output", { data: { stream: "output", items: [[1, "2", 3min]] }} ]
+        [ "types", "list", "output", { stream: "output", items: [[1, "2", 3min]] } ]
         [ "types", "list", "result", { status: "PASS" } ]
-        [ "types", "record", "output", { data: { stream: "output", items: [{a: 1, b: 2}] }} ]
+        [ "types", "record", "output", { stream: "output", items: [{a: 1, b: 2}] } ]
         [ "types", "record", "result", { status: "PASS" } ]
     ]
 }
@@ -121,10 +121,10 @@ def execute-test-with-multiple-lines [] {
 
     assert equal $results [
         [suite test type payload];
-        [ "suite", "multi-print", "output", { data: { stream: "output", items: ["one"] }} ]
-        [ "suite", "multi-print", "output", { data: { stream: "output", items: ["two"] }} ]
-        [ "suite", "print-rest", "output", { data: { stream: "output", items: ["one", "two"] }} ]
-        [ "suite", "with-newlines", "output", { data: { stream: "output", items: ["one\ntwo"] }} ]
+        [ "suite", "multi-print", "output", { stream: "output", items: ["one"] } ]
+        [ "suite", "multi-print", "output", { stream: "output", items: ["two"] } ]
+        [ "suite", "print-rest", "output", { stream: "output", items: ["one", "two"] } ]
+        [ "suite", "with-newlines", "output", { stream: "output", items: ["one\ntwo"] } ]
     ]
 }
 
@@ -139,9 +139,9 @@ def execute-test-with-multiple-lines-deep [] {
 
     assert equal $results [
         [suite test type payload];
-        [ "types", "list", "output", { data: { stream: "output", items: [[1, "2\n3", 4min]] }} ]
+        [ "types", "list", "output", { stream: "output", items: [[1, "2\n3", 4min]] } ]
         [ "types", "list", "result", { status: "PASS" } ]
-        [ "types", "record", "output", { data: { stream: "output", items: [{a: 1, b: "2\n3"}] }} ]
+        [ "types", "record", "output", { stream: "output", items: [{a: 1, b: "2\n3"}] } ]
         [ "types", "record", "result", { status: "PASS" } ]
     ]
 }
@@ -158,7 +158,7 @@ def execute-before-each-test [] {
     assert equal $results [
         [suite test type payload];
         [ "before-suite", "test", "start", {} ]
-        [ "before-suite", "test", "output", { data: { stream: "output", items: ["What do you get if you multiply six by nine?", 42] }} ]
+        [ "before-suite", "test", "output", { stream: "output", items: ["What do you get if you multiply six by nine?", 42] } ]
         [ "before-suite", "test", "result", { status: "PASS" } ]
         [ "before-suite", "test", "finish", {} ]
     ]
@@ -177,9 +177,9 @@ def execute-after-each-test [] {
     assert equal $results [
         [suite test type payload];
         [ "after-suite", "test", "start", {} ]
-        [ "after-suite", "test", "output", { data: { stream: "output", items: ["What do you get if you multiply six by nine?", 42] }} ]
+        [ "after-suite", "test", "output", { stream: "output", items: ["What do you get if you multiply six by nine?", 42] } ]
         [ "after-suite", "test", "result", { status: "PASS" } ]
-        [ "after-suite", "test", "output", { data: { stream: "output", items: ["What do you get if you multiply six by nine?", 42] }} ]
+        [ "after-suite", "test", "output", { stream: "output", items: ["What do you get if you multiply six by nine?", 42] } ]
         [ "after-suite", "test", "finish", {} ]
     ]
 }
@@ -198,14 +198,14 @@ def execute-before-and-after-each-captures-output [] {
     assert equal $results [
         [suite test type payload];
         [ "suite", "test1", "start", {} ]
-        [ "suite", "test1", "output", { data: { stream: "output", items: [$success_message] }} ]
+        [ "suite", "test1", "output", { stream: "output", items: [$success_message] } ]
         [ "suite", "test1", "result", { status: "PASS" } ]
-        [ "suite", "test1", "output", { data: { stream: "error", items: [$warning_message] }} ]
+        [ "suite", "test1", "output", { stream: "error", items: [$warning_message] } ]
         [ "suite", "test1", "finish", {} ]
         [ "suite", "test2", "start", {} ]
-        [ "suite", "test2", "output", { data: { stream: "output", items: [$success_message] }} ]
+        [ "suite", "test2", "output", { stream: "output", items: [$success_message] } ]
         [ "suite", "test2", "result", { status: "PASS" } ]
-        [ "suite", "test2", "output", { data: { stream: "error", items: [$warning_message] }} ]
+        [ "suite", "test2", "output", { stream: "error", items: [$warning_message] } ]
         [ "suite", "test2", "finish", {} ]
     ]
 }
@@ -223,7 +223,7 @@ def execute-before-each-error-handling [] {
         [suite test type payload];
         [ "suite", "test", "start", {} ]
         [ "suite", "test", "result", { status: "FAIL" } ]
-        [ "suite", "test", "output", { data: { stream: "error", items: [$failure_message] }} ]
+        [ "suite", "test", "output", { stream: "error", items: [$failure_message] } ]
         [ "suite", "test", "finish", {} ]
     ]
 }
@@ -242,7 +242,7 @@ def execute-after-each-error-handling [] {
         [ "suite", "test", "start", {} ]
         [ "suite", "test", "result", { status: "PASS" } ] # The test passed
         [ "suite", "test", "result", { status: "FAIL" } ] # But after-each failed
-        [ "suite", "test", "output", { data: { stream: "error", items: [$failure_message] }} ]
+        [ "suite", "test", "output", { stream: "error", items: [$failure_message] } ]
         [ "suite", "test", "finish", {} ]
     ]
 }
@@ -261,11 +261,11 @@ def execute-before-all-error-handling [] {
         [suite test type payload];
         [ "suite", "test1", "start", {} ]
         [ "suite", "test1", "result", { status: "FAIL" } ]
-        [ "suite", "test1", "output", { data: { stream: "error", items: [$failure_message] }} ]
+        [ "suite", "test1", "output", { stream: "error", items: [$failure_message] } ]
         [ "suite", "test1", "finish", {} ]
         [ "suite", "test2", "start", {} ]
         [ "suite", "test2", "result", { status: "FAIL" } ]
-        [ "suite", "test2", "output", { data: { stream: "error", items: [$failure_message] }} ]
+        [ "suite", "test2", "output", { stream: "error", items: [$failure_message] } ]
         [ "suite", "test2", "finish", {} ]
     ]
 }
@@ -288,14 +288,14 @@ def execute-after-all-error-handling [] {
         [ "suite", "test1", "finish", {} ]
         [ "suite", "test1", "start", {} ]
         [ "suite", "test1", "result", { status: "FAIL" } ]
-        [ "suite", "test1", "output", { data: { stream: "error", items: [$failure_message] }} ]
+        [ "suite", "test1", "output", { stream: "error", items: [$failure_message] } ]
         [ "suite", "test1", "finish", {} ]
         [ "suite", "test2", "start", {} ]
         [ "suite", "test2", "result", { status: "PASS" } ]
         [ "suite", "test2", "finish", {} ]
         [ "suite", "test2", "start", {} ]
         [ "suite", "test2", "result", { status: "FAIL" } ]
-        [ "suite", "test2", "output", { data: { stream: "error", items: [$failure_message] }} ]
+        [ "suite", "test2", "output", { stream: "error", items: [$failure_message] } ]
         [ "suite", "test2", "finish", {} ]
     ]
 }
@@ -343,8 +343,8 @@ def signature-before-that-returns-nothing [] {
 
     assert equal $result [
         [suite test type payload];
-        [ "suite", "test", "output", { data: { stream: "output", items: [ "preserved-all" ] }} ]
-        [ "suite", "test", "output", { data: { stream: "output", items: [ "preserved-each" ] }} ]
+        [ "suite", "test", "output", { stream: "output", items: [ "preserved-all" ] } ]
+        [ "suite", "test", "output", { stream: "output", items: [ "preserved-each" ] } ]
         [ "suite", "test", "result", { status: "PASS" } ]
     ]
 }
@@ -383,9 +383,9 @@ def signature-before-each-that-returns-non-record [] {
     assert equal $result [
         [suite test type payload];
         [ "suite", "test", "result", { status: "FAIL" } ]
-        [ "suite", "test", "output", { data: { stream: "error", items: [
+        [ "suite", "test", "output", { stream: "error", items: [
             "The before-each/all command 'returns-string' must return a record or nothing, not 'string'"
-        ] }} ]
+        ] } ]
     ]
 }
 
@@ -402,9 +402,9 @@ def signature-before-all-that-returns-non-record [] {
     assert equal $result [
         [suite test type payload];
         [ "suite", "test", "result", { status: "FAIL" } ]
-        [ "suite", "test", "output", { data: { stream: "error", items: [
+        [ "suite", "test", "output", { stream: "error", items: [
             "The before-each/all command 'returns-string' must return a record or nothing, not 'string'"
-        ] }} ]
+        ] } ]
     ]
 }
 
@@ -428,7 +428,7 @@ def signature-after-that-accepts-non-record [] {
             "suite"
             "signature-after-that-accepts-non-record"
             "output"
-            { data: { stream: "output", items: [{}] }}
+            { stream: "output", items: [{}] }
         ]
         [
             "suite"
@@ -440,7 +440,7 @@ def signature-after-that-accepts-non-record [] {
             "suite"
             "test"
             "output"
-            { data: { stream: "error", items: ["Can't convert to Closure."] }}
+            { stream: "error", items: ["Can't convert to Closure."] }
         ]
     ]
 }
@@ -465,24 +465,24 @@ def full-cycle-context [] {
     assert equal $results ([
         [suite test type payload];
         # Before all is only executed once at the beginning
-        [ "full-cycle", "full-cycle-context", "output", { data: { stream: "output", items: ["ba"] }} ]
+        [ "full-cycle", "full-cycle-context", "output", { stream: "output", items: ["ba"] } ]
 
         [ "full-cycle", "test1", "start", {} ]
-        [ "full-cycle", "test1", "output", { data: { stream: "output", items: [ "b" ] }} ]
-        [ "full-cycle", "test1", "output", { data: { stream: "output", items: [ "t" ] }} ]
+        [ "full-cycle", "test1", "output", { stream: "output", items: [ "b" ] } ]
+        [ "full-cycle", "test1", "output", { stream: "output", items: [ "t" ] } ]
         [ "full-cycle", "test1", "result", { status: "PASS" } ]
-        [ "full-cycle", "test1", "output", { data: { stream: "output", items: [ "a" ] }} ]
+        [ "full-cycle", "test1", "output", { stream: "output", items: [ "a" ] } ]
         [ "full-cycle", "test1", "finish", {} ]
 
         [ "full-cycle", "test2", "start", {} ]
-        [ "full-cycle", "test2", "output", { data: { stream: "output", items: [ "b" ] }} ]
-        [ "full-cycle", "test2", "output", { data: { stream: "output", items: [ "t" ] }} ]
+        [ "full-cycle", "test2", "output", { stream: "output", items: [ "b" ] } ]
+        [ "full-cycle", "test2", "output", { stream: "output", items: [ "t" ] } ]
         [ "full-cycle", "test2", "result", { status: "PASS" } ]
-        [ "full-cycle", "test2", "output", { data: { stream: "output", items: [ "a" ] }} ]
+        [ "full-cycle", "test2", "output", { stream: "output", items: [ "a" ] } ]
         [ "full-cycle", "test2", "finish", {} ]
 
         # After all is only executed once at the end
-        [ "full-cycle", "full-cycle-context", "output", { data: { stream: "output", items: ["aa"] }} ]
+        [ "full-cycle", "full-cycle-context", "output", { stream: "output", items: ["aa"] } ]
     ] | sort-by suite test)
 }
 
@@ -537,8 +537,8 @@ def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, 
             | reject timestamp
             | update payload { |row|
                 if ($row.type in ["output", "error"]) {
-                    # Decode output to testable data format
-                    { data: ($row.payload.data | decode-output ) }
+                    # Decode output to testable format
+                    ($row.payload | decode-output )
                 } else {
                     $row.payload
                 }

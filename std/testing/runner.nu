@@ -184,11 +184,10 @@ export def print [--stderr (-e), --raw (-r), --no-newline (-n), ...rest: any] {
     # Encode to base64 to avoid newlines in any strings breaking the line-based protocol
     let encoded = $output | to nuon --raw | encode base64
 
-    nutest-299792458-emit output { data: $encoded }
+    nutest-299792458-emit output $encoded
 }
 
-# TODO make payload multi-typed to avoid unnecessary record construction
-def nutest-299792458-emit [type: string, payload: record = { }] {
+def nutest-299792458-emit [type: string, payload: any = {}] {
     let event = {
         timestamp: (date now | format date "%+")
         suite: $env.NU_TEST_SUITE_NAME?
