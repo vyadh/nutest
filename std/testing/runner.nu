@@ -187,7 +187,7 @@ export def print [--stderr (-e), --raw (-r), --no-newline (-n), ...rest: any] {
     nutest-299792458-emit output $encoded
 }
 
-def nutest-299792458-emit [type: string, payload: any = {}] {
+def nutest-299792458-emit [type: string, payload: any = null] {
     let event = {
         timestamp: (date now | format date "%+")
         suite: $env.NU_TEST_SUITE_NAME?
