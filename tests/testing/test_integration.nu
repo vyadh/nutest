@@ -227,8 +227,6 @@ def with-terminal-reporter [] {
     let results = test-run-raw $"run-tests --path '($temp)' --reporter terminal --strategy { threads: 1 }"
         | ansi strip
 
-        print $results
-
     # The ordering of the suites is currently indeterminate so we need to match tests specifically
     assert ($results | str starts-with "Running tests...")
     assert ($results =~ $"✅ PASS test_1 test_foo\n  oof")

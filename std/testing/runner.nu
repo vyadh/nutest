@@ -104,7 +104,7 @@ def nutest-299792458-execute-test [
 
     try {
         $context | do $test.execute
-        nutest-299792458-emit "result" { status: "PASS" }
+        nutest-299792458-emit "result" "PASS"
         # Note that although we have emitted PASS the after-each may still fail (see below)
     } catch { |error|
         nutest-299792458-fail $error
@@ -124,7 +124,7 @@ def nutest-299792458-force-result [tests: list, status: string] {
     for test in $tests {
         with-env { NU_TEST_NAME: $test.name } {
             nutest-299792458-emit "start"
-            nutest-299792458-emit "result" { status: $status }
+            nutest-299792458-emit "result" $status
             nutest-299792458-emit "finish"
         }
     }
@@ -160,7 +160,7 @@ def nutest-299792458-execute-after [items: list]: record -> nothing {
 }
 
 def nutest-299792458-fail [error: record] {
-    nutest-299792458-emit "result" { status: "FAIL" }
+    nutest-299792458-emit "result" "FAIL"
     # Exclude raw so it can be convered to Nuon
     # Exclude debug as it reduces noise in the output
     print -e ($error | reject raw debug)

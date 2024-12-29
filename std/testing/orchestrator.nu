@@ -63,7 +63,7 @@ def run-suite [
         for test in $tests {
             let template = { timestamp: (date now | format date "%+"), suite: $suite, test: $test.name }
             $template | merge { type: "start", payload: null } | process-event $reporter
-            $template | merge { type: "result", payload: { status: "FAIL" } } | process-event $reporter
+            $template | merge { type: "result", payload: "FAIL" } | process-event $reporter
             $template | merge (as-error-output $result.stderr) | process-event $reporter
             $template | merge { type: "finish", payload: null } | process-event $reporter
         }
@@ -113,7 +113,7 @@ def process-event [reporter: record] {
             do $reporter.fire-finish $template
         }
         { type: "result" } => {
-            let message = $template | merge { result: $event.payload.status }
+            let message = $template | merge { result: $event.payload }
             do $reporter.fire-result $message
         }
         { type: "output" } => {
