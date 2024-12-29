@@ -67,13 +67,13 @@ def run-suite [
 }
 
 def runner-module []: nothing -> string {
-    let files = scope modules | where name == "runner" | get file
-    if ($files | is-empty) {
-        # This is required when nu-test is embedded in the standard library
-        return "std/testing/runner.nu"
+    let in_std = scope modules | where file == "std/testing/mod.nu" | is-not-empty
+    if $in_std {
+        "std/testing/runner.nu"
     } else {
-        # This is required when nu-test is run as a separate module
-        $files | first
+        # Can't just use `path self` directly for both cases, as it's currently wrong for virtual/std files
+        const runner_nu = path self "runner.nu"
+        $runner_nu
     }
 }
 
