@@ -20,6 +20,10 @@ export def list-tests [
     } | flatten | sort-by suite test
 }
 
+def "nu-complete reporter" []: nothing -> list<string> {
+    [terminal table-pretty table summary]
+}
+
 # Discover and run annotated test commands.
 #
 # The results are returned based on the specified reporter, being one of:
@@ -32,7 +36,7 @@ export def run-tests [
     --match-suites: string # Regular expression to match against suite names (defaults to all)
     --match-tests: string  # Regular expression to match against test names (defaults to all)
     --strategy: record     # Override test run behaviour, such as test concurrency (defaults to automatic)
-    --reporter: string     # The reporter used for test result output
+    --reporter: string@"nu-complete reporter" # The reporter used for test result output
     --fail                 # Print results and exit with non-zero status if any tests fail (useful for CI/CD systems)
 ]: nothing -> any {
 
