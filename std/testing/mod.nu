@@ -20,23 +20,40 @@ export def list-tests [
     } | flatten | sort-by suite test
 }
 
-def "nu-complete reporter" []: nothing -> list<string> {
-    [terminal table-pretty table summary]
+def "nu-complete reporter" []: nothing -> record<options: record,completions: table<value: string,description: string>> {
+    {
+        options: {
+            sort: false
+        }
+        completions: [
+            [value description];
+            [
+                "terminal"
+                "Output test results as they complete as text. (default)"
+            ]
+            [
+                "table-pretty"
+                "A table listing all tests with decorations and color."
+            ]
+            [
+                "table"
+                "A table listing all test results as data, useful for querying."
+            ]
+            [
+                "summary"
+                "A table with the total tests passed/failed/skipped."
+            ]
+        ]
+    }
 }
 
 # Discover and run annotated test commands.
-#
-# The results are returned based on the specified reporter, being one of:
-# - `terminal` (default): Output test results as they complete as text.
-# - `table-pretty` (default): A table listing all tests with decorations and color.
-# - `table`: A table listing all test results as data, useful for querying.
-# - `summary`: A table with the total tests passed/failed/skipped.
 export def run-tests [
     --path: path           # Location of tests (defaults to current directory)
     --match-suites: string # Regular expression to match against suite names (defaults to all)
     --match-tests: string  # Regular expression to match against test names (defaults to all)
     --strategy: record     # Override test run behaviour, such as test concurrency (defaults to automatic)
-    --reporter: string@"nu-complete reporter" # The reporter used for test result output
+    --reporter: string@"nu-complete reporter" = "terminal" # The reporter used for test result output
     --fail                 # Print results and exit with non-zero status if any tests fail (useful for CI/CD systems)
 ]: nothing -> any {
 
@@ -46,7 +63,6 @@ export def run-tests [
     let path = $path | default $env.PWD | check-path
     let suite = $match_suites | default ".*"
     let test = $match_tests | default ".*"
-    let reporter = $reporter | default "terminal"
     let strategy = (default-strategy $reporter) | merge ($strategy | default { })
     let reporter = select-reporter $reporter
 
