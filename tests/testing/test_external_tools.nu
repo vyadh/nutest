@@ -24,14 +24,17 @@ def cleanup-test []: record -> nothing {
     $in | harness cleanup-test
 }
 
-# [ignore]
-def output [] {
+# [test]
+def non-captured-output-is-ignored [] {
     let code = {
-        #^ls | complete
-        print "Hello, world!"
+        ^$nu.current-exe --version # This will print direct to stdout
+        print "Only this text"
     }
 
     let result = $in | harness run $code
 
-    print $result
+    assert equal ($result | reject suite test) {
+        result: "PASS"
+        output: [{ stream: "output", items: "Only this text"}]
+    }
 }

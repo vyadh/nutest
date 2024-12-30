@@ -65,7 +65,6 @@ def execute-plan-tests [] {
     ] | sort-by suite test)
 }
 
-# TODO move into test_output.nu
 #[test]
 def execute-test-types-basic [] {
     let plan = [
@@ -90,7 +89,6 @@ def execute-test-types-basic [] {
     ]
 }
 
-# TODO move into test_output.nu
 #[test]
 def execute-test-types-structured [] {
     let plan = [

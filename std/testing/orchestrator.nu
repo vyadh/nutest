@@ -50,12 +50,22 @@ def run-suite [
 
     if $result.exit_code == 0 {
         for line in ($result.stdout | lines) {
-            let event = $line | from nuon
+            try {
+                let event = $line | from nuon
 
-            # Useful for understanding event stream
-            #print ($event | table --expand)
+                # Useful for understanding event stream
+                #print ($event | table --expand)
 
-            $event | process-event $reporter
+                $event | process-event $reporter
+            } catch { |error|
+                if $error.msg == "error when loading nuon text" {
+                    # Test printed direct to stdout so runner could not capture output,
+                    # which means we cannot associate with a specific test
+                    print -e $"Warning: Non-captured output for '($suite)': ($line)"
+                } else {
+                    $error.raw
+                }
+            }
         }
     } else {
         # This is only triggered on a suite-level failure so not caught by the embedded runner
