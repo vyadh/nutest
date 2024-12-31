@@ -1,6 +1,6 @@
-# Nutest
+# Nu-test
 
-A Nushell test runner.
+A [Nushell](https://www.nushell.sh) test runner.
 
 ![An example nu-test run](resources/test-run.png)
 

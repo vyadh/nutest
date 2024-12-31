@@ -4,7 +4,7 @@
 
 - Handle output from before/after all (ignore it? repeat for every test? custom event?)
 - Fluent assertion module with pluggable matchers.
-- GitHub Actions for nu-test itself
+- Test Nushell standard library via GitHub Actions job
 - Test report in standard format (cargo test JSON or nextest / JUnit XML)
 - Generate test coverage (in llvm-cov format to allow combining with Nushell coverage)
 

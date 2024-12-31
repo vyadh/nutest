@@ -1,0 +1,35 @@
+name: Tests
+
+on:
+  workflow_call:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  tests:
+    name: Run Tests
+
+    strategy:
+      fail-fast: true
+      matrix:
+        # TODO windows-latest and macos-latest are currently not working
+        platform: [ubuntu-latest]
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nushell
+        uses: hustcer/setup-nu@v3
+        with:
+          version: "*"
+
+      - name: Test Nu-Test
+        run: nu -c 'use std/testing; testing run-tests --reporter terminal --fail'
+
+  # TODO: Job that runs Nushell's standard library tests
+  #- name: Test Standard Library
+  #  run: nu -c 'use std/testing; testing run-tests --reporter terminal --path crates/nu-std'
