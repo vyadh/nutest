@@ -1,7 +1,6 @@
 
 # A formatter that preserves the data as-is, including stream metadata, useful for tests.
-# todo 'preserved' more consistent?
-export def preserve []: table<stream: string, items: list<any>> -> closure {
+export def preserved []: table<stream: string, items: list<any>> -> closure {
     { $in }
 }
 
@@ -13,8 +12,6 @@ export def unformatted []: table<stream: string, items: list<any>> -> closure {
             | flatten # todo causing unexpected behaviour?
     }
 }
-
-# todo add `table`
 
 # A formatter that formats items as a string against a theme
 export def pretty [

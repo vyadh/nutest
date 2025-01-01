@@ -7,7 +7,7 @@ use ../../std/testing/formatter.nu
 
 # [before-all]
 def setup-tests []: record -> record {
-    $in | harness setup-tests (formatter preserve)
+    $in | harness setup-tests (formatter preserved)
 }
 
 # [after-all]

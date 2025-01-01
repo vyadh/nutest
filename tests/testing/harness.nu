@@ -7,7 +7,7 @@ use ../../std/testing/formatter.nu
 
 # Encapsulate before-all behaviour
 export def setup-tests [formatter?: closure]: nothing -> record {
-    let formatter = $formatter | default (formatter preserve)
+    let formatter = $formatter | default (formatter preserved)
     let reporter = reporter_table create (theme none) $formatter
     do $reporter.start
     $in | merge {

@@ -35,7 +35,7 @@ def trim []: string -> string {
 # Since we only have one database it needs to be created once before all tests.
 # We also need to ensure we narrow down results to the unique ones used in each test.
 def reporter-setup []: nothing -> record {
-    let reporter = reporter_table create (theme none) (formatter preserve)
+    let reporter = reporter_table create (theme none) (formatter preserved)
     do $reporter.start
     { reporter: $reporter }
 }

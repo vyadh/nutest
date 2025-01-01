@@ -7,7 +7,7 @@ use ../../std/testing/theme.nu
 
 #[test]
 def data-and-metadata [] {
-    let formatter = formatter preserve
+    let formatter = formatter preserved
 
     assert equal ([] | do $formatter) []
 

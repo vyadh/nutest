@@ -158,7 +158,7 @@ def select-formatter [theme: closure, error_format: string = "record"]: string -
 
     let option = $in
     match $option {
-        "preserve" => (formatter preserve)
+        "preserved" => (formatter preserved)
         "unformatted" => (formatter unformatted)
         "pretty" => (formatter pretty $theme $error_format)
         _ => {

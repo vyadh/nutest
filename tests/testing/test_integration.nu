@@ -56,7 +56,7 @@ def with-default-table-options [] {
 def with-different-formatter [] {
     let temp = $in.temp
 
-    let results = test-run $"run-tests --path '($temp)' --reporter table --formatter preserve"
+    let results = test-run $"run-tests --path '($temp)' --reporter table --formatter preserved"
 
     assert equal $results [
         { suite: test_1, test: test_bar, result: "PASS", output: [{stream: "error", items: "rab"}] }
