@@ -75,7 +75,6 @@ def format-result [result: string, theme: closure]: nothing -> string {
 def format-output [formatter: closure]: table<stream: string, items: list<any>> -> string {
     let output = $in
     let formatted = $output | do $formatter
-    # todo shouldn't need 'if' will table formatting
     if ($formatted | describe) == "string" {
         $formatted | indent
     } else {

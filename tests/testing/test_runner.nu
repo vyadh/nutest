@@ -1,4 +1,6 @@
 use std/assert
+use ../../std/testing/formatter.nu
+use ../../std/testing/theme.nu
 
 const success_message = "I'd much rather be happy than right any day"
 const warning_message = "Don't Panic"
@@ -544,18 +546,15 @@ def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, 
     )
 }
 
-# todo need any of below now we have error formatting in formatters?
-
 def decode-output []: string -> table<stream: string, items: list<any>> {
-    $in | decode base64 | decode | from nuon | decode-output-events
-    # todo use formatter here once it's supports errors
+    $in | decode base64 | decode | from nuon | reformat-errors-in-table
 }
 
-def decode-output-events []: table<stream: string, items: list<any>> -> table<stream: string, items: list<any>> {
-    $in | each { $in | decode-output-event }
+def reformat-errors-in-table []: table<stream: string, items: list<any>> -> table<stream: string, items: list<any>> {
+    $in | each { $in | reformat-errors }
 }
 
-def decode-output-event []: record<stream: string, items: list<any>> -> record<stream: string, items: list<any>> {
+def reformat-errors []: record<stream: string, items: list<any>> -> record<stream: string, items: list<any>> {
     $in | update items { |event|
         $event.items | each { |item|
             if ($item | looks-like-error) {

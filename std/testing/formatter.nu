@@ -64,8 +64,6 @@ def looks-like-error []: any -> bool {
     }
 }
 
-# todo remove error_format from strategy
-
 def format-error [error_format: string]: record -> any {
     let error = $in
     match $error_format {

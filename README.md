@@ -20,16 +20,16 @@ Writing tests in Nushell is both powerful and expressive. Not only for testing N
 
 ## Writing Tests
 
-**nu-test** uses command description as a tag system for tests, test discovery will ignore non-tagged commands.
-For now it support:
-| tag | description |
-| - | - |
-| **\[test\]** | this is the main tag to annotate tests.| 
-| **\[before-all\]** | this is run once before all tests.|
-| **\[before-each\]** | this is run before each test.|
-| **\[after-all\]** | this is run once after all tests.|
-| **\[after-each\]** | this is run after each test.|
-| **\[ignore\]** | ignores the test but still collects it, similar to `todo` in other test runners.|
+**Nu-test** uses the command description as a tag system for tests, test discovery will ignore non-tagged commands. It supports:
+
+| tag                 | description                             |
+|---------------------|-----------------------------------------|
+| **\[test\]**        | this is the main tag to annotate tests. | 
+| **\[before-all\]**  | this is run once before all tests.      |
+| **\[before-each\]** | this is run before each test.           |
+| **\[after-all\]**   | this is run once after all tests.       |
+| **\[after-each\]**  | this is run after each test.            |
+| **\[ignore\]**      | ignores the test but still collects it. |
 
 For example:
 
