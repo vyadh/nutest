@@ -6,6 +6,8 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: '0 7 * * *' # Run every morning at 7am UTC
 
 jobs:
   nutest-tests:
