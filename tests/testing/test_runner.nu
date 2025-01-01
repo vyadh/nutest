@@ -551,10 +551,6 @@ def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, 
         ^$nu.current-exe
             --no-config-file
             --commands $"
-                # These leek from the parent process if they are not set in the runner
-                $env.NU_TEST_SUITE_NAME = null
-                $env.NU_TEST_NAME = null
-
                 use std/testing/runner.nu *
                 source ($this_file)
                 nutest-299792458-execute-suite { threads: 0 } ($suite) ($plan)

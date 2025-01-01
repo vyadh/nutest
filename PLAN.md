@@ -8,10 +8,14 @@
 - Fluent assertion module with pluggable matchers.
 - Generate test coverage (in llvm-cov format to allow combining with Nushell coverage)
 
+## Known Bugs
+
+- The ordering of before/after all output is not reflected well as they are only kept in the database once for the suite and then re-produced for each test. A better strategy might be to reflect them as before-all and after-all output events in the database (using another record field?), and then query and order them appropriately in the final output.
+
 ## Future Ideas
 
+- Optionally write event stream to file to help debug Nutest itself.
 - Better support for direct-to-stdout tests by external tools that don't use the print statement. Allow running with sequential or subshell-based processing to capture output. Or even auto-detect and re-run tests.
-- Output from before/after all is replicated on every test output (perhaps via store query)
 - Detect flaky tests by re-running failed tests a few times.
 - More sophisticated change display rather than simple assertion module output, e.g. differences in records and tables, perhaps displayed as tables
     - Perhaps highlight differences in output using background colours like a diff tool.

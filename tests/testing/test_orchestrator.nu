@@ -245,15 +245,16 @@ def run-test-with-output [] {
 }
 
 # [test]
-# The output from before/after-all is not currently captured by orchestrator
-def run-before-after-all-with-output [] {
+def run-before-after-with-output [] {
     let context = $in
     let temp = $context.temp
 
     mut suite = create-suite $temp "all-with-output"
-    let suite = ("print 1; print -e 2" | append-test $temp $suite "ba" --type "before-all")
-    let suite = ("print 3; print -e 4" | append-test $temp $suite "test")
-    let suite = ("print 5; print -e 6" | append-test $temp $suite "aa" --type "after-all")
+    let suite = ("print bao; print -e bao" | append-test $temp $suite "ba" --type "before-all")
+    let suite = ("print beo; print -e beo" | append-test $temp $suite "be" --type "before-each")
+    let suite = ("print to; print -e te" | append-test $temp $suite "test")
+    let suite = ("print aeo; print -e aee" | append-test $temp $suite "ae" --type "after-each")
+    let suite = ("print aao; print -e aae" | append-test $temp $suite "aa" --type "after-all")
     let results = [$suite] | test-run $context
 
     assert equal $results [
@@ -261,7 +262,15 @@ def run-before-after-all-with-output [] {
             suite: "all-with-output"
             test: "test"
             result: "PASS"
-            output: [[stream, items]; ["output", 3], ["error", 4]]
+            output: [
+                [stream, items];
+                ["output", "bao"], ["error", "bao"]
+                # TODO Since only one before/after all in DB, we cannot guarantee order
+                ["output", "aao"], ["error", "aae"]
+                ["output", "beo"], ["error", "beo"]
+                ["output", "to"], ["error", "te"]
+                ["output", "aeo"], ["error", "aee"]
+            ]
         }
     ]
 }

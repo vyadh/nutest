@@ -90,7 +90,7 @@ def fire-result [row: record<suite: string, test: string, result: string>] {
     store insert-result $row
 }
 
-def fire-output [row: record<suite: string, test: string, data: string>] {
+def fire-output [row: record<suite: string, test: any, data: string>] {
     store insert-output $row
 }
 

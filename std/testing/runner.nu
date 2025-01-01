@@ -24,7 +24,8 @@ export def nutest-299792458-execute-suite [
     suite: string
     suite_data: list
 ] {
-    with-env { NU_TEST_SUITE_NAME: $suite } {
+    # We reset the test name to avoid collisions around tests within tests
+    with-env { NU_TEST_SUITE_NAME: $suite, NU_TEST_NAME: null } {
         nutest-299792458-execute-suite-internal $default_strategy $suite_data
     }
 
@@ -190,7 +191,7 @@ export def print [--stderr (-e), --raw (-r), --no-newline (-n), ...rest: any] {
 def nutest-299792458-emit [type: string, payload: any = null] {
     let event = {
         timestamp: (date now | format date "%+")
-        suite: $env.NU_TEST_SUITE_NAME?
+        suite: $env.NU_TEST_SUITE_NAME
         test: $env.NU_TEST_NAME?
         type: $type
         payload: $payload

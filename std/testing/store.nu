@@ -8,8 +8,8 @@ export def create [] {
     $db | query db "
         CREATE TABLE nu_test_results (
             suite TEXT NOT NULL,
-            test TEXT NOT NULL,
-            result TEXT,
+            test TEXT NULL,
+            result TEXT NOT NULL,
             PRIMARY KEY (suite, test)
         )
     "
@@ -17,8 +17,8 @@ export def create [] {
     $db | query db "
         CREATE TABLE nu_test_output (
             suite TEXT NOT NULL,
-            test TEXT NOT NULL,
-            data TEXT
+            test TEXT NULL,
+            data TEXT NOT NULL
         )
     "
 
@@ -49,7 +49,8 @@ export def insert-result [ row: record<suite: string, test: string, result: stri
     }
 }
 
-export def insert-output [ row: record<suite: string, test: string, data: string> ] {
+# Test is "any" as it can be a string or null if emitted from before/after all
+export def insert-output [ row: record<suite: string, test: any, data: string> ] {
     retry-on-lock "nu_test_output" {
         $row | stor insert --table-name nu_test_output
     }
@@ -133,7 +134,8 @@ def query-output [
     $db | query db "
             SELECT data
             FROM nu_test_output
-            WHERE suite = :suite AND test = :test
+            -- A test is NULL when emitted from before/after all
+            WHERE suite = :suite AND (test = :test OR test IS NULL)
         " --params { suite: $suite test: $test }
         | get data # The column name
         | each { $in | from nuon }
