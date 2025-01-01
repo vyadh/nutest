@@ -20,33 +20,6 @@ export def list-tests [
     } | flatten | sort-by suite test
 }
 
-def "nu-complete reporter" []: nothing -> record<options: record,completions: table<value: string,description: string>> {
-    {
-        options: {
-            sort: false
-        }
-        completions: [
-            [value description];
-            [
-                "terminal"
-                "Output test results as they complete as text. (default)"
-            ]
-            [
-                "table-pretty"
-                "A table listing all tests with decorations and color."
-            ]
-            [
-                "table"
-                "A table listing all test results as data, useful for querying."
-            ]
-            [
-                "summary"
-                "A table with the total tests passed/failed/skipped."
-            ]
-        ]
-    }
-}
-
 # Discover and run annotated test commands.
 export def run-tests [
     --path: path           # Location of tests (defaults to current directory)
@@ -54,7 +27,7 @@ export def run-tests [
     --match-tests: string  # Regular expression to match against test names (defaults to all)
     --strategy: record     # Override test run behaviour, such as test concurrency (defaults to automatic)
     --reporter: string@"nu-complete reporter" = "terminal" # The reporter used for test result output
-    --formatter: string    # Output formatting, being preserve, unformatted or pretty (defaults to automatic)
+    --formatter: string@"nu-complete formatter" # A formatter for output messages (defaults to reporter-specific)
     --fail                 # Print results and exit with non-zero status if any tests fail (useful for CI/CD systems)
 ]: nothing -> any {
 
@@ -193,3 +166,54 @@ def select-formatter [theme: closure, error_format: string = "record"]: string -
         }
     }
 }
+
+def "nu-complete reporter" []: nothing -> record<options: record, completions: table<value: string, description: string>> {
+    {
+        options: {
+            sort: false
+        }
+        completions: [
+            [value description];
+            [
+                "terminal"
+                "Output test results as they complete as text. (default)"
+            ]
+            [
+                "table-pretty"
+                "A table listing all tests with decorations and color."
+            ]
+            [
+                "table"
+                "A table listing all test results as data, useful for querying."
+            ]
+            [
+                "summary"
+                "A table with the total tests passed/failed/skipped."
+            ]
+        ]
+    }
+}
+
+def "nu-complete formatter" []: nothing -> record<options: record, completions: table<value: string, description: string>> {
+    {
+        options: {
+            sort: false
+        }
+        completions: [
+            [value description];
+            [
+                "preserved"
+                "Output full output information including stream metadata."
+            ]
+            [
+                "unformatted"
+                "Show the original data output with original typing, each item in a list."
+            ]
+            [
+                "pretty"
+                "Format all output as text, with `stderr` text highlighted and errors in their rendered form."
+            ]
+        ]
+    }
+}
+
