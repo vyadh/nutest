@@ -225,21 +225,43 @@ def run-multiple-suites [] {
 }
 
 # [test]
-def run-test-with-output-and-error-lines [] {
+def run-test-with-output [] {
     let context = $in
     let temp = $context.temp
 
-    mut suite = create-suite $temp "output"
+    mut suite = create-suite $temp "test-with-output"
     let suites = [ ("print 1 2; print -e 3 4" | append-test $temp $suite "test") ]
     let results = $suites | test-run $context
 
     assert equal $results [
         {
-            suite: "output"
+            suite: "test-with-output"
             test: "test"
             result: "PASS"
             # The items are not grouped due to the flatten when querying output in store.nu
             output: [[stream, items]; ["output", 1], ["output", 2], ["error", 3], ["error", 4]]
+        }
+    ]
+}
+
+# [test]
+# The output from before/after-all is not currently captured by orchestrator
+def run-before-after-all-with-output [] {
+    let context = $in
+    let temp = $context.temp
+
+    mut suite = create-suite $temp "all-with-output"
+    let suite = ("print 1; print -e 2" | append-test $temp $suite "ba" --type "before-all")
+    let suite = ("print 3; print -e 4" | append-test $temp $suite "test")
+    let suite = ("print 5; print -e 6" | append-test $temp $suite "aa" --type "after-all")
+    let results = [$suite] | test-run $context
+
+    assert equal $results [
+        {
+            suite: "all-with-output"
+            test: "test"
+            result: "PASS"
+            output: [[stream, items]; ["output", 3], ["error", 4]]
         }
     ]
 }

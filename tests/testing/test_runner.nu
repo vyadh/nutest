@@ -211,6 +211,38 @@ def execute-before-and-after-each-captures-output [] {
 }
 
 #[test]
+# This kind output is not associated with tests by the runner
+def execute-before-and-after-all-captures-output [] {
+    let plan = [
+        { name: "before-all", type: "before-all", execute: "{ print 1; print -e 2; get-context }" }
+        { name: "test1", type: "test", execute: "{ print 3; print -e 4 }" }
+        { name: "test2", type: "test", execute: "{ print 5; print -e 6 }" }
+        { name: "after-all", type: "after-all", execute: "{ print 7; print -e 8 }" }
+    ]
+
+    let results = test-run "suite" $plan
+
+    assert equal $results [
+        [suite test type payload];
+        [ "suite", "test1", "start", null ]
+        [ "suite", "test1", "output", { stream: "output", items: [3] } ]
+        [ "suite", "test1", "output", { stream: "error", items: [4] } ]
+        [ "suite", "test1", "result", "PASS" ]
+        [ "suite", "test1", "finish", null ]
+        [ "suite", "test2", "start", null ]
+        [ "suite", "test2", "output", { stream: "output", items: [5] } ]
+        [ "suite", "test2", "output", { stream: "error", items: [6] } ]
+        [ "suite", "test2", "result", "PASS" ]
+        [ "suite", "test2", "finish", null ]
+        # Ordering is due to this suite performing sorting due to parallelism
+        [ "suite", null, "output", { stream: "output", items: [1] } ]
+        [ "suite", null, "output", { stream: "error", items: [2] } ]
+        [ "suite", null, "output", { stream: "output", items: [7] } ]
+        [ "suite", null, "output", { stream: "error", items: [8] } ]
+     ]
+}
+
+#[test]
 def execute-before-each-error-handling [] {
     let plan = [
         { name: "test", type: "test", execute: "{ noop }" }
@@ -426,12 +458,6 @@ def signature-after-that-accepts-non-record [] {
         # We still test the output here however to capture unintended behaviour changes.
         [
             "suite"
-            "signature-after-that-accepts-non-record"
-            "output"
-            { stream: "output", items: [{}] }
-        ]
-        [
-            "suite"
             "test"
             "result"
             "FAIL"
@@ -441,6 +467,12 @@ def signature-after-that-accepts-non-record [] {
             "test"
             "output"
             { stream: "error", items: ["Can't convert to Closure."] }
+        ]
+        [
+            "suite"
+            null
+            "output"
+            { stream: "output", items: [{}] }
         ]
     ]
 }
@@ -465,7 +497,7 @@ def full-cycle-context [] {
     assert equal $results ([
         [suite test type payload];
         # Before all is only executed once at the beginning
-        [ "full-cycle", "full-cycle-context", "output", { stream: "output", items: ["ba"] } ]
+        [ "full-cycle", null, "output", { stream: "output", items: ["ba"] } ]
 
         [ "full-cycle", "test1", "start", null ]
         [ "full-cycle", "test1", "output", { stream: "output", items: [ "b" ] } ]
@@ -482,7 +514,7 @@ def full-cycle-context [] {
         [ "full-cycle", "test2", "finish", null ]
 
         # After all is only executed once at the end
-        [ "full-cycle", "full-cycle-context", "output", { stream: "output", items: ["aa"] } ]
+        [ "full-cycle", null, "output", { stream: "output", items: ["aa"] } ]
     ] | sort-by suite test)
 }
 
@@ -519,6 +551,10 @@ def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, 
         ^$nu.current-exe
             --no-config-file
             --commands $"
+                # These leek from the parent process if they are not set in the runner
+                $env.NU_TEST_SUITE_NAME = null
+                $env.NU_TEST_NAME = null
+
                 use std/testing/runner.nu *
                 source ($this_file)
                 nutest-299792458-execute-suite { threads: 0 } ($suite) ($plan)

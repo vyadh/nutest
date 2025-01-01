@@ -1,16 +1,17 @@
-# Possible Planned Features
+# Planned Features / Ideas
 
 ## Roadmap
 
-- Handle output from before/after all (ignore it? repeat for every test? custom event?)
+- Document test file naming supported and add {*-test,test-*} globs 
+- Remove multi-threading from runner so we can remove weird sorting and can confirm order of events
+- Test report in standard format (cargo test JSON or nextest / JUnit XML) and integrate into CI as example
 - Fluent assertion module with pluggable matchers.
-- Test Nushell standard library via GitHub Actions job
-- Test report in standard format (cargo test JSON or nextest / JUnit XML)
 - Generate test coverage (in llvm-cov format to allow combining with Nushell coverage)
 
 ## Future Ideas
 
 - Better support for direct-to-stdout tests by external tools that don't use the print statement. Allow running with sequential or subshell-based processing to capture output. Or even auto-detect and re-run tests.
+- Output from before/after all is replicated on every test output (perhaps via store query)
 - Detect flaky tests by re-running failed tests a few times.
 - More sophisticated change display rather than simple assertion module output, e.g. differences in records and tables, perhaps displayed as tables
     - Perhaps highlight differences in output using background colours like a diff tool.
