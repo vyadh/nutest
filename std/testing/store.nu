@@ -1,6 +1,8 @@
 
 # We use `query db` here rather than `stor create` as we need full SQLite features
 export def create [] {
+    delete
+
     let db = stor open
 
     $db | query db "
@@ -27,8 +29,9 @@ export def create [] {
 
 # We close the store so tests of this do not open the store multiple times
 export def delete [] {
-    stor delete --table-name nu_test_results
-    stor delete --table-name nu_test_output
+    let db = stor open
+    $db | query db "DROP TABLE IF EXISTS nu_test_results"
+    $db | query db "DROP TABLE IF EXISTS nu_test_output"
 }
 
 export def insert-result [ row: record<suite: string, test: string, result: string> ] {

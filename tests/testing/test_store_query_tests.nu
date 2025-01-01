@@ -1,5 +1,4 @@
 use std/assert
-use ../../std/testing/theme.nu
 source ../../std/testing/store.nu
 
 # Note: Using isolated suite to avoid concurrency conflicts with other tests

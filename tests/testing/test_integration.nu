@@ -238,10 +238,6 @@ def with-terminal-reporter [] {
     assert ($results | str ends-with "Test run completed: 6 total, 3 passed, 1 failed, 2 skipped\n")
 }
 
-def sort-lines []: string -> list<string> {
-    $in | str trim | split row "\n" | sort
-}
-
 def test-run [command: string] {
     let result = (
         ^$nu.current-exe
