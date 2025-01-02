@@ -37,14 +37,18 @@ def discover-test-files [] {
     mkdir ($temp | path join "subdir")
 
     touch ($temp | path join "test_foo.nu")
+    touch ($temp | path join "test-foo2.nu")
     touch ($temp | path join "bar_test.nu")
+    touch ($temp | path join "bar2-test.nu")
     touch ($temp | path join "subdir" "test_baz.nu")
 
     let result = list-files $temp | sort
 
     assert equal $result [
+      ($temp | path join "bar2-test.nu")
       ($temp | path join "bar_test.nu")
       ($temp | path join "subdir" "test_baz.nu")
+      ($temp | path join "test-foo2.nu")
       ($temp | path join "test_foo.nu")
     ]
 }

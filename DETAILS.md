@@ -2,7 +2,7 @@
 
 ## How Does It Work?
 
-Nutest discovers tests by scanning matching files in the path, sourcing that code and collecting test annotations on methods via `scope commands`. The file patterns currently detected are only `test_*.nu` and `*_test.nu` for performance of the test discovery. The latter pattern is useful when you're using Nushell to test other things so the file is alphabetically ordered close to the files being tested.
+Nutest discovers tests by scanning matching files in the path, sourcing that code and collecting test annotations on methods via `scope commands`. The file patterns detected are `test_*.nu`, `test-*.nu`, `*_test.nu` and `*-test.nu` to match the most common styles and file groupings.
 
 Each test file, which include multiple tests (a suite) is dispatched to run on a single Nu subshell.
 
