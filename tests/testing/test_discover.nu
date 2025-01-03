@@ -22,7 +22,7 @@ def cleanup [] {
 def discover-specific-test-file [] {
     let temp = $in.temp
     let file = $temp | path join "test_foo.nu"
-    touch ($file)
+    touch $file
 
     let result = list-files $file
 
