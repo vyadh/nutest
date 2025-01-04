@@ -2,11 +2,17 @@ use std/assert
 
 const default_pattern = '**/{*[\-_]test,test[\-_]*}.nu'
 
-export def list-files [
-    path: string
-    pattern: string = $default_pattern
-]: nothing -> list<string> {
+export def list-suite-files [
+    --glob: string = $default_pattern
+    --matcher: string = ".*"
+]: string -> list<string> {
 
+    let path = $in
+    list-files $path $glob
+        | where ($it | path parse | get stem) like $matcher
+}
+
+def list-files [ path: string, pattern: string ]: nothing -> list<string> {
     if ($path | path type) == file {
         [$path]
     } else {

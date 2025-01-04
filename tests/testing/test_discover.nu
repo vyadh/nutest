@@ -1,8 +1,5 @@
 use std/assert
-use ../../std/testing/discover.nu [
-    list-files
-    list-test-suites
-]
+use ../../std/testing/discover.nu
 
 #[before-each]
 def setup [] {
@@ -19,12 +16,21 @@ def cleanup [] {
 }
 
 #[test]
-def discover-specific-test-file [] {
+def "list suites with none available" [] {
+    let temp = $in.temp
+
+    let result = $temp | discover list-suite-files
+
+    assert equal $result []
+}
+
+#[test]
+def "list suites with specified file path" [] {
     let temp = $in.temp
     let file = $temp | path join "test_foo.nu"
     touch $file
 
-    let result = list-files $file
+    let result = $file | discover list-suite-files
 
     assert equal $result [
       ($temp | path join "test_foo.nu")
@@ -32,7 +38,7 @@ def discover-specific-test-file [] {
 }
 
 #[test]
-def discover-test-files [] {
+def "list suites with default glob" [] {
     let temp = $in.temp
     mkdir ($temp | path join "subdir")
 
@@ -42,7 +48,7 @@ def discover-test-files [] {
     touch ($temp | path join "bar2-test.nu")
     touch ($temp | path join "subdir" "test_baz.nu")
 
-    let result = list-files $temp | sort
+    let result = $temp | discover list-suite-files | sort
 
     assert equal $result [
       ($temp | path join "bar2-test.nu")
@@ -54,13 +60,13 @@ def discover-test-files [] {
 }
 
 #[test]
-def discover-any-files [] {
+def "list suites via specified glob" [] {
     let temp = $in.temp
 
     touch ($temp | path join "test_foo.nu")
     touch ($temp | path join "any.nu")
 
-    let result = list-files $temp "**/*.nu" | sort
+    let result = $temp | discover list-suite-files --glob "**/*.nu" | sort
 
     assert equal $result [
       ($temp | path join "any.nu")
@@ -69,13 +75,25 @@ def discover-any-files [] {
 }
 
 #[test]
-def discover-no-files [] {
+def "list suites with matcher" [] {
     let temp = $in.temp
+    mkdir ($temp | path join "subdir")
 
-    let result = list-files $temp
+    touch ($temp | path join "test_foo.nu")
+    touch ($temp | path join "test-foo2.nu")
+    touch ($temp | path join "bar_test.nu")
+    touch ($temp | path join "bar2-test.nu")
+    touch ($temp | path join "subdir" "test_baz.nu")
 
-    assert equal $result []
+    let result = $temp | discover list-suite-files --matcher "ba" | sort
+
+    assert equal $result [
+      ($temp | path join "bar2-test.nu")
+      ($temp | path join "bar_test.nu")
+      ($temp | path join "subdir" "test_baz.nu")
+    ]
 }
+
 
 #[test]
 def discover-test-suites [] {
@@ -98,7 +116,7 @@ def discover-test-suites [] {
     def test_quux [] { }
     " | save $test_file_2
 
-    let result = list-test-suites $temp | sort
+    let result = discover list-test-suites $temp | sort
 
     assert equal $result [
         {
