@@ -60,6 +60,17 @@ def "parse when fully specified" [] {
 }
 
 # [test]
+def "parse with space in value" [] {
+    let result = 'testing run-tests --match-tests "parse some" --path ../something'  | parse-command-context
+
+    assert equal $result {
+        suite: ".*"
+        test: "\"parse some\""
+        path: "../something"
+    }
+}
+
+# [test]
 def "parse with prior commands" [] {
     let result = "use std/testing; testing run-tests --match-suites sui --match-tests te --path ../something" | parse-command-context
 
