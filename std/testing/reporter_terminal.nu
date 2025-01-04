@@ -52,6 +52,9 @@ def complete-test [theme: closure, formatter: closure]: record -> nothing {
     let test = { type: "test", text: $event.test } | do $theme
 
     let result = store query-test $event.suite $event.test
+    if ($result | is-empty) {
+        error make { msg: $"No test results found for: ($event)" }
+    }
     let row = $result | first
     let formatted = format-result $row.result $theme
 

@@ -53,7 +53,7 @@ export def run [
 
     let result = $results | where test == $test
     if ($result | is-empty) {
-        $result
+        error make { msg: $"No results found for test: ($test)" }
     } else {
         $result | first
     }

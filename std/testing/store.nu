@@ -47,6 +47,15 @@ export def insert-result [ row: record<suite: string, test: string, result: stri
             result: $row.result
         }
     }
+
+    # Unfortunately some inserts silently fail and it's not clear why.
+    # It does seem that Nushell performs `query db` with different code to `stor insert`
+    # and using query to insert seems wrong, but we need the conflict handling above.
+    # So as a horrible hack, we check for insertion and retry if it fails.
+    if (query-test $row.suite $row.test | is-empty) {
+        sleep 10ms
+        insert-result $row
+    }
 }
 
 # Test is "any" as it can be a string or null if emitted from before/after all
@@ -113,20 +122,28 @@ export def query-test [
 ]: nothing -> table<suite: string, test: string, result: string, output: table<stream: string, items: list<any>>> {
 
     let db = stor open
-    $db | query db "
-        SELECT suite, test, result
-        FROM nu_test_results
-        WHERE suite = :suite AND test = :test
-    " --params {
-        suite: $suite
-        test: $test
-    } | insert output { |row|
-        query-output $db $row.suite $row.test
-    }
+    query-result $db $suite $test
+        | insert output { |row|
+            query-output $db $row.suite $row.test
+        }
+}
+
+def query-result [
+    db: any
+    suite: string
+    test: string
+]: nothing -> table<suite: string, test: string, result: string> {
+
+    $db
+        | query db "
+            SELECT suite, test, result
+            FROM nu_test_results
+            WHERE suite = :suite AND test = :test
+        " --params { suite: $suite test: $test }
 }
 
 def query-output [
-    db
+    db: any
     suite: string
     test: string
 ]: nothing -> table<stream: string, items: list<any>> {

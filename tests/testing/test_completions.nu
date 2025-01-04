@@ -130,7 +130,7 @@ def "complete tests" [] {
         # foo1 is excluded via suite pattern
         '"some foo2"' # Commands with spaces are quoted
         "some_foo3"
-        # foo4 is excluded via as it's not a test
+        # foo4 is excluded as it's not a test
         # foo5 is excluded test pattern
     ]
 }
