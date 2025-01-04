@@ -94,22 +94,20 @@ export def "nu-complete tests" [context: string]: nothing -> record {
 
 def parse-command-context []: string -> record<suite: string, test: string, path: string> {
     let options = (
-        ast --flatten $in
-            # Allow consuming until the first "internal call"
-            | reverse
-            | take while { $in.shape != "shape_internalcall" }
-            | reverse
-            # Group into parameter name and value pairs
-            | window 2 --stride 2
-            # Extract into a record of "name: value" pairs (assumes name then value)
-            | each { |pair| $pair | get content }
+        $in
+            # Strip everything before the actual arguments
+            | str replace --regex '^.*?--' '--'
+            # Group into parameter name and value pairs, being: table<name, value>
+            | parse --regex '--(?P<name>[-\w]+)\s+(?P<value>[^--]+)'
+            # Extract into a table that can be converted into a record of "name: value" pairs
+            | each { |pair| [ ($pair | get name), ($pair | get value | str trim) ] }
             | into record
     )
 
     {
-        suite: ($options | get-or-null "--match-suites" | default ".*")
-        test: ($options | get-or-null "--match-tests" | default ".*")
-        path: ($options | get-or-null "--path" | default ".")
+        suite: ($options | get-or-null "match-suites" | default ".*")
+        test: ($options | get-or-null "match-tests" | default ".*")
+        path: ($options | get-or-null "path" | default ".")
     }
 }
 
