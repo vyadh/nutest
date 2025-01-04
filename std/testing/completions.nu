@@ -55,6 +55,7 @@ export def "nu-complete suites" [context: string]: nothing -> record {
     let suites = $options.path
         | discover suite-files --matcher $options.suite
         | each { path parse | get stem }
+        | sort
 
     {
         options: {
