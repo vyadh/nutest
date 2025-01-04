@@ -11,7 +11,6 @@
 
 ## Roadmap
 
-- Document test file naming supported and add {*-test,test-*} globs 
 - Remove multi-threading from runner so we can remove weird sorting and can confirm order of events
 - Test report in standard format (cargo test JSON or nextest / JUnit XML) and integrate into CI as example
 - Fluent assertion module with pluggable matchers.

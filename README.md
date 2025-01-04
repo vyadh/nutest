@@ -20,6 +20,16 @@ Writing tests in Nushell is both powerful and expressive. Not only for testing N
 
 ## Writing Tests
 
+### Test Suites
+
+A recognised test suite (a Nushell file containing tests) is recognised by nu-test is defined as a filename matching one of the following patterns somewhere within the path:
+- `test_*.nu`
+- `test-*.nu`
+- `*_test.nu`
+- `*-test.nu`
+
+### Test Commands
+
 **Nu-test** uses the command description as a tag system for tests, test discovery will ignore non-tagged commands. It supports:
 
 | tag                 | description                             |
