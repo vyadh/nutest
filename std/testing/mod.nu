@@ -28,7 +28,7 @@ use completions.nu *
 export def run-tests [
     --path: path           # Location of tests (defaults to current directory)
     --match-suites: string@"nu-complete suites" # Regular expression to match against suite names (defaults to all)
-    --match-tests: string  # Regular expression to match against test names (defaults to all)
+    --match-tests: string@"nu-complete tests"   # Regular expression to match against test names (defaults to all)
     --strategy: record     # Override test run behaviour, such as test concurrency (defaults to automatic)
     --reporter: string@"nu-complete reporter" = "terminal" # The reporter used for test result output
     --formatter: string@"nu-complete formatter" # A formatter for output messages (defaults to reporter-specific)

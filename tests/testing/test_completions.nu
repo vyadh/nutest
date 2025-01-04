@@ -84,3 +84,42 @@ def "complete suites" [] {
         "test_baz"
     ]
 }
+
+#[test]
+def "complete tests" [] {
+    let temp = $in.temp
+
+    let temp = $in.temp
+    let test_file_1 = $temp | path join "test_1.nu"
+    let test_file_2 = $temp | path join "test_2.nu"
+
+    "
+    # [test]
+    def some_foo1 [] { }
+    " | save $test_file_1
+    '
+    # [test]
+    def "some foo2" [] { }
+    # [ignore]
+    def some_foo3 [] { }
+    # [before-each]
+    def some_foo4 [] { }
+    # [test]
+    def some_foo5 [] { }
+    ' | save $test_file_2
+
+
+    touch ($temp | path join "test_foo.nu")
+    touch ($temp | path join "test_bar.nu")
+    touch ($temp | path join "test_baz.nu")
+
+    let result = nu-complete tests $"--path ($temp) --match-suites _2 --match-tests foo[1234]"
+
+    assert equal $result.completions [
+        # foo1 is excluded via suite pattern
+        '"some foo2"' # Commands with spaces are quoted
+        "some_foo3"
+        # foo4 is excluded via as it's not a test
+        # foo5 is excluded test pattern
+    ]
+}

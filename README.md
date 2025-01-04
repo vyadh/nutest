@@ -118,6 +118,22 @@ run-tests --match-suites api --match-tests test[0-9]
 ```
 This will run all files that include `api` in the name and tests that contain `test` followed by a digit.
 
+### Completions
+
+Completions are available not only for normal command values, they are also available for suites and tests, making it easier to run specific suites and tests from the command line.
+
+For example, typing the following and pressing tab will show all available suites that contain the word `api`:
+```nu
+run-tests --match-suites api<tab>
+```
+
+Typing the following and pressing tab will show all available tests that contain the word `parse`:
+```nu
+run-tests --match-tests parse<tab>
+```
+
+While test discovery is done concurrently and quick even with many test files, you can specify `--match-suites <pattern>` before `--match-tests` to greatly reduce the amount of work nu-test needs to do to find the tests you want to run.
+
 ### Reporting
 
 By default, there is the terminal reporter that outputs the test results as they complete. This is useful for long-running tests where you want to see the results as they happen.

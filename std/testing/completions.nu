@@ -1,3 +1,5 @@
+use discover.nu
+
 export def "nu-complete reporter" []: nothing -> record<options: record, completions: table<value: string, description: string>> {
     {
         options: {
@@ -49,8 +51,6 @@ export def "nu-complete formatter" []: nothing -> record<options: record, comple
 }
 
 export def "nu-complete suites" [context: string]: nothing -> record {
-    use discover.nu
-
     let options = $context | parse-command-context
     let suites = $options.path
         | discover suite-files --matcher $options.suite
@@ -62,6 +62,32 @@ export def "nu-complete suites" [context: string]: nothing -> record {
             positional: false # Use substring matching
         }
         completions: $suites
+    }
+}
+
+export def "nu-complete tests" [context: string]: nothing -> record {
+    let options = $context | parse-command-context
+
+    let tests = $options.path
+        | discover suite-files --matcher $options.suite
+        | discover test-suites --matcher $options.test
+        | each { |suite| $suite.tests | where { $in.type in ["test", "ignore"] } }
+        | flatten
+        | sort
+        | each {
+            if ($in.name | str contains " ") {
+                $'"($in.name)"'
+            } else {
+                $in.name
+            }
+        }
+
+    {
+        options: {
+            completion_algorithm: "prefix"
+            positional: false # Use substring matching
+        }
+        completions: $tests
     }
 }
 
