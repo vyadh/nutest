@@ -53,7 +53,7 @@ export def "nu-complete suites" [context: string]: nothing -> record {
 
     let options = $context | parse-command-context
     let suites = $options.path
-        | discover list-suite-files --matcher $options.suite
+        | discover suite-files --matcher $options.suite
         | each { path parse | get stem }
 
     {

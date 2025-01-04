@@ -2,17 +2,19 @@ use std/assert
 
 const default_pattern = '**/{*[\-_]test,test[\-_]*}.nu'
 
-export def list-suite-files [
+export def suite-files [
     --glob: string = $default_pattern
     --matcher: string = ".*"
 ]: string -> list<string> {
 
     let path = $in
-    list-files $path $glob
+    $path
+        | list-files $glob
         | where ($it | path parse | get stem) like $matcher
 }
 
-def list-files [ path: string, pattern: string ]: nothing -> list<string> {
+def list-files [ pattern: string ]: string -> list<string> {
+    let path = $in
     if ($path | path type) == file {
         [$path]
     } else {
@@ -21,9 +23,14 @@ def list-files [ path: string, pattern: string ]: nothing -> list<string> {
     }
 }
 
-export def list-test-suites [path: string]: nothing -> table<name: string, path: string, tests<table<name: string, type: string>>> {
-    list-files $path $default_pattern
+export def test-suites [
+    --matcher: string = ".*"
+]: list<string> -> table<name: string, path: string, tests<table<name: string, type: string>>> {
+
+    let suite_files = $in
+    $suite_files
         | par-each { discover-suite $in }
+        | filter-tests $matcher
 }
 
 def discover-suite [test_file: string]: nothing -> record<name: string, path: string, tests: table<name: string, type: string>> {
@@ -36,6 +43,20 @@ def discover-suite [test_file: string]: nothing -> record<name: string, path: st
     } else {
         error make { msg: $result.stderr }
     }
+}
+
+# Query any method with a specific tag in the description
+def test-query [file: string]: nothing -> string {
+    let query = "
+        scope commands
+            | where ( $it.type == 'custom' and $it.description =~ '\\[[a-z-]+\\]' )
+            | each { |item| {
+                name: $item.name
+                description: $item.description
+            } }
+            | to nuon
+    "
+    $"source ($file); ($query)"
 }
 
 def parse-suite [test_file: string, tests: list<record<name: string, description: string>>]: nothing -> record<name: string, path: string, tests: table<name: string, type: string>> {
@@ -58,16 +79,22 @@ def parse-test [test: record<name: string, description: string>]: nothing -> rec
     }
 }
 
-# Query any method with a specific tag in the description
-def test-query [file: string]: nothing -> string {
-    let query = "
-        scope commands
-            | where ( $it.type == 'custom' and $it.description =~ '\\[[a-z-]+\\]' )
-            | each { |item| {
-                name: $item.name
-                description: $item.description
-            } }
-            | to nuon
-    "
-    $"source ($file); ($query)"
+def filter-tests [
+    matcher: string
+]: table<name: string, path: string, tests<table<name: string, type: string>>> -> table<name: string, path: string, tests<table<name: string, type: string>>> {
+
+    let tests = $in
+    $tests
+        | each { |suite|
+            {
+                name: $suite.name
+                path: $suite.path
+                tests: ($suite.tests | where
+                    # Filter only 'test' and 'ignore' by pattern
+                    ($it.type != "test" and $it.type != "ignore") or $it.name like $matcher
+                )
+            }
+        }
+        # Remove suites that have no actual tests to run
+        | where ($it.tests | where type in ["test", "ignore"] | is-not-empty)
 }

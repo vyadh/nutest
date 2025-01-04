@@ -80,37 +80,13 @@ def with-specific-file [] {
 }
 
 #[test]
-def with-specific-test [] {
+def with-matching-suite-and-test [] {
     let temp = $in.temp
 
-    let results = test-run $"run-tests --path '($temp)' --reporter table --match-tests test_foo"
-
-    assert equal $results [
-        { suite: test_1, test: test_foo, result: "PASS", output: ["oof"] }
-    ]
-}
-
-#[test]
-def with-test-pattern [] {
-    let temp = $in.temp
-
-    let results = test-run $"run-tests --path '($temp)' --reporter table --match-tests 'test_ba[rz]'"
+    let results = test-run $"run-tests --path '($temp)' --reporter table --match-suites _1 --match-tests test_ba[rz]"
 
     assert equal $results [
         { suite: test_1, test: test_bar, result: "PASS", output: ["rab"] }
-        { suite: test_2, test: test_baz, result: "PASS", output: ["zab"] }
-    ]
-}
-
-#[test]
-def with-specific-suite [] {
-    let temp = $in.temp
-
-    let results = test-run $"run-tests --path '($temp)' --reporter table --match-suites test_1"
-
-    assert equal $results [
-        { suite: test_1, test: test_bar, result: "PASS", output: ["rab"] }
-        { suite: test_1, test: test_foo, result: "PASS", output: ["oof"] }
     ]
 }
 

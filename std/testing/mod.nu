@@ -12,7 +12,8 @@ export def list-tests [
     use discover.nu
 
     let path = $path | default $env.PWD | check-path
-    let suites = discover list-test-suites $path
+    #todo we can now more easily allow matchers here
+    let suites = $path | discover suite-files | discover test-suites
 
     $suites | each { |suite|
         $suite.tests
@@ -47,11 +48,12 @@ export def run-tests [
     # Discovered suites are of the type:
     # list<record<name: string, path: string, tests<table<name: string, type: string>>>
 
-    let suites = discover list-test-suites $path
-    let filtered = $suites | filter-tests $suite $test
+    let test_suites = $path
+        | discover suite-files --matcher $suite
+        | discover test-suites --matcher $test
 
     do $reporter.start
-    $filtered | (orchestrator run-suites $reporter $strategy)
+    $test_suites | (orchestrator run-suites $reporter $strategy)
     let results = do $reporter.results
     let success = do $reporter.success
     do $reporter.complete
@@ -81,25 +83,6 @@ def default-strategy [reporter: string]: nothing -> record<threads: int> {
         # but don't fit well for table-based reporters
         error_format: (if $reporter == "terminal" { "rendered" } else { "compact" })
     }
-}
-
-def filter-tests [
-    suite_pattern: string, test_pattern: string
-]: table<name: string, path: string, tests<table<name: string, type: string>>> -> table<name: string, path: string, tests<table<name: string, type: string>>> {
-    ($in
-        | where name =~ $suite_pattern
-        | each { |suite|
-            {
-                name: $suite.name
-                path: $suite.path
-                tests: ($suite.tests | where
-                    # Filter only 'test' and 'ignore' by pattern
-                    ($it.type != test and $it.type != ignore) or $it.name =~ $test_pattern
-                )
-            }
-        }
-        | where ($it.tests | is-not-empty)
-    )
 }
 
 def check-path []: string -> string {
