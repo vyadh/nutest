@@ -16,6 +16,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
+        version: ["0.101.0", "*", "nightly"] # Earliest supported, latest and nightly
         # TODO windows-latest and macos-latest are currently not working
         platform: [ubuntu-latest]
 
@@ -27,7 +28,7 @@ jobs:
       - name: Install Nushell Binary
         uses: hustcer/setup-nu@v3
         with:
-          version: "*"
+          version: ${{ matrix.version }}
 
       - name: Test Nu-Test
         run: nu -c 'use std/testing; testing run-tests --reporter terminal --fail'
