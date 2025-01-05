@@ -209,7 +209,8 @@ def with-terminal-reporter [] {
     assert ($results =~ $"✅ PASS test_1 test_bar\n  rab")
     assert ($results =~ $"✅ PASS test_2 test_baz\n  zab")
     assert ($results =~ $"🚧 SKIP test_2 test_qux")
-    assert ($results =~ $"❌ FAIL test_3 test_quux\n  Error:[\n ]+× Ouch")
+    # We use '.' as version 0.101.0 used '×', newer versions use 'x'
+    assert ($results =~ $"❌ FAIL test_3 test_quux\n  Error:[\n ]+. Ouch")
     assert ($results =~ $"🚧 SKIP test_3 test_oof")
     assert ($results | str ends-with "Test run completed: 6 total, 3 passed, 1 failed, 2 skipped\n")
 }

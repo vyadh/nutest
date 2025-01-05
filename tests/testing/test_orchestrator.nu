@@ -265,7 +265,7 @@ def run-before-after-with-output [] {
             output: [
                 [stream, items];
                 ["output", "bao"], ["error", "bao"]
-                # TODO Since only one before/after all in DB, we cannot guarantee order
+                # Since only one before/after all in DB, we cannot guarantee order
                 ["output", "aao"], ["error", "aae"]
                 ["output", "beo"], ["error", "beo"]
                 ["output", "to"], ["error", "te"]
