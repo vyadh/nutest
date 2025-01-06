@@ -5,15 +5,12 @@ use formatter.nu
 
 export def create [theme: closure, formatter: closure]: nothing -> record {
     {
-        start: { store create }
-        complete: { store delete }
-        success: { store success }
+        start: { || }
+        complete: { || }
         results: { query-results $theme $formatter }
         has-return-value: true
         fire-start: { |row| }
         fire-finish: { |row| }
-        fire-result: { |row| store insert-result $row }
-        fire-output: { |row| store insert-output $row }
     }
 }
 

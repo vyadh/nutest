@@ -5,15 +5,12 @@ use theme.nu
 
 export def create []: nothing -> record {
     {
-        start: { store create }
-        complete: { store delete }
-        success: { store success }
+        start: { || }
+        complete: { || }
         results: { query-summary }
         has-return-value: true
         fire-start: { |row| }
         fire-finish: { |row| }
-        fire-result: { |row| store insert-result $row }
-        fire-output: { |row| } # Not required
     }
 }
 

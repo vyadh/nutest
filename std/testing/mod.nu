@@ -37,6 +37,7 @@ export def run-tests [
 
     use discover.nu
     use orchestrator.nu
+    use store.nu
 
     let path = $path | default $env.PWD | check-path
     let suite = $match_suites | default ".*"
@@ -52,11 +53,13 @@ export def run-tests [
         | discover suite-files --matcher $suite
         | discover test-suites --matcher $test
 
+    store create
     do $reporter.start
     $test_suites | (orchestrator run-suites $reporter $strategy)
     let results = do $reporter.results
-    let success = do $reporter.success
     do $reporter.complete
+    let success = store success
+    store delete
 
     # To reflect the exit code we need to print the results instead
     if ($fail) {

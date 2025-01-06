@@ -2,11 +2,13 @@ use ../../std/testing/orchestrator.nu
 use ../../std/testing/reporter_table.nu
 use ../../std/testing/theme.nu
 use ../../std/testing/formatter.nu
+use ../../std/testing/store.nu
 
 # A harness for running tests against nutest itself.
 
 # Encapsulate before-all behaviour
 export def setup-tests [formatter?: closure]: nothing -> record {
+    store create
     let formatter = $formatter | default (formatter preserved)
     let reporter = reporter_table create (theme none) $formatter
     do $reporter.start
@@ -19,6 +21,7 @@ export def setup-tests [formatter?: closure]: nothing -> record {
 export def cleanup-tests []: record<reporter: record> -> nothing {
     let reporter = $in.reporter
     do $reporter.complete
+    store delete
 }
 
 # Encapsulate before-each behaviour

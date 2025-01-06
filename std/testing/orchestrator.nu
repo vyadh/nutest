@@ -1,4 +1,5 @@
 use std/assert
+use store.nu
 
 # This script generates the test suite data and embeds a runner into a nushell sub-process to execute.
 
@@ -124,12 +125,13 @@ def process-event [reporter: record] {
         }
         { type: "result" } => {
             let message = $template | merge { result: $event.payload }
-            do $reporter.fire-result $message
+            store insert-result $message
         }
         { type: "output" } => {
+            # TODO if no reporter needs the output, we don't need to bother processing this?
             let decoded = $event.payload | decode base64 | decode
             let message = $template | merge { data: $decoded }
-            do $reporter.fire-output $message
+            store insert-output $message
         }
     }
 }

@@ -6,19 +6,15 @@ export def create [theme: closure, formatter: closure]: nothing -> record {
     {
         start: { start-suite }
         complete: { complete-suite }
-        success: { success }
         results: { [] }
         has-return-value: false
         fire-start: { |row| start-test $row }
         fire-finish: { |row| $row | complete-test $theme $formatter }
-        fire-result: { |row| fire-result $row }
-        fire-output: { |row| fire-output $row }
     }
 }
 
 def start-suite []: nothing -> nothing {
     print "Running tests..."
-    store create
 }
 
 def complete-suite []: nothing -> nothing {
@@ -32,8 +28,6 @@ def complete-suite []: nothing -> nothing {
 
     let output = $"($total) total, ($passed) passed, ($failed) failed, ($skipped) skipped"
     print $"Test run completed: ($output)"
-
-    store delete
 }
 
 def count [key: string]: list -> int {
@@ -87,14 +81,6 @@ def format-output [formatter: closure]: table<stream: string, items: list<any>> 
 
 def indent []: string -> string {
     "  " + ($in | str replace --all "\n" "\n  ")
-}
-
-def fire-result [row: record<suite: string, test: string, result: string>] {
-    store insert-result $row
-}
-
-def fire-output [row: record<suite: string, test: any, data: string>] {
-    store insert-output $row
 }
 
 def success [] {
