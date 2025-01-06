@@ -103,6 +103,15 @@ Will return:
 
 ## Current Features
 
+- [x] Flexible test definitions
+- [x] Setup/teardown with context available to tests
+- [x] Filtering of the suites and tests to run
+- [x] Terminal completions for suites and tests
+- [x] Reporting in various ways, including queryable Nushell data tables
+- [x] Test output captured and shown against test results
+- [x] CI/CD support in the form of a `--fail` flag
+- [x] Parallel test execution and concurrency control
+
 ### Flexible Tests
 
 Supports tests scripts in flexible configurations:
@@ -185,7 +194,7 @@ run-tests --fail
 This is useful for CI/CD pipelines where it is desirable to fail the current
 job. However, note that using this directly in your shell will exit your shell session!
 
-### Concurrency
+### Parallel Test Execution
 
 Tests written in Nutest are run concurrently by default.
 
