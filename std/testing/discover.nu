@@ -10,7 +10,7 @@ export def suite-files [
     let path = $in
     $path
         | list-files $glob
-        | where ($it | path parse | get stem) like $matcher
+        | where ($it | path parse | get stem) =~ $matcher
 }
 
 def list-files [ pattern: string ]: string -> list<string> {
@@ -25,7 +25,7 @@ def list-files [ pattern: string ]: string -> list<string> {
 
 export def test-suites [
     --matcher: string = ".*"
-]: list<string> -> table<name: string, path: string, tests<table<name: string, type: string>>> {
+]: list<string> -> table<name: string, path: string, tests:table<name: string, type: string>> {
 
     let suite_files = $in
     $suite_files
@@ -81,7 +81,7 @@ def parse-test [test: record<name: string, description: string>]: nothing -> rec
 
 def filter-tests [
     matcher: string
-]: table<name: string, path: string, tests<table<name: string, type: string>>> -> table<name: string, path: string, tests<table<name: string, type: string>>> {
+]: table<name: string, path: string, tests:table<name: string, type: string>> -> table<name: string, path: string, tests:table<name: string, type: string>> {
 
     let tests = $in
     $tests
@@ -91,7 +91,7 @@ def filter-tests [
                 path: $suite.path
                 tests: ($suite.tests | where
                     # Filter only 'test' and 'ignore' by pattern
-                    ($it.type != "test" and $it.type != "ignore") or $it.name like $matcher
+                    ($it.type != "test" and $it.type != "ignore") or $it.name =~ $matcher
                 )
             }
         }

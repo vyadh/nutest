@@ -5,12 +5,12 @@ use theme.nu
 
 export def create []: nothing -> record {
     {
-        start: { || }
-        complete: { || }
+        start: {|| ignore }
+        complete: { || ignore }
         results: { query-summary }
         has-return-value: true
-        fire-start: { |row| }
-        fire-finish: { |row| }
+        fire-start: { |row| ignore}
+        fire-finish: { |row| ignore }
     }
 }
 
