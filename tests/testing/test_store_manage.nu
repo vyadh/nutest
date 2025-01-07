@@ -3,53 +3,53 @@ use ../../std/testing/store.nu
 
 # [strategy]
 def sequential []: nothing -> record {
-    { threads: 1 }
+  {threads: 1}
 }
 
 # [before-each]
 def create-test-dir []: record -> record {
-    let temp = mktemp --tmpdir --directory
-    {
-        temp: $temp
-    }
+  let temp = mktemp --tmpdir --directory
+  {
+    temp: $temp
+  }
 }
 
 # [after-each]
 def cleanup-test-dir [] {
-    let context = $in
-    rm --recursive $context.temp
+  let context = $in
+  rm --recursive $context.temp
 }
 
 # [test]
 def "delete a created store" [] {
-    let store = store create
-    store delete
+  let store = store create
+  store delete
 }
 
 # [test]
 def "delete succeeds even no results tables" [] {
-    store delete
+  store delete
 }
 
 # [test]
 def "runs with previous unclean run" [] {
-    let context = $in
-    let temp = $context.temp
+  let context = $in
+  let temp = $context.temp
 
-    let result = (
-        ^$nu.current-exe
-            --no-config-file
-            --commands $"
+  let result = (
+    ^$nu.current-exe
+    --no-config-file
+    --commands $"
                 use std/testing/store.nu
                 store create
 
                 use std/testing *
                 run-tests --path '($temp)' --reporter table
             "
-    ) | complete
+  ) | complete
 
-    if $result.exit_code != 0 {
-        print $result.stderr
-        assert false "Resets result store on new run"
-    }
+  if $result.exit_code != 0 {
+    print $result.stderr
+    assert false "Resets result store on new run"
+  }
 }

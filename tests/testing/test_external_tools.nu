@@ -6,35 +6,35 @@ use harness.nu
 
 # [before-all]
 def setup-tests []: record -> record {
-    $in | harness setup-tests
+  $in | harness setup-tests
 }
 
 # [after-all]
 def cleanup-tests []: record -> nothing {
-    $in | harness cleanup-tests
+  $in | harness cleanup-tests
 }
 
 # [before-each]
 def setup-test []: record -> record {
-    $in | harness setup-test
+  $in | harness setup-test
 }
 
 # [after-each]
 def cleanup-test []: record -> nothing {
-    $in | harness cleanup-test
+  $in | harness cleanup-test
 }
 
 # [test]
 def non-captured-output-is-ignored [] {
-    let code = {
-        ^$nu.current-exe --version # This will print direct to stdout
-        print "Only this text"
-    }
+  let code = {
+    ^$nu.current-exe --version # This will print direct to stdout
+    print "Only this text"
+  }
 
-    let result = $in | harness run $code
+  let result = $in | harness run $code
 
-    assert equal ($result | reject suite test) {
-        result: "PASS"
-        output: [{ stream: "output", items: "Only this text"}]
-    }
+  assert equal ($result | reject suite test) {
+    result: "PASS"
+    output: [{stream: "output" items: "Only this text"}]
+  }
 }
