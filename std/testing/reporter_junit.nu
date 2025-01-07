@@ -97,14 +97,6 @@ def testcase []: record<suite: string, test: string, result: string, output: lis
     }
 }
 
-def counts []: table<suite: string, test: string, result: string> -> record {
-    let results = $in
-    {
-        totals: ($results | count)
-        suites: ($results | counts-by-suite | into record)
-    }
-}
-
 def count []: table<suite: string, test: string, result: string> -> record<total: int, failed: int, skipped: int> {
     let rows = $in
     {
@@ -112,15 +104,4 @@ def count []: table<suite: string, test: string, result: string> -> record<total
         failed: ($rows | where result == "FAIL" | length)
         skipped: ($rows | where result == "SKIP" | length)
     }
-}
-
-def counts-by-suite []: table<suite: string, test: string, result: string> -> table<suite: string, total: int, failed: int, skipped: int> {
-    let results = $in
-    $results
-        | group-by suite
-        | items { |suite, suite_results|
-            {
-                $suite: ($suite_results | count)
-            }
-        }
 }

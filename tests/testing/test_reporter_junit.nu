@@ -2,23 +2,20 @@ use std/assert
 source ../../std/testing/reporter_junit.nu
 
 #[test]
-def "counts when no tests" [] {
+def "count when no tests" [] {
     let data = []
 
-    let result = $data | counts
+    let result = $data | count
 
     assert equal $result {
-        totals: {
-            total: 0
-            failed: 0
-            skipped: 0
-        }
-        suites: { }
+        total: 0
+        failed: 0
+        skipped: 0
     }
 }
 
 #[test]
-def "counts with suites of all states" [] {
+def "count with suites of all states" [] {
     let data = [
         { suite: "suite1", test: "test1A", result: "PASS" }
         { suite: "suite1", test: "test1B", result: "PASS" }
@@ -37,31 +34,26 @@ def "counts with suites of all states" [] {
         { suite: "suite3", test: "test3A", result: "PASS" }
     ]
 
-    let result = $data | counts
+    assert equal ($data | count) {
+        total: 13
+        failed: 3
+        skipped: 4
+    }
 
-    assert equal $result {
-        totals: {
-            total: 13
-            failed: 3
-            skipped: 4
-        }
-        suites: {
-            suite1: {
-                total: 6
-                failed: 2
-                skipped: 1
-            }
-            suite2: {
-                total: 6
-                failed: 1
-                skipped: 3
-            }
-            suite3: {
-                total: 1
-                failed: 0
-                skipped: 0
-            }
-        }
+    assert equal ($data | where suite == "suite1" | count) {
+        total: 6
+        failed: 2
+        skipped: 1
+    }
+    assert equal ($data | where suite == "suite2" | count) {
+        total: 6
+        failed: 1
+        skipped: 3
+    }
+    assert equal ($data | where suite == "suite3" | count) {
+        total: 1
+        failed: 0
+        skipped: 0
     }
 }
 
