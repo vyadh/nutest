@@ -11,8 +11,15 @@
 
 ## Roadmap
 
+- JUnit test reports:
+  - Output by way of a reporter that can be saved to file (done)
+  - Integration tests
+  - Add information about errors into the expected JUnit failure elements
+  - Add test output
+  - Integrate into CI [with example setup](https://github.com/EnricoMi/publish-unit-test-result-action)
+  - Support multiple reporters so can print to terminal and save to file
+    - Or, add --reporter-options as a record. Could embed optional formatter here and also output files
 - Figure out why the rendered errors no longer print in colours. Perhaps no longer do `ansi reset`?
-- Test report in standard format (cargo test JSON or nextest / JUnit XML) and integrate into CI as example
 - Fluent assertion module with pluggable matchers.
 - Generate test coverage (in llvm-cov format to allow combining with Nushell coverage)
 

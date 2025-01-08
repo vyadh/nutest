@@ -136,6 +136,16 @@ def select-reporter [
 
             reporter_terminal create $theme $formatter
         }
+        "junit" => {
+            use theme.nu
+            use reporter_junit.nu
+
+            # todo Formatter and/or theme would need to remove ansi styling
+            let theme = theme none
+            let formatter = $formatter_option | default "unformatted" | select-formatter $theme
+
+            reporter_junit create $formatter
+        }
         _ => {
             error make { msg: $"Unknown reporter: ($reporter_option)" }
         }

@@ -1,3 +1,4 @@
+use store.nu
 
 # JUnit XML format.
 # https://llg.cubic.org/docs/junit
@@ -16,8 +17,35 @@
 #    </testsuite>
 #  </testsuites>
 
+export def create [formatter: closure]: nothing -> record {
+    {
+        start: { || }
+        complete: { || }
+        results: { create-report $formatter }
+        has-return-value: true
+        fire-start: { |row| }
+        fire-finish: { |row| }
+    }
+}
+
+# todo use formatter within junit translation as we need the full types to query error information
+def create-report [formatter: closure]: nothing -> string {
+    query-results | collect | to junit
+}
+
+def query-results []: nothing -> table<suite: string, test: string, result: string, output: list<any>> {
+    store query | each { |row|
+        {
+            suite: $row.suite
+            test: $row.test
+            result: $row.result
+            output: $row.output
+        }
+    }
+}
+
 export def "to junit" []: table<suite: string, test: string, result: string, output: list<any>> -> string {
-    $in | testsuites | to xml --self-closed
+    $in | testsuites | to xml --self-closed --indent 2
 }
 
 # <testsuites name="s" disabled="n" tests="n" failures="n" errors="n" time="d">
