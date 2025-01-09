@@ -215,6 +215,42 @@ def with-terminal-reporter [] {
     assert ($results | str ends-with "Test run completed: 6 total, 3 passed, 1 failed, 2 skipped\n")
 }
 
+#[test]
+def with-junit-reporter [] {
+    let temp = $in.temp
+    let test_file_3 = $temp | path join "test_3.nu"
+    "
+    #[test]
+    def test_quux [] { error make { msg: 'Ouch' } }
+    #[ignore]
+    def test_oof [] { }
+    " | save $test_file_3
+
+    let results = test-run-raw $"run-tests --path '($temp)' --reporter junit"
+
+    assert equal $results '<testsuites name="nu-test" tests="6" disabled="2" failures="1">
+  <testsuite name="test_1" tests="2" disabled="0" failures="0">
+    <testcase name="test_bar" classname="test_1"/>
+    <testcase name="test_foo" classname="test_1"/>
+  </testsuite>
+  <testsuite name="test_2" tests="2" disabled="1" failures="0">
+    <testcase name="test_baz" classname="test_2"/>
+    <testcase name="test_qux" classname="test_2">
+      <skipped/>
+    </testcase>
+  </testsuite>
+  <testsuite name="test_3" tests="2" disabled="1" failures="1">
+    <testcase name="test_oof" classname="test_3">
+      <skipped/>
+    </testcase>
+    <testcase name="test_quux" classname="test_3">
+      <failure type="Error" message=""></failure>
+    </testcase>
+  </testsuite>
+</testsuites>
+'
+}
+
 def test-run [command: string] {
     let result = (
         ^$nu.current-exe

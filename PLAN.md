@@ -11,9 +11,7 @@
 
 ## Roadmap
 
-- JUnit test reports:
-  - Output by way of a reporter that can be saved to file (done)
-  - Integration tests
+- JUnit test reports WIP:
   - Add information about errors into the expected JUnit failure elements
   - Add test output
   - Integrate into CI [with example setup](https://github.com/EnricoMi/publish-unit-test-result-action)
