@@ -1,11 +1,12 @@
 
 # A formatter that preserves the data as-is, including stream metadata, useful for tests.
-export def preserved []: table<stream: string, items: list<any>> -> closure {
+export def preserved []: nothing -> closure {
     { $in }
 }
 
 # A formatter that preserves the data only, useful for querying.
-export def unformatted []: table<stream: string, items: list<any>> -> closure {
+export def unformatted []: nothing -> closure {
+    #table<stream: string, items: list<any>> -> list<any>
     {
         $in
             | each { |message| $message.items }
@@ -17,8 +18,9 @@ export def unformatted []: table<stream: string, items: list<any>> -> closure {
 export def pretty [
     theme: closure
     error_format: string
-]: table<stream: string, items: list<any>> -> closure {
+]: nothing -> closure {
 
+    #table<stream: string, items: list<any>> -> string
     {
         let events  = $in
         $events
@@ -30,7 +32,7 @@ export def pretty [
 def pretty-format-event [
     theme: closure
     error_format: string
-]: record<stream: string, items: list<any>> -> string {
+]: record<stream: string, items: any> -> string {
 
     let event = $in
     match $event {

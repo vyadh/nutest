@@ -406,7 +406,7 @@ def after-no-input []: nothing -> nothing {
 def signature-before-each-that-returns-non-record [] {
     let plan = [
         { name: "returns-string", type: "before-each", execute: "{ 'value' }" }
-        { name: "test", type: "test", execute: "{ }" }
+        { name: "test", type: "test", execute: "{ noop }" }
     ]
 
     let result = test-run "suite" $plan |
@@ -425,7 +425,7 @@ def signature-before-each-that-returns-non-record [] {
 def signature-before-all-that-returns-non-record [] {
     let plan = [
         { name: "returns-string", type: "before-all", execute: "{ 'value' }" }
-        { name: "test", type: "test", execute: "{ }" }
+        { name: "test", type: "test", execute: "{ noop }" }
     ]
 
     let result = test-run "suite" $plan |
@@ -443,8 +443,10 @@ def signature-before-all-that-returns-non-record [] {
 #[test]
 def signature-after-that-accepts-non-record [] {
     let plan = [
-        { name: "test", type: "test", execute: "{ }" }
-        { name: "accepts-string", type: "after-all", execute: "{ accepts-string }" }
+        [name, type, execute];
+        ["context", "before-all", "{ { key: context } }"]
+        ["test", "test", "{ noop }"]
+        ["accepts-string", "after-all", "{ accepts-string }"]
     ]
 
     let result = test-run "suite" $plan |
@@ -452,27 +454,19 @@ def signature-after-that-accepts-non-record [] {
 
     assert equal $result [
         [suite test type payload];
-        # This is a suite-level failure generated outside the runner (the orchestrator outside this test).
-        # Short of doing additional error interception or pre-checking via
-        # `scope commands` there's not much we can do about this.
-        # We still test the output here however to capture unintended behaviour changes.
+        # Nushell currently allows this, perhaps because we're not using the type as a string.
+        # We still test to capture unintended behaviour changes.
         [
             "suite"
             "test"
             "result"
-            "FAIL"
-        ]
-        [
-            "suite"
-            "test"
-            "output"
-            { stream: "error", items: ["Can't convert to Closure."] }
+            "PASS"
         ]
         [
             "suite"
             null
             "output"
-            { stream: "output", items: [{}] }
+            { stream: "output", items: [{key: "context"}] }
         ]
     ]
 }
@@ -578,12 +572,8 @@ def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, 
     )
 }
 
-def decode-output []: string -> table<stream: string, items: list<any>> {
-    $in | decode base64 | decode | from nuon | reformat-errors-in-table
-}
-
-def reformat-errors-in-table []: table<stream: string, items: list<any>> -> table<stream: string, items: list<any>> {
-    $in | each { $in | reformat-errors }
+def decode-output []: string -> record<stream: string, items: list<any>> {
+    $in | decode base64 | decode | from nuon | reformat-errors
 }
 
 def reformat-errors []: record<stream: string, items: list<any>> -> record<stream: string, items: list<any>> {

@@ -148,12 +148,14 @@ def query-output [
     test: string
 ]: nothing -> table<stream: string, items: list<any>> {
 
-    $db | query db "
+    let result = $db | query db "
             SELECT data
             FROM nu_test_output
             -- A test is NULL when emitted from before/after all
             WHERE suite = :suite AND (test = :test OR test IS NULL)
         " --params { suite: $suite test: $test }
+
+    $result
         | get data # The column name
         | each { $in | from nuon }
         | flatten

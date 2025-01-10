@@ -1,5 +1,5 @@
 
-export def none []: record -> closure {
+export def none []: nothing -> closure {
     {
         match $in {
             { type: _, text: $text } => $text
@@ -7,7 +7,7 @@ export def none []: record -> closure {
     }
 }
 
-export def standard []: record -> closure {
+export def standard []: nothing -> closure {
     {
         match $in {
             { type: "pass", text: $text } => $"✅ (ansi green)($text)(ansi reset)"

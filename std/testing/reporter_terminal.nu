@@ -30,7 +30,7 @@ def complete-suite []: nothing -> nothing {
     print $"Test run completed: ($output)"
 }
 
-def count [key: string]: list -> int {
+def count [key: string]: record -> int {
     $in
         | get --ignore-errors $key
         | default []
@@ -69,7 +69,7 @@ def format-result [result: string, theme: closure]: nothing -> string {
     }
 }
 
-def format-output [formatter: closure]: table<stream: string, items: list<any>> -> string {
+def format-output [formatter: closure]: table<stream: string, items: any> -> string {
     let output = $in
     let formatted = $output | do $formatter
     if ($formatted | describe) == "string" {

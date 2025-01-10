@@ -26,7 +26,7 @@ def query-summary []: nothing -> record<total: int, passed: int, failed: int, sk
     }
 }
 
-def count [key: string]: list -> int {
+def count [key: string]: record -> int {
     $in
         | get --ignore-errors $key
         | default []

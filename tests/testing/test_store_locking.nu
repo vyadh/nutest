@@ -24,17 +24,17 @@ def delete-state-file []: record -> nothing {
     rm -f $state_file
 }
 
-def initialise-attempts-file []: record<state: string> -> nothing {
+def initialise-attempts-file []: record<state_file: string> -> nothing {
     let context = $in
     "0" | save -f $context.state_file
 }
 
-def new-attempt []: record<state: string> -> nothing {
+def new-attempt []: record<state_file: string> -> nothing {
     let context = $in
     ($context | attempt-count) + 1 | save -f $context.state_file
 }
 
-def attempt-count []: record<state: string> -> int {
+def attempt-count []: record<state_file: string> -> int {
     let context = $in
     (open $context.state_file | into int)
 }

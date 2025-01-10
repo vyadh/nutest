@@ -22,7 +22,7 @@
 export def nutest-299792458-execute-suite [
     default_strategy: record<threads: int>
     suite: string
-    suite_data: list
+    suite_data: table
 ] {
     # We reset the test name to avoid collisions around tests within tests
     with-env { NU_TEST_SUITE_NAME: $suite, NU_TEST_NAME: null } {
@@ -35,16 +35,16 @@ export def nutest-299792458-execute-suite [
 
 def nutest-299792458-execute-suite-internal [
     default_strategy: record<threads: int>
-    suite_data: list
+    suite_data: table
 ] {
 
     let plan = $suite_data | group-by type
 
-    def find-or-default [key: string, default: record]: list -> record {
+    def find-or-default [key: string, default: record]: record -> record {
         let values = $in | get --ignore-errors $key
         if ($values | is-empty) { $default } else { $values | first }
     }
-    def get-or-empty [key: string]: list -> list {
+    def get-or-empty [key: string]: record -> list {
         $in | get --ignore-errors $key | default []
     }
 

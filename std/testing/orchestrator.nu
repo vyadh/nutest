@@ -105,7 +105,7 @@ def create-test-plan-data [test: record<name: string, type: string>]: nothing ->
 }
 
 # Need to encode orchestrator errors as the runner would do, and compatible with the store output
-def as-error-output [error: string]: record -> record {
+def as-error-output [error: string]: nothing -> record {
     {
         type: "output"
         payload: ({ stream: "error", items: [$error] } | to nuon | encode base64)
