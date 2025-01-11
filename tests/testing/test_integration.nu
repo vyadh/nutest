@@ -59,9 +59,9 @@ def with-different-formatter [] {
     let results = test-run $"run-tests --path '($temp)' --reporter table --formatter preserved"
 
     assert equal $results [
-        { suite: test_1, test: test_bar, result: "PASS", output: [{stream: "error", items: "rab"}] }
-        { suite: test_1, test: test_foo, result: "PASS", output: [{stream: "output", items: "oof"}] }
-        { suite: test_2, test: test_baz, result: "PASS", output: [{stream: "output", items: "zab"}] }
+        { suite: test_1, test: test_bar, result: "PASS", output: [{stream: "error", items: ["rab"]}] }
+        { suite: test_1, test: test_foo, result: "PASS", output: [{stream: "output", items: ["oof"]}] }
+        { suite: test_2, test: test_baz, result: "PASS", output: [{stream: "output", items: ["zab"]}] }
         { suite: test_2, test: test_qux, result: "SKIP", output: [] }
     ]
 }

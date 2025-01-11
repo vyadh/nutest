@@ -240,8 +240,7 @@ def run-test-with-output [] {
             suite: "test-with-output"
             test: "test"
             result: "PASS"
-            # The items are not grouped due to the flatten when querying output in store.nu
-            output: [[stream, items]; ["output", 1], ["output", 2], ["error", 3], ["error", 4]]
+            output: [[stream, items]; ["output", [1, 2]], ["error", [3, 4]]]
         }
     ]
 }
@@ -266,12 +265,12 @@ def run-before-after-with-output [] {
             result: "PASS"
             output: [
                 [stream, items];
-                ["output", "bao"], ["error", "bao"]
+                ["output", ["bao"]], ["error", ["bao"]]
                 # Since only one before/after all in DB, we cannot guarantee order
-                ["output", "aao"], ["error", "aae"]
-                ["output", "beo"], ["error", "beo"]
-                ["output", "to"], ["error", "te"]
-                ["output", "aeo"], ["error", "aee"]
+                ["output", ["aao"]], ["error", ["aae"]]
+                ["output", ["beo"]], ["error", ["beo"]]
+                ["output", ["to"]], ["error", ["te"]]
+                ["output", ["aeo"]], ["error", ["aee"]]
             ]
         }
     ]

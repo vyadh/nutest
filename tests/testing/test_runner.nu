@@ -452,23 +452,35 @@ def signature-after-that-accepts-non-record [] {
     let result = test-run "suite" $plan |
         where type in ["result", "output"]
 
-    assert equal $result [
-        [suite test type payload];
-        # Nushell currently allows this, perhaps because we're not using the type as a string.
-        # We still test to capture unintended behaviour changes.
-        [
-            "suite"
-            "test"
-            "result"
-            "PASS"
+    # Check only supported on Nushell >= 0.101.1 (currently nightly so we check)
+    let version = version | get version | split row '.' | each { into int }
+    let supported = $version.0 >= 0 and $version.1 >= 101 and $version.2 >= 1
+
+    if $supported {
+        assert equal $result [
+            [suite test type payload];
+            # Nushell currently allows this, perhaps because we're not using the type as a string.
+            # We still test to capture unintended behaviour changes.
+            [
+                "suite"
+                "test"
+                "result"
+                "PASS"
+            ]
+            [
+                "suite"
+                "test"
+                "result"
+                "FAIL"
+            ]
+            [
+                "suite"
+                "test"
+                "output"
+                { stream: "error", items: ["Input type not supported."] }
+            ]
         ]
-        [
-            "suite"
-            null
-            "output"
-            { stream: "output", items: [{key: "context"}] }
-        ]
-    ]
+    }
 }
 
 def accepts-string []: string -> nothing {

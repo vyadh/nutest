@@ -158,8 +158,4 @@ def query-output [
     $result
         | get data # The column name
         | each { $in | from nuon }
-        | flatten
-
-    # Note the flatten unwraps multiple calls to `print`
-    # This is simpler, but prevents implementing things like `print --no-newline`
 }

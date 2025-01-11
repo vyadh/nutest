@@ -10,7 +10,7 @@ export def unformatted []: nothing -> closure {
     {
         $in
             | each { |message| $message.items }
-            | flatten # todo causing unexpected behaviour?
+            | flatten
     }
 }
 
@@ -32,7 +32,7 @@ export def pretty [
 def pretty-format-event [
     theme: closure
     error_format: string
-]: record<stream: string, items: any> -> string {
+]: record<stream: string, items: list<any>> -> string {
 
     let event = $in
     match $event {
@@ -66,6 +66,7 @@ def looks-like-error []: any -> bool {
     }
 }
 
+# returns: string|record
 def format-error [error_format: string]: record -> any {
     let error = $in
     match $error_format {
@@ -77,11 +78,11 @@ def format-error [error_format: string]: record -> any {
 }
 
 # Rendered errors have useful info for terminal mode but too much for table-based reporters
-def error-format-rendered []: record -> list<string> {
-    return [$in.rendered]
+def error-format-rendered []: record -> string {
+    return $in.rendered
 }
 
-def error-format-compact []: record -> list<string> {
+def error-format-compact []: record -> string {
     let error = $in
 
     let json = $error.json | from json
@@ -90,7 +91,7 @@ def error-format-compact []: record -> list<string> {
     let labels = $json | get labels?
 
     if $help != null {
-        [$message, $help]
+        $"($message)\n($help)"
     } else if ($labels != null) {
         let detail = $labels | each { |label|
             | get text
@@ -105,12 +106,12 @@ def error-format-compact []: record -> list<string> {
                 | str replace --all --regex '[\n\r]+' '\n'
                 | str replace --all "|>" "\n|>")
                 | str join ""
-            [$message, ...($formatted | lines)]
+            [$message, ...($formatted | lines)] | str join "\n"
          } else {
-            [$message, ...($detail | lines)]
+            [$message, ...($detail | lines)] | str join "\n"
          }
     } else {
-        [$message]
+        $message
     }
 }
 

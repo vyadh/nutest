@@ -42,7 +42,7 @@ export def cleanup-test []: record -> nothing {
 export def run [
     code: closure
     strategy: record = { }
-]: record<reporter: record, temp_dir: string> -> record<result: string, output: string> {
+]: record<reporter: record, temp_dir: string> -> record<result: string, output: any> {
 
     let context = $in
     let temp = $context.temp_dir

@@ -11,6 +11,7 @@
 
 ## Roadmap
 
+- Figure out why the rendered errors no longer print in colours. Perhaps no longer do `ansi reset`?
 - Test report in standard format (cargo test JSON or nextest / JUnit XML) and integrate into CI as example
 - Fluent assertion module with pluggable matchers.
 - Generate test coverage (in llvm-cov format to allow combining with Nushell coverage)

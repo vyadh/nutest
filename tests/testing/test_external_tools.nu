@@ -35,6 +35,6 @@ def non-captured-output-is-ignored [] {
 
     assert equal ($result | reject suite test) {
         result: "PASS"
-        output: [{ stream: "output", items: "Only this text"}]
+        output: [{ stream: "output", items: ["Only this text"]}]
     }
 }

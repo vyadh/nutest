@@ -26,7 +26,7 @@ def cleanup-test []: record -> nothing {
 }
 
 # [test]
-def assertion-failure [] {
+def "assertion compact" [] {
     let test = {
         assert equal 1 2
     }
@@ -42,7 +42,7 @@ def assertion-failure [] {
 }
 
 # [test]
-def basic-error [] {
+def "basic compact" [] {
     let code = {
         error make { msg: 'some error' }
     }
@@ -53,7 +53,62 @@ def basic-error [] {
 }
 
 # [test]
-def full-rendered-error [] {
+def "full preserved" [] {
+    let code = {
+        let variable = 'span source'
+
+        error make {
+            msg: 'a decorated error'
+            label: {
+                text: 'happened here'
+                span: (metadata $variable).span
+            }
+            help: 'some help'
+        }
+    }
+
+    # Formatter that preserves all type information (pass-through)
+    let formatter = formatter preserved
+    let reporter = reporter_table create (theme none) $formatter
+    let context = $in | merge { reporter: $reporter }
+    let output = $context | run $code
+
+    assert equal ($output.stream) ["error"]
+    let details = $output.items | first | get json.0 | from json
+    assert equal ($details.msg) "a decorated error"
+    assert equal ($details.labels.0.text) "happened here"
+    assert equal ($details.help) "some help"
+}
+
+# [test]
+def "full unformatted" [] {
+    let code = {
+        let variable = 'span source'
+
+        error make {
+            msg: 'a decorated error'
+            label: {
+                text: 'happened here'
+                span: (metadata $variable).span
+            }
+            help: 'some help'
+        }
+    }
+
+    # Use 'unformatted' formatter
+    let formatter = formatter unformatted
+    let reporter = reporter_table create (theme none) $formatter
+    let context = $in | merge { reporter: $reporter }
+    let output = $context | run $code
+
+    let details = $output.0.json | from json
+    assert equal ($details.msg) "a decorated error"
+    assert equal ($details.labels.0.text) "happened here"
+    assert equal ($details.help) "some help"
+}
+
+# [test]
+def "full rendered" [] {
     let code = {
         let variable = 'span source'
 
@@ -79,7 +134,7 @@ def full-rendered-error [] {
 }
 
 # [test]
-def full-compact-error [] {
+def "full compact" [] {
     let code = {
         let variable = 'span source'
 
