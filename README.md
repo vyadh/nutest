@@ -109,8 +109,10 @@ Will return:
 - [x] Terminal completions for suites and tests
 - [x] Reporting in various ways, including queryable Nushell data tables
 - [x] Test output captured and shown against test results
-- [x] CI/CD support in the form of a `--fail` flag
 - [x] Parallel test execution and concurrency control
+- [x] CI/CD support
+  - [x] Non-zero exit code in the form of a `--fail` flag
+  - [x] Test report integration with a wide array of tools
 
 ### Flexible Tests
 
@@ -178,21 +180,11 @@ Will return:
 ╰─────────┴────╯
 ```
 
+
 ### Test Output
 
 Output from the `print` command to stdout and stderr will be captured and shown against test results, which is useful for debugging failing tests.
 
-
-### CI/CD Support
-
-In normal operation the tests will be run and the results will be returned as a table with the exit code always set to 0. To avoid manually checking the results, the `--fail` flag can be used to set the exit code to 1 if any tests fail. In this mode, the test results will be printed in the default format and cannot be interrogated.
-
-```nu
-run-tests --fail
-```
-
-This is useful for CI/CD pipelines where it is desirable to fail the current
-job. However, note that using this directly in your shell will exit your shell session!
 
 ### Parallel Test Execution
 
@@ -214,6 +206,29 @@ def threads []: nothing -> record {
 ```
 
 This would be beneficial in a project where most tests should run concurrently by default, but a subset perhaps require exclusive access to a resource, or one that needs resetting on a per-test basis.
+
+
+### CI/CD Support
+
+#### Exit Codes
+
+In normal operation the tests will be run and the results will be returned as a table with the exit code always set to 0. To avoid manually checking the results, the `--fail` flag can be used to set the exit code to 1 if any tests fail. In this mode, the test results will be printed in the default format and cannot be interrogated.
+
+```nu
+run-tests --fail
+```
+
+This is useful for CI/CD pipelines where it is desirable to fail the current
+job. However, note that using this directly in your shell will exit your shell session!
+
+### Test Report Integration
+
+In order to integrate with CI/CD tools, such as the excellent [GitHub Action to Publish Test Results](https://github.com/EnricoMi/publish-unit-test-result-action), you can output the result in JUnit XML format. The JUnit format was chosen simply as it appears to have the widest level of support. This can be done by specifying the `--reporter junit` option to the `run-tests` command:
+
+```nu
+run-tests --reporter junit | save test-report.xml
+```
+
 
 ## Alternatives
 
