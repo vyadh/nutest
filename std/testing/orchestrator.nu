@@ -36,15 +36,15 @@ def run-suite [
 ] {
     let plan_data = create-suite-plan-data $tests
 
-    let result = (
-        ^$nu.current-exe
-            --no-config-file
+    # Run with forced colour to get colourised rendered error output
+    let result = with-env { FORCE_COLOR: true } {
+        (^$nu.current-exe
             --commands $"
                 use (runner-module) *
                 source ($path)
                 nutest-299792458-execute-suite ($strategy | to nuon) ($suite) ($plan_data)
-            "
-    ) | complete
+        ")
+    } | complete
 
     # Useful for understanding plan
     #print $'($plan_data)'

@@ -11,6 +11,7 @@
 
 ## Roadmap
 
+- We don't explain to `use` nu-test
 - Get Topiary and Nushell working and add as commit hook
 - JUnit test reports WIP:
   - Add information about errors into the expected JUnit failure elements
@@ -18,8 +19,6 @@
   - Integrate into CI [with example setup](https://github.com/EnricoMi/publish-unit-test-result-action)
   - Support multiple reporters so can print to terminal and save to file
     - Or, add --reporter-options as a record. Could embed optional formatter here and also output files
-- Restore rendered error colours from Nushell after 0.101.0
-  - This is likely a result of the new terminal detection code in Nushell. Can we deactivate it?
 - Fluent assertion module with pluggable matchers.
 - Generate test coverage (in llvm-cov format to allow combining with Nushell coverage)
 

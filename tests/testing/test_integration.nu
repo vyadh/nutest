@@ -103,9 +103,9 @@ def exit-on-fail-with-passing-tests [] {
             "
     ) | complete
 
-    let output = $result.stdout
+    let output = $result.stdout | ansi strip
+    assert ($output =~ "test_1[ │]+test_foo[ │]+PASS[ │]+oof") "Tests are output"
     assert equal $result.exit_code 0 "Exit code is 0"
-    assert ($output =~ "test_1[ │]+test_foo[ │]+PASS[ │]+oof") "Tests    are output"
 }
 
 #[test]
@@ -126,8 +126,9 @@ def exit-on-fail-with-failing-tests [] {
             "
     ) | complete
 
+    let output = $result.stdout | ansi strip
+    assert ($output =~ "test_3[ │]+test_quux[ │]+FAIL[ │]+{msg: Ouch") "Tests are output"
     assert equal $result.exit_code 1
-    assert ($result.stdout =~ "test_3[ │]+test_quux[ │]+FAIL[ │]+{msg: Ouch") "Tests are output"
 }
 
 #[test]
