@@ -13,6 +13,10 @@ jobs:
   nutest-tests:
     name: Run Nu-Test Tests
 
+    permissions:
+      checks: write
+      pull-requests: write
+
     strategy:
       fail-fast: true
       matrix:
@@ -31,7 +35,17 @@ jobs:
           version: ${{ matrix.version }}
 
       - name: Test Nu-Test
+        run: nu -c 'use std/testing; testing run-tests --reporter junit | save test-report.xml'
+
+      # todo Support multiple reporters to avoid need for secondary run
+      - name: Test Nu-Test
         run: nu -c 'use std/testing; testing run-tests --reporter terminal --fail'
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: test-report.xml
 
   nushell-tests:
     name: Run Nushell Tests

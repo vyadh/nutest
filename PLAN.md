@@ -16,7 +16,7 @@
 - JUnit test reports WIP:
   - Add information about errors into the expected JUnit failure elements
   - Add test output
-  - Integrate into CI [with example setup](https://github.com/EnricoMi/publish-unit-test-result-action)
+  - Add [a badge](https://github.com/EnricoMi/publish-unit-test-result-action/?tab=readme-ov-file#create-a-badge-from-test-results) for test results
   - Support multiple reporters so can print to terminal and save to file
     - Or, add --reporter-options as a record. Could embed optional formatter here and also output files
 - Fluent assertion module with pluggable matchers.
