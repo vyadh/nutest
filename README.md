@@ -10,13 +10,29 @@ A [Nushell](https://www.nushell.sh) test runner.
 
 *^ Terminal mode - test results appear as they complete.*
 
+
 ## Requirements
 
 Nushell 0.101.0 or later.
 
+
 ## Motivation
 
 Writing tests in Nushell is both powerful and expressive. Not only for testing Nushell code, but also other things, such as APIs, infrastructure, and other scripts. However, Nushell doesn't currently include a test runner for Nu scripts in the standard library. While a runner is not strictly necessary, Nutest aims to encourage writing tests for scripts by making testing more easily accessible.
+
+
+## Install and Run
+
+Note: Nu-test is fully functional but currently still in pre-1.0 development.
+
+```nu
+git https://github.com/vyadh/nu-test.git
+use nu-test/std/testing
+
+cd <your project>
+testing run-tests
+```
+
 
 ## Writing Tests
 
@@ -100,6 +116,7 @@ Will return:
 │           │                  │        │ {data: xxx}         │
 ╰───────────┴──────────────────┴────────┴─────────────────────╯
 ```
+
 
 ## Current Features
 

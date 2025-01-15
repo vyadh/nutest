@@ -11,7 +11,7 @@
 
 ## Roadmap
 
-- We don't explain to `use` nu-test
+- Support for nupm install 
 - Get Topiary and Nushell working and add as commit hook
 - JUnit test reports WIP:
   - Add information about errors into the expected JUnit failure elements
