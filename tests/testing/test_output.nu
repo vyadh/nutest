@@ -5,27 +5,27 @@ use ../../std/testing/formatter.nu
 # This suite ensures that various printed outputs are represented as would be
 # expected if the test code was being run directly and interactively.
 
-# [before-all]
+#[before-all]
 def setup-tests []: record -> record {
     $in | harness setup-tests (formatter preserved)
 }
 
-# [after-all]
+#[after-all]
 def cleanup-tests []: record -> nothing {
     $in | harness cleanup-tests
 }
 
-# [before-each]
+#[before-each]
 def setup-test []: record -> record {
     $in | harness setup-test
 }
 
-# [after-each]
+#[after-each]
 def cleanup-test []: record -> nothing {
     $in | harness cleanup-test
 }
 
-# [test]
+#[test]
 def nulls [] {
     let code = { print null }
     let output = $in | run $code
@@ -36,7 +36,7 @@ def nulls [] {
     assert equal $output [ [null, null, null] ]
 }
 
-# [test]
+#[test]
 def numbers [] {
     let code = { print 1 }
     let output = $in | run $code
@@ -47,7 +47,7 @@ def numbers [] {
     assert equal $output [ [1, 2, 3] ]
 }
 
-# [test]
+#[test]
 def strings [] {
     let code = { print "str" }
     let output = $in | run $code
@@ -58,14 +58,14 @@ def strings [] {
     assert equal $output [ ["one", "two", "three"] ]
 }
 
-# [test]
+#[test]
 def durations [] {
     let code = { print 2min }
     let output = $in | run $code
     assert equal $output [ [2min] ]
 }
 
-# [test]
+#[test]
 def lists [] {
     let code = { print [] }
     let output = $in | run $code
@@ -80,7 +80,7 @@ def lists [] {
     assert equal $output [ [[1, two, 3], [4, five, 6]] ]
 }
 
-# [test]
+#[test]
 def records [] {
     let code = { print {} }
     let output = $in | run $code
@@ -95,7 +95,7 @@ def records [] {
     assert equal $output [ [{a: 1, b: "two"}, {c: 3, d: "four"}] ]
 }
 
-# [test]
+#[test]
 def tables [] {
     let code = { print ([[a, b, c]; [1, 2, 3]] | take 0) }
     let output = $in | run $code
@@ -110,21 +110,21 @@ def tables [] {
     assert equal $output [ [[{a: 1, b: two, c: 3}], [{d: 4, e: five, f: 6}]] ]
 }
 
-# [test]
+#[test]
 def "table in record" [] {
     let code = { print { a: 1, b: [[c, d]; [1, 2]] } }
     let output = $in | run $code
     assert equal $output [ [{a: 1, b: [{c: 1, d: 2}]}] ]
 }
 
-# [test]
+#[test]
 def "record in table" [] {
     let code = { print [[a, b]; [1, {c: 2, d: 3}]] }
     let output = $in | run $code
     assert equal $output [ [[[a, b]; [1, {c: 2, d: 3}]]] ]
 }
 
-# [test]
+#[test]
 def "capture print fidelity" [] {
     let code = { print 1; print 2 3; print "more" "args" }
     let output = $in | run $code

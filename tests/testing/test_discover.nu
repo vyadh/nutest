@@ -114,15 +114,15 @@ def "tests suites found" [] {
     "
     #[test]
     def test_foo [] { }
-    # [test]
+    #[test]
     def test_bar [] { }
     " | save $test_file_1
 
     "
-    # [test]
+    #[test]
     def test_baz [] { }
     def test_qux [] { }
-    # [other]
+    #[other]
     def test_quux [] { }
     " | save $test_file_2
 

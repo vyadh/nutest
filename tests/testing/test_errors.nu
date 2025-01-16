@@ -4,28 +4,28 @@ use ../../std/testing/formatter.nu
 use ../../std/testing/theme.nu
 use ../../std/testing/reporter_table.nu
 
-# [before-all]
+#[before-all]
 def setup-tests []: record -> record {
     let formatter = formatter pretty (theme none) "compact" # Unless overridden
     $in | harness setup-tests $formatter
 }
 
-# [after-all]
+#[after-all]
 def cleanup-tests []: record -> nothing {
     $in | harness cleanup-tests
 }
 
-# [before-each]
+#[before-each]
 def setup-test []: record -> record {
     $in | harness setup-test
 }
 
-# [after-each]
+#[after-each]
 def cleanup-test []: record -> nothing {
     $in | harness cleanup-test
 }
 
-# [test]
+#[test]
 def "assertion compact" [] {
     let test = {
         assert equal 1 2
@@ -41,7 +41,7 @@ def "assertion compact" [] {
     " | trim-all)
 }
 
-# [test]
+#[test]
 def "basic compact" [] {
     let code = {
         error make { msg: 'some error' }
@@ -52,7 +52,7 @@ def "basic compact" [] {
     assert equal $output "some error"
 }
 
-# [test]
+#[test]
 def "full preserved" [] {
     let code = {
         let variable = 'span source'
@@ -80,7 +80,7 @@ def "full preserved" [] {
     assert equal ($details.help) "some help"
 }
 
-# [test]
+#[test]
 def "full unformatted" [] {
     let code = {
         let variable = 'span source'
@@ -107,7 +107,7 @@ def "full unformatted" [] {
     assert equal ($details.help) "some help"
 }
 
-# [test]
+#[test]
 def "full rendered" [] {
     let code = {
         let variable = 'span source'
@@ -133,7 +133,7 @@ def "full rendered" [] {
     assert str contains $output "some help"
 }
 
-# [test]
+#[test]
 def "full compact" [] {
     let code = {
         let variable = 'span source'

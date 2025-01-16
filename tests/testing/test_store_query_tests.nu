@@ -1,18 +1,18 @@
 use std/assert
 use ../../std/testing/store.nu
 
-# [strategy]
+#[strategy]
 def sequential []: nothing -> record {
     { threads: 1 }
 }
 
-# [before-each]
+#[before-each]
 def create-store []: record -> record {
     store create
     { }
 }
 
-# [after-each]
+#[after-each]
 def delete-store [] {
     store delete
 }
@@ -27,7 +27,7 @@ def create-suites [] {
     store insert-result { suite: "suite3", test: "fail1", result: "FAIL" }
 }
 
-# [test]
+#[test]
 def "query tests" [] {
     create-suites
 
@@ -41,7 +41,7 @@ def "query tests" [] {
     ]
 }
 
-# [test]
+#[test]
 def "query for specific test" [] {
     create-suites
 
@@ -52,7 +52,7 @@ def "query for specific test" [] {
     ]
 }
 
-# [test]
+#[test]
 def "query with before or after all output" [] {
     store insert-output { suite: "suite1", test: null, data: ([{stream: "output", items: ["abc"]}] | to nuon) }
     store insert-result { suite: "suite1", test: "pass1", result: "PASS" }

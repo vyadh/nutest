@@ -487,7 +487,7 @@ def accepts-string []: string -> nothing {
     print $in
 }
 
-# [test]
+#[test]
 def full-cycle-context [] {
     let plan = [
         { name: "before-all", type: "before-all", execute: "{ fc-before-all }" }
