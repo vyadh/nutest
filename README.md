@@ -25,11 +25,37 @@ Writing tests in Nushell is both powerful and expressive. Not only for testing N
 
 Note: Nu-test is fully functional but currently still in pre-1.0 development.
 
+### Using [nupm](https://github.com/nushell/nupm)
+
+First-time installation:
+
 ```nu
 git https://github.com/vyadh/nu-test.git
-use nutest
+nupm install nu-test --path
+```
 
+Usage:
+
+```nu
 cd <your project>
+use nutest
+nutest run-tests
+```
+
+### Standalone
+
+First-time installation:
+
+```nu
+git https://github.com/vyadh/nu-test.git
+cp -r nu-test/nutest <a directory referenced by NU_LIB_DIRS / $env.NU_LIB_DIRS>
+```
+
+Usage:
+
+```nu
+cd <your project>
+use nutest
 nutest run-tests
 ```
 
