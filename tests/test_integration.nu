@@ -227,9 +227,9 @@ def with-junit-reporter [] {
     def test_oof [] { }
     " | save $test_file_3
 
-    let results = test-run-raw $"run-tests --path '($temp)' --reporter junit"
+    let results = test-run-raw $"run-tests --path '($temp)' --reporter junit" | strip-xml-whitespace
 
-    assert equal $results '<testsuites name="nu-test" tests="6" disabled="2" failures="1">
+    assert equal $results ('<testsuites name="nu-test" tests="6" disabled="2" failures="1">
   <testsuite name="test_1" tests="2" disabled="0" failures="0">
     <testcase name="test_bar" classname="test_1"/>
     <testcase name="test_foo" classname="test_1"/>
@@ -249,7 +249,7 @@ def with-junit-reporter [] {
     </testcase>
   </testsuite>
 </testsuites>
-'
+' | strip-xml-whitespace)
 }
 
 def test-run [command: string] {
@@ -284,4 +284,8 @@ def test-run-raw [command: string]: nothing -> string {
     } else {
         $result.stdout
     }
+}
+
+def strip-xml-whitespace []: string -> string {
+    $in | str trim | str replace --all --regex '>[\n\r ]+<' '><'
 }

@@ -11,7 +11,7 @@ on:
 
 jobs:
   nutest-tests:
-    name: Run Nu-Test Tests
+    name: Run Tests
 
     permissions:
       checks: write
@@ -21,7 +21,7 @@ jobs:
       fail-fast: true
       matrix:
         version: ["0.101.0", "*", "nightly"] # Earliest supported, latest and nightly
-        platform: [ubuntu-latest]
+        platform: [ubuntu-latest, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.platform }}
 
@@ -34,15 +34,27 @@ jobs:
           version: ${{ matrix.version }}
 
       - name: Test Nu-Test
-        run: nu -c 'use nutest; nutest run-tests --reporter junit | save test-report.xml'
+        run: nu -c "use nutest; nutest run-tests --reporter junit | save test-report.xml"
 
       # Second run currently required as we can only specify one reporter
       - name: Test Nu-Test
-        run: nu -c 'use nutest; nutest run-tests --reporter terminal --fail'
+        run: nu -c "use nutest; nutest run-tests --reporter terminal --fail"
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
+        if: runner.os == 'Linux' && always()
+        with:
+          files: test-report.xml
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action/macos@v2
+        if: runner.os == 'macOS' && always()
+        with:
+          files: test-report.xml
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action/windows@v2
+        if: runner.os == 'Windows' && always()
         with:
           files: test-report.xml
 
@@ -52,7 +64,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        platform: [ubuntu-latest]
+        platform: [ubuntu-latest, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.platform }}
 
@@ -72,5 +84,7 @@ jobs:
           version: "*"
 
       - name: Test Nushell
-        run: nu -c "use $GITHUB_WORKSPACE/nutest; nutest run-tests --reporter terminal --fail --path tests"
+        # Nushell used here so use of workspace directory works consistently across platforms
+        shell: nu {0}
+        run: nu -c $"use ($env.GITHUB_WORKSPACE)/nutest; nutest run-tests --reporter terminal --fail --path tests"
         working-directory: nushell/crates/nu-std

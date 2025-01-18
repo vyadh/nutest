@@ -164,5 +164,5 @@ def run [code: closure]: record -> string {
 }
 
 def trim-all []: string -> string {
-    $in | str trim | str replace --all --regex '[\n\t ]+' ' '
+    $in | str trim | str replace --all --regex '[\n\r\t ]+' ' '
 }

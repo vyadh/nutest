@@ -51,11 +51,11 @@ def "suite files with default glob" [] {
     let result = $temp | discover suite-files | sort
 
     assert equal $result [
-      ($temp | path join "bar2-test.nu")
-      ($temp | path join "bar_test.nu")
-      ($temp | path join "subdir" "test_baz.nu")
-      ($temp | path join "test-foo2.nu")
-      ($temp | path join "test_foo.nu")
+      ($temp | path join "bar2-test.nu" | path expand)
+      ($temp | path join "bar_test.nu" | path expand)
+      ($temp | path join "subdir" "test_baz.nu" | path expand)
+      ($temp | path join "test-foo2.nu" | path expand)
+      ($temp | path join "test_foo.nu" | path expand)
     ]
 }
 
@@ -69,8 +69,8 @@ def "suite files via specified glob" [] {
     let result = $temp | discover suite-files --glob "**/*.nu" | sort
 
     assert equal $result [
-      ($temp | path join "any.nu")
-      ($temp | path join "test_foo.nu")
+      ($temp | path join "any.nu" | path expand)
+      ($temp | path join "test_foo.nu" | path expand)
     ]
 }
 
@@ -88,9 +88,9 @@ def "suite files with matcher" [] {
     let result = $temp | discover suite-files --matcher "ba" | sort
 
     assert equal $result [
-      ($temp | path join "bar2-test.nu")
-      ($temp | path join "bar_test.nu")
-      ($temp | path join "subdir" "test_baz.nu")
+      ($temp | path join "bar2-test.nu" | path expand)
+      ($temp | path join "bar_test.nu" | path expand)
+      ($temp | path join "subdir" "test_baz.nu" | path expand)
     ]
 }
 
