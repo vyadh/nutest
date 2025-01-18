@@ -98,7 +98,7 @@ def exit-on-fail-with-passing-tests [] {
         ^$nu.current-exe
             --no-config-file
             --commands $"
-                use std/testing *
+                use nutest *
                 run-tests --path ($temp) --reporter table --formatter pretty --fail
             "
     ) | complete
@@ -121,7 +121,7 @@ def exit-on-fail-with-failing-tests [] {
         ^$nu.current-exe
             --no-config-file
             --commands $"
-                use std/testing *
+                use nutest *
                 run-tests --path ($temp) --reporter table --formatter pretty --fail
             "
     ) | complete
@@ -138,7 +138,7 @@ def useful-error-on-non-existent-path [] {
         ^$nu.current-exe
             --no-config-file
             --commands $"
-                use std/testing *
+                use nutest *
                 run-tests --path ($missing_path)
             "
     ) | complete
@@ -257,7 +257,7 @@ def test-run [command: string] {
         ^$nu.current-exe
             --no-config-file
             --commands $"
-                use std/testing *
+                use nutest *
                 ($command) | to nuon
             "
     ) | complete
@@ -274,7 +274,7 @@ def test-run-raw [command: string]: nothing -> string {
         ^$nu.current-exe
             --no-config-file
             --commands $"
-                use std/testing *
+                use nutest *
                 ($command)
             "
     ) | complete

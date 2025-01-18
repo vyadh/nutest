@@ -1,6 +1,6 @@
 use std/assert
-use ../../std/testing/formatter.nu
-use ../../std/testing/theme.nu
+use ../nutest/formatter.nu
+use ../nutest/theme.nu
 
 const success_message = "I'd much rather be happy than right any day"
 const warning_message = "Don't Panic"
@@ -557,7 +557,7 @@ def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, 
         ^$nu.current-exe
             --no-config-file
             --commands $"
-                use std/testing/runner.nu *
+                use nutest/runner.nu *
                 source ($this_file)
                 nutest-299792458-execute-suite { threads: 0 } ($suite) ($plan)
             "

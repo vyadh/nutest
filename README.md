@@ -27,10 +27,10 @@ Note: Nu-test is fully functional but currently still in pre-1.0 development.
 
 ```nu
 git https://github.com/vyadh/nu-test.git
-use nu-test/std/testing
+use nutest
 
 cd <your project>
-testing run-tests
+nutest run-tests
 ```
 
 

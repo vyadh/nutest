@@ -2,7 +2,7 @@
 # This module is for running tests.
 #
 # Example Usage:
-#   use std/testing *; run-tests
+#   use nutest; nutest run-tests
 
 # Discover annotated test commands.
 export def list-tests [

@@ -81,6 +81,7 @@ def run-suite [
     }
 }
 
+# todo Need to investigate below. Is this still relevant if not going in the std lib?
 def runner-module []: nothing -> string {
     let in_std = scope modules | where file == "std/testing/mod.nu" | is-not-empty
     if $in_std {

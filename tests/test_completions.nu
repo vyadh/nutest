@@ -1,5 +1,5 @@
 use std/assert
-source ../../std/testing/completions.nu
+source ../nutest/completions.nu
 
 #[before-each]
 def setup [] {
@@ -17,7 +17,7 @@ def cleanup [] {
 
 #[test]
 def "parse with empty option" [] {
-    let result = "testing run-tests --reporter table --match-suites " | parse-command-context
+    let result = "nutest run-tests --reporter table --match-suites " | parse-command-context
 
     assert equal $result {
         suite: ".*"
@@ -28,7 +28,7 @@ def "parse with empty option" [] {
 
 #[test]
 def "parse with specified option" [] {
-    let result = "testing run-tests --reporter table --match-suites orc" | parse-command-context
+    let result = "nutest run-tests --reporter table --match-suites orc" | parse-command-context
 
     assert equal $result {
         suite: "orc"
@@ -39,7 +39,7 @@ def "parse with specified option" [] {
 
 #[test]
 def "parse with extra space" [] {
-    let result = "testing run-tests  --match-suites  orc" | parse-command-context
+    let result = "nutest run-tests  --match-suites  orc" | parse-command-context
 
     assert equal $result {
         suite: "orc"
@@ -50,7 +50,7 @@ def "parse with extra space" [] {
 
 #[test]
 def "parse when fully specified" [] {
-    let result = "testing run-tests --match-suites sui --match-tests te --path ../something" | parse-command-context
+    let result = "nutest run-tests --match-suites sui --match-tests te --path ../something" | parse-command-context
 
     assert equal $result {
         suite: "sui"
@@ -61,7 +61,7 @@ def "parse when fully specified" [] {
 
 #[test]
 def "parse with space in value" [] {
-    let result = 'testing run-tests --match-tests "parse some" --path ../something'  | parse-command-context
+    let result = 'nutest run-tests --match-tests "parse some" --path ../something'  | parse-command-context
 
     assert equal $result {
         suite: ".*"
@@ -72,7 +72,7 @@ def "parse with space in value" [] {
 
 #[test]
 def "parse with prior commands" [] {
-    let result = "use std/testing; testing run-tests --match-suites sui --match-tests te --path ../something" | parse-command-context
+    let result = "use nutest; nutest run-tests --match-suites sui --match-tests te --path ../something" | parse-command-context
 
     assert equal $result {
         suite: "sui"

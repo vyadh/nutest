@@ -35,11 +35,11 @@ jobs:
           version: ${{ matrix.version }}
 
       - name: Test Nu-Test
-        run: nu -c 'use std/testing; testing run-tests --reporter junit | save test-report.xml'
+        run: nu -c 'use nutest; nutest run-tests --reporter junit | save test-report.xml'
 
       # todo Support multiple reporters to avoid need for secondary run
       - name: Test Nu-Test
-        run: nu -c 'use std/testing; testing run-tests --reporter terminal --fail'
+        run: nu -c 'use nutest; nutest run-tests --reporter terminal --fail'
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
@@ -73,5 +73,5 @@ jobs:
           version: "*"
 
       - name: Test Nushell
-        run: nu -c "use $GITHUB_WORKSPACE/std/testing; testing run-tests --reporter terminal --fail --path tests"
+        run: nu -c "use $GITHUB_WORKSPACE/nutest; nutest run-tests --reporter terminal --fail --path tests"
         working-directory: nushell/crates/nu-std

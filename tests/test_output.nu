@@ -1,6 +1,6 @@
 use std/assert
 use harness.nu
-use ../../std/testing/formatter.nu
+use ../nutest/formatter.nu
 
 # This suite ensures that various printed outputs are represented as would be
 # expected if the test code was being run directly and interactively.

@@ -1,5 +1,5 @@
 use std/assert
-use ../../std/testing/discover.nu
+use ../nutest/discover.nu
 
 #[before-each]
 def setup [] {

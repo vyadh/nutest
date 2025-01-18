@@ -1,5 +1,5 @@
 use std/assert
-use ../../std/testing/store.nu
+use ../nutest/store.nu
 
 #[strategy]
 def sequential []: nothing -> record {

@@ -1,8 +1,8 @@
-use ../../std/testing/orchestrator.nu
-use ../../std/testing/reporter_table.nu
-use ../../std/testing/theme.nu
-use ../../std/testing/formatter.nu
-use ../../std/testing/store.nu
+use ../nutest/orchestrator.nu
+use ../nutest/reporter_table.nu
+use ../nutest/theme.nu
+use ../nutest/formatter.nu
+use ../nutest/store.nu
 
 # A harness for running tests against nutest itself.
 

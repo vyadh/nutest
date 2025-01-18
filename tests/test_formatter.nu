@@ -1,6 +1,6 @@
 use std/assert
-use ../../std/testing/formatter.nu
-use ../../std/testing/theme.nu
+use ../nutest/formatter.nu
+use ../nutest/theme.nu
 
 # The follow tests provide a unit-test focused view of the formatter module.
 # More comprehensive integration tests can be found in output and error tests.

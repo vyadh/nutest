@@ -1,5 +1,5 @@
 use std/assert
-use ../../std/testing/store.nu
+use ../nutest/store.nu
 
 #[strategy]
 def sequential []: nothing -> record {
@@ -40,11 +40,11 @@ def "runs with previous unclean run" [] {
         ^$nu.current-exe
             --no-config-file
             --commands $"
-                use std/testing/store.nu
+                use nutest/store.nu
                 store create
 
-                use std/testing *
-                run-tests --path '($temp)' --reporter table
+                use nutest
+                nutest run-tests --path '($temp)' --reporter table
             "
     ) | complete
 

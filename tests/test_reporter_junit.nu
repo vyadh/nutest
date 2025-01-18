@@ -1,5 +1,5 @@
 use std/assert
-source ../../std/testing/reporter_junit.nu
+source ../nutest/reporter_junit.nu
 
 #[test]
 def "count when no tests" [] {
