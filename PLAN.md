@@ -1,4 +1,4 @@
-# Planned Features / Ideas
+# Planned Features and Ideas
 
 ## Known Issues
 
@@ -9,21 +9,32 @@
   - Same for before-all and after-all.
   - We could try to accumulate as much context as possible, but it doesn't seem worth complicating the existing design currently.
 
-## Roadmap
+## Milestone: Version 1.0
 
-- Get Topiary and Nushell working and add as commit hook
-- JUnit test reports WIP:
-  - Add information about errors into the expected JUnit failure elements
+- Get Windows and MacOS tests running in GitHub Actions
+- Get Topiary Nushell formatting working as commit hook (if it's readable)
+- JUnit test reports:
+  - Add [a badge](https://github.com/EnricoMi/publish-unit-test-result-action/?tab=readme-ov-file#create-a-badge-from-test-results) for test results in CI serving as an example
+- Support multiple reporters so we can print to terminal and save to file
+  - This will partially fix the need for two runs in CI (though also need to consider `--fail` with `save`)
+- Versioning strategy, labels and docs/automation
+- Basic contributor agreement if needed
+
+## Post v1 Roadmap
+
+- JUnit test reports:
+  - Add error information into the expected JUnit failure elements
   - Add test output
-  - Add [a badge](https://github.com/EnricoMi/publish-unit-test-result-action/?tab=readme-ov-file#create-a-badge-from-test-results) for test results
-  - Support multiple reporters so can print to terminal and save to file
-    - Or, add --reporter-options as a record. Could embed optional formatter here and also output files
+  - Investigate use of styling of errors and strip as necessary
 - Fluent assertion module with pluggable matchers.
 - Generate test coverage (in llvm-cov format to allow combining with Nushell coverage)
 
 ## Future Ideas
 
-- Optionally write event stream to file to help debug Nutest itself.
+- Support matchers in `list-tests` (a trivial win)
+- Optimisation: If no reporter requires test output (e.g. summary), we can avoid having to process it
+- Optionally write decoded event stream to file to help debug Nutest itself.
+- Optionally allow running ignored tests.
 - Better support for direct-to-stdout tests by external tools that don't use the print statement. Allow running with sequential or subshell-based processing to capture output. Or even auto-detect and re-run tests.
 - Detect flaky tests by re-running failed tests a few times.
 - More sophisticated change display rather than simple assertion module output, e.g. differences in records and tables, perhaps displayed as tables
@@ -33,6 +44,8 @@
 - Dynamic terminal UI, showing the currently executing suites and tests.
     - This will resolve not being able to see the currently running tests in the terminal reporter
     - Would include things like a progress bar, running total of completed, fails, skips, etc.
-    - If we save historical test run timings, we should also estimate time left
-- Optionally allow running ignored tests.
-- Stream test results. Each suite is run in a separate nu process via `complete` and therefore each suite's results are not reported until the whole suite completed. There are some limitations here due to Nushell not being able to run processes concurrently. However, we may be able to stream the events and avoid the `complete` command to resolve this. This is ideally required for the event-based terminal UI.
+    - Would retain error information and output on tail failure
+    - If we save historical test run timings, we could:
+      - Estimate time left
+      - Provide difference reports to provide idea of regressions
+- Stream test results. Each suite is run in a separate nu process via `complete` and therefore each suite's results are not reported until the whole suite completed. There are some limitations here due to not being able to process Nushell sub-processes concurrently. However, we may be able to avoid the `complete` command to resolve this. This would also help better reflect current status in the event-based terminal UI.

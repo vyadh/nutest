@@ -17,19 +17,18 @@ use store.nu
 #    </testsuite>
 #  </testsuites>
 
-export def create [formatter: closure]: nothing -> record {
+export def create []: nothing -> record {
     {
         start: { || }
         complete: { || }
-        results: { create-report $formatter }
+        results: { create-report }
         has-return-value: true
         fire-start: { |row| }
         fire-finish: { |row| }
     }
 }
 
-# todo use formatter within junit translation as we need the full types to query error information
-def create-report [formatter: closure]: nothing -> string {
+def create-report []: nothing -> string {
     query-results | collect | to junit
 }
 

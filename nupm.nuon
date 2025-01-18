@@ -2,6 +2,6 @@
     name: "nutest"
     type: "module"
     version: "1.0.0-alpha"
-    description: "Nutest"
+    description: "Nutest, The Nushell test framework"
     license: "MIT"
 }

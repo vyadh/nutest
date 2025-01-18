@@ -12,7 +12,6 @@ export def list-tests [
     use discover.nu
 
     let path = $path | default $env.PWD | check-path
-    #todo we can now more easily allow matchers here
     let suites = $path | discover suite-files | discover test-suites
 
     $suites | each { |suite|
@@ -140,11 +139,7 @@ def select-reporter [
             use theme.nu
             use reporter_junit.nu
 
-            # todo Formatter and/or theme would need to remove ansi styling
-            let theme = theme none
-            let formatter = $formatter_option | default "unformatted" | select-formatter $theme
-
-            reporter_junit create $formatter
+            reporter_junit create
         }
         _ => {
             error make { msg: $"Unknown reporter: ($reporter_option)" }

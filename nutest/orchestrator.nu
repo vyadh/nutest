@@ -129,7 +129,6 @@ def process-event [reporter: record] {
             store insert-result $message
         }
         { type: "output" } => {
-            # TODO if no reporter needs the output, we don't need to bother processing this?
             let decoded = $event.payload | decode base64 | decode
             let message = $template | merge { data: $decoded }
             store insert-output $message

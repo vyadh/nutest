@@ -21,7 +21,6 @@ jobs:
       fail-fast: true
       matrix:
         version: ["0.101.0", "*", "nightly"] # Earliest supported, latest and nightly
-        # TODO windows-latest and macos-latest are currently not working
         platform: [ubuntu-latest]
 
     runs-on: ${{ matrix.platform }}
@@ -37,7 +36,7 @@ jobs:
       - name: Test Nu-Test
         run: nu -c 'use nutest; nutest run-tests --reporter junit | save test-report.xml'
 
-      # todo Support multiple reporters to avoid need for secondary run
+      # Second run currently required as we can only specify one reporter
       - name: Test Nu-Test
         run: nu -c 'use nutest; nutest run-tests --reporter terminal --fail'
 
