@@ -29,14 +29,14 @@ Note: Nu-test is fully functional but currently still in pre-1.0 development.
 
 First-time installation:
 
-```nu
+```nushell
 git https://github.com/vyadh/nu-test.git
 nupm install nu-test --path
 ```
 
 Usage:
 
-```nu
+```nushell
 cd <your project>
 use nutest
 nutest run-tests
@@ -46,14 +46,14 @@ nutest run-tests
 
 First-time installation:
 
-```nu
+```nushell
 git https://github.com/vyadh/nu-test.git
 cp -r nu-test/nutest <a directory referenced by NU_LIB_DIRS / $env.NU_LIB_DIRS>
 ```
 
 Usage:
 
-```nu
+```nushell
 cd <your project>
 use nutest
 nutest run-tests
@@ -85,7 +85,7 @@ A recognised test suite (a Nushell file containing tests) is recognised by nu-te
 
 For example:
 
-```nu
+```nushell
 use std assert
 
 #[before-each]
@@ -177,7 +177,7 @@ These setup/teardown commands can also be used to generate contexts used by each
 ### Filtering
 
 Allows filter of suites and tests to run via a pattern, such as:
-```nu
+```nushell
 run-tests --match-suites api --match-tests test[0-9]
 ```
 This will run all files that include `api` in the name and tests that contain `test` followed by a digit.
@@ -187,12 +187,12 @@ This will run all files that include `api` in the name and tests that contain `t
 Completions are available not only for normal command values, they are also available for suites and tests, making it easier to run specific suites and tests from the command line.
 
 For example, typing the following and pressing tab will show all available suites that contain the word `api`:
-```nu
+```nushell
 run-tests --match-suites api<tab>
 ```
 
 Typing the following and pressing tab will show all available tests that contain the word `parse`:
-```nu
+```nushell
 run-tests --match-tests parse<tab>
 ```
 
@@ -203,14 +203,14 @@ While test discovery is done concurrently and quick even with many test files, y
 By default, there is the terminal reporter that outputs the test results as they complete. This is useful for long-running tests where you want to see the results as they happen.
 
 It is also possible to emit test results as a normal data table that can be processed like other Nushell data. For example, you can filter the results to show only tests that need attention using:
-```nu
+```nushell
 run-tests --reporter table | where result in [SKIP, FAIL]
 ```
 
 See screenshots above for examples of the output (in that case using `--reporter table-pretty`).
 
 Finally, there is a reporter that just shows the summary of the test run:
-```nu
+```nushell
 run-tests --reporter summary
 ```
 Will return:
@@ -241,7 +241,7 @@ See the Concurrency section under How Does It Work? for more details.
 
 The concurrency level can also be specified at the suite-level by way of a `strategy` annotation. For example, the following strategy will run all tests in the suite sequentially:
 
-```nu
+```nushell
 #[strategy]
 def threads []: nothing -> record {
   { threads: 1 }
@@ -257,7 +257,7 @@ This would be beneficial in a project where most tests should run concurrently b
 
 In normal operation the tests will be run and the results will be returned as a table with the exit code always set to 0. To avoid manually checking the results, the `--fail` flag can be used to set the exit code to 1 if any tests fail. In this mode, the test results will be printed in the default format and cannot be interrogated.
 
-```nu
+```nushell
 run-tests --fail
 ```
 
@@ -268,7 +268,7 @@ job. However, note that using this directly in your shell will exit your shell s
 
 In order to integrate with CI/CD tools, such as the excellent [GitHub Action to Publish Test Results](https://github.com/EnricoMi/publish-unit-test-result-action), you can output the result in JUnit XML format. The JUnit format was chosen simply as it appears to have the widest level of support. This can be done by specifying the `--reporter junit` option to the `run-tests` command:
 
-```nu
+```nushell
 run-tests --reporter junit | save test-report.xml
 ```
 
