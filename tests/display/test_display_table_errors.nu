@@ -1,8 +1,8 @@
 use std/assert
-use harness.nu
-use ../nutest/formatter.nu
-use ../nutest/theme.nu
-use ../nutest/display/display_table.nu
+use ../harness.nu
+use ../../nutest/formatter.nu
+use ../../nutest/theme.nu
+use ../../nutest/display/display_table.nu
 
 #[before-all]
 def setup-tests []: record -> record {

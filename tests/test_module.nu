@@ -15,12 +15,13 @@ def "strategy override" [] {
 #[test]
 def "display default" [] {
     assert equal (null | select-display null | get name) "display terminal"
+    assert equal (null | select-display "nothing" | get name) "display terminal"
 }
 
 #[test]
-def "display defaults to none with result" [] {
-    assert equal (null | select-display "table" | get name) "display none"
-    assert equal (null | select-display "summary" | get name) "display none"
+def "display defaults to nothing with result" [] {
+    assert equal (null | select-display "table" | get name) "display nothing"
+    assert equal (null | select-display "summary" | get name) "display nothing"
 }
 
 #[test]

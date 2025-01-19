@@ -1,8 +1,6 @@
 use ../store.nu
 use ../formatter.nu
 
-# todo rename data_table?
-
 export def create []: nothing -> record {
     let formatter = formatter unformatted
 

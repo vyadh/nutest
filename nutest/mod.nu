@@ -36,8 +36,6 @@ export def run-tests [
     --fail                 # Print results and exit with non-zero status if any tests fail (useful for CI/CD systems)
 ]: nothing -> any {
 
-    # todo remove formatter option
-
     use discover.nu
     use orchestrator.nu
     use store.nu
@@ -105,17 +103,16 @@ def select-display [
 ]: any -> record<name: string, run-start: closure, run-complete: closure, test-start: closure, test-complete: closure> {
 
     let display_option = $in
-
-    let display = match $display_option {
-        null if $returns_option != null => "none"
+    let display_option = match $display_option {
+        null if $returns_option != null and $returns_option != "nothing" => "nothing"
         null => "terminal"
         _ => $display_option
     }
 
-    match $display {
-        "none" => {
-            use display/display_none.nu
-            display_none create
+    match $display_option {
+        "nothing" => {
+            use display/display_nothing.nu
+            display_nothing create
         }
         "terminal" => {
             use display/display_terminal.nu

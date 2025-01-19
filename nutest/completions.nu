@@ -46,30 +46,6 @@ export def "nu-complete returns" []: nothing -> record<options: record, completi
     }
 }
 
-# todo no longer needed
-export def "nu-complete formatter" []: nothing -> record<options: record, completions: table<value: string, description: string>> {
-    {
-        options: {
-            sort: false
-        }
-        completions: [
-            [value description];
-            [
-                "preserved"
-                "Output full output information including stream metadata."
-            ]
-            [
-                "unformatted"
-                "Show the original data output with original typing, each item in a list."
-            ]
-            [
-                "pretty"
-                "Format all output as text, with `stderr` text highlighted and errors in their rendered form."
-            ]
-        ]
-    }
-}
-
 export def "nu-complete suites" [context: string]: nothing -> record {
     let options = $context | parse-command-context
     let suites = $options.path
