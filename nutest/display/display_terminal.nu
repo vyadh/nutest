@@ -1,14 +1,16 @@
 # A reporter that collects results into a table
 
-use store.nu
+use ../store.nu
 
-export def create [theme: closure, formatter: closure]: nothing -> record {
+export def create [
+    theme: closure
+    formatter: closure
+]: nothing -> record<name: string, start: closure, complete: closure, fire-start: closure, fire-finish: closure> {
+
     {
         name: "display terminal"
         start: { start-suite }
         complete: { complete-suite }
-        results: { }
-        has-return-value: false
         fire-start: { |row| start-test $row }
         fire-finish: { |row| $row | complete-test $theme $formatter }
     }
@@ -82,8 +84,4 @@ def format-output [formatter: closure]: table<stream: string, items: any> -> str
 
 def indent []: string -> string {
     "  " + ($in | str replace --all "\n" "\n  ")
-}
-
-def success [] {
-    store success
 }

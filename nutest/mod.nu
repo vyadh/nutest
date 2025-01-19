@@ -119,13 +119,13 @@ def select-display [
             display_none create
         }
         "terminal" => {
-            use reporter_terminal.nu
+            use display/display_terminal.nu
             use formatter.nu
             use theme.nu
 
             let theme = theme standard
             let error_format = "rendered"
-            reporter_terminal create $theme (formatter pretty $theme $error_format)
+            display_terminal create $theme (formatter pretty $theme $error_format)
         }
         "table" => {
             use reporter_table.nu
@@ -172,16 +172,6 @@ def select-reporter [
             use reporter_summary.nu
 
             reporter_summary create
-        }
-        "terminal" => {
-            use theme.nu
-            use reporter_terminal.nu
-
-            let theme = theme standard
-            let error_format = "rendered"
-            let formatter = $formatter_option | default "pretty" | select-formatter $theme $error_format
-
-            reporter_terminal create $theme $formatter
         }
         "junit" => {
             use theme.nu
