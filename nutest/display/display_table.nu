@@ -12,7 +12,7 @@ export def create []: nothing -> record<name: string, run-start: closure, run-co
     {
         name: "display table"
         run-start: { || ignore }
-        run-complete: { || ignore } # todo doesn't print anything
+        run-complete: { || print (query-results $theme $formatter) }
         test-start: { |row| ignore }
         test-complete: { |row| ignore }
 
