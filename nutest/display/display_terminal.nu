@@ -1,11 +1,13 @@
 # A reporter that collects results into a table
 
 use ../store.nu
+use ../theme.nu
+use ../formatter.nu
 
-export def create [
-    theme: closure
-    formatter: closure
-]: nothing -> record<name: string, start: closure, complete: closure, fire-start: closure, fire-finish: closure> {
+export def create []: nothing -> record<name: string, start: closure, complete: closure, fire-start: closure, fire-finish: closure> {
+    let theme = theme standard
+    let error_format = "rendered"
+    let formatter = formatter pretty $theme $error_format
 
     {
         name: "display terminal"

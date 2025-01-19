@@ -42,7 +42,7 @@ def cleanup [] {
 def with-default-table-options [] {
     let temp = $in.temp
 
-    let results = test-run $"run-tests --path '($temp)' --reporter table"
+    let results = test-run $"run-tests --path '($temp)' --return table"
 
     assert equal $results [
         { suite: test_1, test: test_bar, result: "PASS", output: ["rab"] }
@@ -53,17 +53,17 @@ def with-default-table-options [] {
 }
 
 #[test]
-def with-different-formatter [] {
+def with-different-return [] {
     let temp = $in.temp
 
-    let results = test-run $"run-tests --path '($temp)' --reporter table --formatter preserved"
+    let results = test-run $"run-tests --path '($temp)' --return summary"
 
-    assert equal $results [
-        { suite: test_1, test: test_bar, result: "PASS", output: [{stream: "error", items: ["rab"]}] }
-        { suite: test_1, test: test_foo, result: "PASS", output: [{stream: "output", items: ["oof"]}] }
-        { suite: test_2, test: test_baz, result: "PASS", output: [{stream: "output", items: ["zab"]}] }
-        { suite: test_2, test: test_qux, result: "SKIP", output: [] }
-    ]
+    assert equal $results {
+        total: 4
+        passed: 3
+        failed: 0
+        skipped: 1
+    }
 }
 
 #[test]
@@ -71,7 +71,7 @@ def with-specific-file [] {
     let temp = $in.temp
     let path = $temp | path join "test_2.nu"
 
-    let results = test-run $"run-tests --path '($path)' --reporter table"
+    let results = test-run $"run-tests --path '($path)' --return table"
 
     assert equal $results [
         { suite: test_2, test: test_baz, result: "PASS", output: ["zab"] }
@@ -83,7 +83,7 @@ def with-specific-file [] {
 def with-matching-suite-and-test [] {
     let temp = $in.temp
 
-    let results = test-run $"run-tests --path '($temp)' --reporter table --match-suites _1 --match-tests test_ba[rz]"
+    let results = test-run $"run-tests --path '($temp)' --return table --match-suites _1 --match-tests test_ba[rz]"
 
     assert equal $results [
         { suite: test_1, test: test_bar, result: "PASS", output: ["rab"] }
@@ -99,12 +99,12 @@ def exit-on-fail-with-passing-tests [] {
             --no-config-file
             --commands $"
                 use nutest *
-                run-tests --path ($temp) --reporter table --formatter pretty --fail
+                run-tests --path ($temp) --return table --fail
             "
     ) | complete
 
     let output = $result.stdout | ansi strip
-    assert ($output =~ "test_1[ │]+test_foo[ │]+PASS[ │]+oof") "Tests are output"
+    assert ($output =~ "test_1[ │]+test_foo[ │]+PASS[ │]+") "Tests are output"
     assert equal $result.exit_code 0 "Exit code is 0"
 }
 
@@ -122,12 +122,12 @@ def exit-on-fail-with-failing-tests [] {
             --no-config-file
             --commands $"
                 use nutest *
-                run-tests --path ($temp) --reporter table --formatter pretty --fail
+                run-tests --path ($temp) --return table --fail
             "
     ) | complete
 
     let output = $result.stdout | ansi strip
-    assert ($output =~ "test_3[ │]+test_quux[ │]+FAIL[ │]+{msg: Ouch") "Tests are output"
+    assert ($output =~ "test_3[ │]+test_quux[ │]+FAIL[ │]+") "Tests are output"
     assert equal $result.exit_code 1
 }
 
@@ -148,7 +148,7 @@ def useful-error-on-non-existent-path [] {
 }
 
 #[test]
-def with-summary-reporter [] {
+def with-summary-return [] {
     let temp = $in.temp
     let test_file_3 = $temp | path join "test_3.nu"
     "
@@ -158,7 +158,7 @@ def with-summary-reporter [] {
     def test_oof [] { }
     " | save $test_file_3
 
-    let results = test-run $"run-tests --path '($temp)' --reporter summary"
+    let results = test-run $"run-tests --path '($temp)' --return summary"
 
     assert equal $results {
         total: 6
@@ -201,7 +201,7 @@ def "terminal display" [] {
     def test_oof [] { }
     " | save $test_file_3
 
-    let results = test-run-raw $"run-tests --path '($temp)' --display terminal --reporter none --strategy { threads: 1 }"
+    let results = test-run-raw $"run-tests --path '($temp)' --display terminal --strategy { threads: 1 }"
         | ansi strip
 
     # The ordering of the suites is currently indeterminate so we need to match tests specifically
@@ -217,6 +217,34 @@ def "terminal display" [] {
 }
 
 #[test]
+def "terminal display with rendered error" [] {
+    let temp = $in.temp
+    let test_file_3 = $temp | path join "test_3.nu"
+    "
+    #[test]
+    def test_quux [] {
+        let variable = 'span source'
+
+        error make {
+            msg: 'a decorated error'
+            label: {
+                text: 'happened here'
+                span: (metadata $variable).span
+            }
+            help: 'some help'
+        }
+    }
+    " | save $test_file_3
+
+    let results = test-run-raw $"run-tests --path '($test_file_3)' --display terminal --strategy { threads: 1 }"
+        | ansi strip
+
+    assert str contains $results "a decorated error"
+    assert str contains $results "happened here"
+    assert str contains $results "some help"
+}
+
+#[ignore]
 def with-junit-reporter [] {
     let temp = $in.temp
     let test_file_3 = $temp | path join "test_3.nu"

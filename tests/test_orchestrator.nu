@@ -4,7 +4,6 @@ use ../nutest/orchestrator.nu [
     run-suites
 ]
 use ../nutest/store.nu
-use ../nutest/reporter_table.nu
 use ../nutest/theme.nu
 use ../nutest/formatter.nu
 

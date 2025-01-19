@@ -65,3 +65,22 @@ def pretty-with-theme-standard [] {
         $"1\n2\n3\n(ansi yellow)a\nb\nc(ansi reset)"
     )
 }
+
+#[test]
+def "pretty with rendered error" [] {
+    let formatter = formatter pretty (theme standard) "rendered"
+
+    assert equal ([] | do $formatter) ""
+
+    assert equal ([
+        { stream: "error", items: [
+            {
+                msg: 'placeholder'
+                json: '[]'
+                rendered: 'a wonderfully decorated error'
+            }
+        ]}
+    ] | do $formatter | ansi strip) (
+        "a wonderfully decorated error"
+    )
+}

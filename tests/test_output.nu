@@ -1,13 +1,14 @@
 use std/assert
 use harness.nu
 use ../nutest/formatter.nu
+use ../nutest/store.nu
 
 # This suite ensures that various printed outputs are represented as would be
 # expected if the test code was being run directly and interactively.
 
 #[before-all]
 def setup-tests []: record -> record {
-    $in | harness setup-tests (formatter preserved)
+    $in | harness setup-tests
 }
 
 #[after-all]
@@ -134,6 +135,21 @@ def "capture print fidelity" [] {
 def run [code: closure]: record -> list<any> {
     let result = $in | harness run $code
     assert equal $result.result "PASS"
-    # We are using the "no-op" formatter here to avoid an implicit dependency (see setup-tests)
-    $result.output | each { |row| $row.items } # Unpack from stream record
+
+    query-results
+        | where test == $result.test
+        | first
+        | get output
+        | each { |row| $row.items } # Unpack from stream record
+}
+
+def query-results []: nothing -> table<suite: string, test: string, result: string, output: string> {
+    store query | each { |row|
+        {
+            suite: $row.suite
+            test: $row.test
+            result: $row.result
+            output: $row.output
+        }
+    }
 }

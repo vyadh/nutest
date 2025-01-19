@@ -1,9 +1,14 @@
 # A reporter that collects results into a table
 
-use store.nu
-use formatter.nu
+use ../store.nu
+use ../theme.nu
+use ../formatter.nu
 
-export def create [theme: closure, formatter: closure]: nothing -> record {
+export def create []: nothing -> record {
+    let theme = theme standard
+    let error_format = "compact"
+    let formatter = formatter pretty $theme $error_format
+
     {
         name: "display table"
         start: { || ignore }

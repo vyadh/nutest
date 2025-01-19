@@ -33,7 +33,7 @@ export def run-tests [
     --display: string@"nu-complete display"     # Display during test run (defaults to terminal, or none if result specified)
     --return: string@"nu-complete return" = "nothing" # Results to return in a pipeline (defaults to nothing)
 
-    --reporter: string@"nu-complete reporter" = "summary" # The reporter used for test result output
+    --reporter: string@"nu-complete reporter" = "none" # The reporter used for test result output
     --formatter: string@"nu-complete formatter" # A formatter for output messages (defaults to reporter-specific)
     --fail                 # Print results and exit with non-zero status if any tests fail (useful for CI/CD systems)
 ]: nothing -> any {
@@ -67,16 +67,16 @@ export def run-tests [
     $test_suites | (orchestrator run-suites $display $strategy)
     do $display.complete
 
-    let results = do $reporter.results
+    let result = do $returns.results
     let success = store success
     store delete
 
     # To reflect the exit code we need to print the results instead
     if ($fail) {
-        print $results
+        print $result
         exit (if $success { 0 } else { 1 })
     } else {
-        $results
+        $result
     }
 }
 
@@ -125,22 +125,11 @@ def select-display [
         }
         "terminal" => {
             use display/display_terminal.nu
-            use formatter.nu
-            use theme.nu
-
-            let theme = theme standard
-            let error_format = "rendered"
-            display_terminal create $theme (formatter pretty $theme $error_format)
+            display_terminal create
         }
         "table" => {
-            use reporter_table.nu
-            use formatter.nu
-            use theme.nu
-
-            let theme = theme standard
-            let error_format = "compact"
-
-            reporter_table create $theme (formatter pretty $theme $error_format)
+            use display/display_table.nu
+            display_table create
         }
         _ => {
             error make { msg: $"Unknown display: ($display_option)" }
@@ -158,8 +147,8 @@ def select-return []: string -> record<name: string, result: closure> {
             return_nothing create
         }
         "summary" => {
-            use reporter_summary.nu
-            reporter_summary create
+            use "return/return_summary.nu"
+            return_summary create
         }
         "table" => {
             use "return/return_table.nu"
@@ -177,30 +166,6 @@ def select-reporter [
 ]: nothing -> record<start: closure, complete: closure, success: closure, results: closure, fire-start: closure, fire-finish: closure> {
 
     match $reporter_option {
-        "table-pretty" => {
-            use theme.nu
-            use reporter_table.nu
-
-            let theme = theme standard
-            let error_format = "compact"
-            let formatter = $formatter_option | default "pretty" | select-formatter $theme $error_format
-
-            reporter_table create $theme $formatter
-        }
-        "table" => {
-            use theme.nu
-            use reporter_table.nu
-
-            let theme = theme none
-            let formatter = $formatter_option | default "unformatted" | select-formatter $theme
-
-            reporter_table create $theme $formatter
-        }
-        "summary" => {
-            use reporter_summary.nu
-
-            reporter_summary create
-        }
         "junit" => {
             use theme.nu
             use reporter_junit.nu
@@ -214,20 +179,6 @@ def select-reporter [
         }
         _ => {
             error make { msg: $"Unknown reporter: ($reporter_option)" }
-        }
-    }
-}
-
-def select-formatter [theme: closure, error_format: string = "record"]: string -> closure {
-    use formatter.nu
-
-    let option = $in
-    match $option {
-        "preserved" => (formatter preserved)
-        "unformatted" => (formatter unformatted)
-        "pretty" => (formatter pretty $theme $error_format)
-        _ => {
-            error make { msg: $"Unknown formatter: ($option)" }
         }
     }
 }

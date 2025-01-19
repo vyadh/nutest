@@ -1,5 +1,5 @@
 use ../nutest/orchestrator.nu
-use ../nutest/reporter_table.nu
+use "../nutest/return/return_table.nu"
 use ../nutest/theme.nu
 use ../nutest/formatter.nu
 use ../nutest/store.nu
@@ -7,27 +7,19 @@ use ../nutest/store.nu
 # A harness for running tests against nutest itself.
 
 # Encapsulate before-all behaviour
-export def setup-tests [formatter?: closure]: nothing -> record {
+export def setup-tests []: record -> record {
     store create
-    let formatter = $formatter | default (formatter preserved)
-    let reporter = reporter_table create (theme none) $formatter
-    do $reporter.start
-    $in | merge {
-        reporter: $reporter
-    }
+    $in
 }
 
 # Encapsulate after-all behaviour
 export def cleanup-tests []: record<reporter: record> -> nothing {
-    let reporter = $in.reporter
-    do $reporter.complete
     store delete
 }
 
 # Encapsulate before-each behaviour
 export def setup-test []: record -> record {
     $in | merge {
-        reporter: $in.reporter
         temp_dir: (mktemp --tmpdir --directory)
     }
 }
@@ -46,19 +38,28 @@ export def run [
 
     let context = $in
     let temp = $context.temp_dir
-    let reporter = $context.reporter
+    let returns = return_table create
     let strategy = { threads: 1 } | merge $strategy
 
     let test = random chars
     let suite = $code | create-closure-suite $temp $test
-    [$suite] | orchestrator run-suites $reporter $strategy
-    let results = do $reporter.results
+    [$suite] | orchestrator run-suites (noop-event-processor) $strategy
+    let results = do $returns.results
 
     let result = $results | where test == $test
     if ($result | is-empty) {
         error make { msg: $"No results found for test: ($test)" }
     } else {
         $result | first
+    }
+}
+
+def noop-event-processor []: nothing -> record<start: closure, complete: closure, fire-start: closure, fire-finish: closure> {
+    {
+        start: { || ignore }
+        complete: { || ignore }
+        fire-start: { |row| ignore }
+        fire-finish: { |row| ignore }
     }
 }
 

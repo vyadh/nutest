@@ -1,7 +1,6 @@
 # A reporter that collects results into a table
 
-use store.nu
-use theme.nu
+use ../store.nu
 
 export def create []: nothing -> record {
     {
