@@ -27,10 +27,10 @@ use completions.nu *
 # Discover and run annotated test commands.
 export def run-tests [
     --path: path           # Location of tests (defaults to current directory)
-    --match-suites: string@"nu-complete suites" # Regular expression to match against suite names (defaults to all)
-    --match-tests: string@"nu-complete tests"   # Regular expression to match against test names (defaults to all)
+    --match-suites: string@"nu-complete suites"  # Regular expression to match against suite names (defaults to all)
+    --match-tests: string@"nu-complete tests"    # Regular expression to match against test names (defaults to all)
     --strategy: record     # Overrides test run behaviour, such as test concurrency (defaults to automatic)
-    --display: string@"nu-complete display"     # Display during test run (defaults to terminal, or none if result specified)
+    --display: string@"nu-complete display"      # Display during test run (defaults to terminal, or none if result specified)
     --returns: string@"nu-complete returns" = "nothing" # Results to return in a pipeline (defaults to nothing)
     --fail                 # Print results and exit with non-zero status if any tests fail (useful for CI/CD systems)
 ]: nothing -> any {
@@ -57,9 +57,9 @@ export def run-tests [
 
     store create
 
-    do $display.start
+    do $display.run-start
     $test_suites | (orchestrator run-suites $display $strategy)
-    do $display.complete
+    do $display.run-complete
 
     let result = do $returns.results
     let success = store success
@@ -99,7 +99,7 @@ def select-strategy []: any -> record<threads: int> {
 # A display implements the event processor interface of the orchestrator
 def select-display [
     returns_option: any
-]: any -> record<name: string, start: closure, complete: closure, fire-start: closure, fire-finish: closure> {
+]: any -> record<name: string, run-start: closure, run-complete: closure, test-start: closure, test-complete: closure> {
 
     let display_option = $in
 

@@ -1,11 +1,10 @@
 
-export def create []: nothing -> record<name: string, start: closure, complete: closure, fire-start: closure, fire-finish: closure> {
+export def create []: nothing -> record<name: string, run-start: closure, run-complete: closure, test-start: closure, test-complete: closure> {
     {
         name: "display none"
-        start: { || ignore }
-        results: { null } # todo delete when no longer used
-        complete: { || ignore }
-        fire-start: { |row| ignore }
-        fire-finish: { |row| ignore }
+        run-start: { || ignore }
+        run-complete: { || ignore }
+        test-start: { |row| ignore }
+        test-complete: { |row| ignore }
     }
 }

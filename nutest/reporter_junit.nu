@@ -19,12 +19,7 @@ use store.nu
 
 export def create []: nothing -> record {
     {
-        start: { || }
-        complete: { || }
         results: { create-report }
-        has-return-value: true
-        fire-start: { |row| }
-        fire-finish: { |row| }
     }
 }
 

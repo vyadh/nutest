@@ -54,12 +54,12 @@ export def run [
     }
 }
 
-def noop-event-processor []: nothing -> record<start: closure, complete: closure, fire-start: closure, fire-finish: closure> {
+def noop-event-processor []: nothing -> record<run-start: closure, run-complete: closure, test-start: closure, test-complete: closure> {
     {
-        start: { || ignore }
-        complete: { || ignore }
-        fire-start: { |row| ignore }
-        fire-finish: { |row| ignore }
+        run-start: { || ignore }
+        run-complete: { || ignore }
+        test-start: { |row| ignore }
+        test-complete: { |row| ignore }
     }
 }
 

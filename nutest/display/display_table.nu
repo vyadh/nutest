@@ -4,19 +4,20 @@ use ../store.nu
 use ../theme.nu
 use ../formatter.nu
 
-export def create []: nothing -> record {
+export def create []: nothing -> record<name: string, run-start: closure, run-complete: closure, test-start: closure, test-complete: closure> {
     let theme = theme standard
     let error_format = "compact"
     let formatter = formatter pretty $theme $error_format
 
     {
         name: "display table"
-        start: { || ignore }
-        complete: { || ignore }
+        run-start: { || ignore }
+        run-complete: { || ignore } # todo doesn't print anything
+        test-start: { |row| ignore }
+        test-complete: { |row| ignore }
+
+        # Easier testing
         results: { query-results $theme $formatter }
-        has-return-value: true
-        fire-start: { |row| ignore }
-        fire-finish: { |row| ignore }
     }
 }
 

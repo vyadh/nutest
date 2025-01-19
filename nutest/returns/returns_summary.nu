@@ -5,12 +5,7 @@ use ../store.nu
 export def create []: nothing -> record {
     {
         name: "returns summary"
-        start: {|| ignore }
-        complete: { || ignore }
         results: { query-summary }
-        has-return-value: true
-        fire-start: { |row| ignore}
-        fire-finish: { |row| ignore }
     }
 }
 

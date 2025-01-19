@@ -13,7 +13,6 @@
 
 - WIP: Support printing to terminal and saving to file
   - Fix the need for two runs in CI (though also need to consider `--fail` with `save`)
-- Inconsistency in reports in start/complete and fire-start/fire-finish events
 - Exit handling on `--fail` isn't quite right, prints results even if there is no return value
 - Get Topiary Nushell formatting working as commit hook (if it's readable)
 - JUnit test reports:

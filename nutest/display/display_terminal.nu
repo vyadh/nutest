@@ -4,17 +4,17 @@ use ../store.nu
 use ../theme.nu
 use ../formatter.nu
 
-export def create []: nothing -> record<name: string, start: closure, complete: closure, fire-start: closure, fire-finish: closure> {
+export def create []: nothing -> record<name: string, run-start: closure, run-complete: closure, test-start: closure, test-complete: closure> {
     let theme = theme standard
     let error_format = "rendered"
     let formatter = formatter pretty $theme $error_format
 
     {
         name: "display terminal"
-        start: { start-suite }
-        complete: { complete-suite }
-        fire-start: { |row| start-test $row }
-        fire-finish: { |row| $row | complete-test $theme $formatter }
+        run-start: { start-suite }
+        run-complete: { complete-suite }
+        test-start: { |row| start-test $row }
+        test-complete: { |row| $row | complete-test $theme $formatter }
     }
 }
 

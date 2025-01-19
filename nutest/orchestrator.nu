@@ -18,7 +18,7 @@ use store.nu
 #     tests: list<test>
 # }
 export def run-suites [
-    event_processor: record<start: closure, complete: closure, fire-start: closure, fire-finish: closure>
+    event_processor: record<run-start: closure, run-complete: closure, test-start: closure, test-complete: closure>
     strategy: record
 ]: list<record<name: string, path: string, tests: table>> -> nothing {
 
@@ -28,7 +28,7 @@ export def run-suites [
 }
 
 def run-suite [
-    event_processor: record<start: closure, complete: closure, fire-start: closure, fire-finish: closure>
+    event_processor: record<run-start: closure, run-complete: closure, test-start: closure, test-complete: closure>
     strategy: record
     suite: string
     path: string
@@ -114,17 +114,17 @@ def as-error-output [error: string]: nothing -> record {
 }
 
 def process-event [
-    event_processor: record<start: closure, complete: closure, fire-start: closure, fire-finish: closure>
+    event_processor: record<run-start: closure, run-complete: closure, test-start: closure, test-complete: closure>
 ] {
     let event = $in
     let template = { suite: $event.suite, test: $event.test }
 
     match $event {
         { type: "start" } => {
-            do $event_processor.fire-start $template
+            do $event_processor.test-start $template
         }
         { type: "finish" } => {
-            do $event_processor.fire-finish $template
+            do $event_processor.test-complete $template
         }
         { type: "result" } => {
             let message = $template | merge { result: $event.payload }
