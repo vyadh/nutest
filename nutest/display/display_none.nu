@@ -3,6 +3,7 @@ export def create []: nothing -> record<name: string, start: closure, complete: 
     {
         name: "display none"
         start: { || ignore }
+        results: { null } # todo delete when no longer used as reporter
         complete: { || ignore }
         fire-start: { |row| ignore }
         fire-finish: { |row| ignore }

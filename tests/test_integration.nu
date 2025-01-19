@@ -191,7 +191,7 @@ def list-tests-as-table [] {
 }
 
 #[test]
-def with-terminal-reporter [] {
+def "terminal display" [] {
     let temp = $in.temp
     let test_file_3 = $temp | path join "test_3.nu"
     "
@@ -201,7 +201,7 @@ def with-terminal-reporter [] {
     def test_oof [] { }
     " | save $test_file_3
 
-    let results = test-run-raw $"run-tests --path '($temp)' --reporter terminal --strategy { threads: 1 }"
+    let results = test-run-raw $"run-tests --path '($temp)' --display terminal --reporter none --strategy { threads: 1 }"
         | ansi strip
 
     # The ordering of the suites is currently indeterminate so we need to match tests specifically

@@ -57,10 +57,12 @@ export def run-tests [
         | discover test-suites --matcher $test
 
     store create
-    do $reporter.start
-    $test_suites | (orchestrator run-suites $reporter $strategy)
+
+    do $display.start
+    $test_suites | (orchestrator run-suites $display $strategy)
+    do $display.complete
+
     let results = do $reporter.results
-    do $reporter.complete
     let success = store success
     store delete
 
@@ -68,11 +70,8 @@ export def run-tests [
     if ($fail) {
         print $results
         exit (if $success { 0 } else { 1 })
-    } else if ($reporter.has-return-value) {
-        $results
     } else {
-        # Nothing to print
-        null
+        $results
     }
 }
 
@@ -101,6 +100,7 @@ def default-strategy [reporter: string]: nothing -> record<threads: int> {
     }
 }
 
+# A display implements the event processor interface of the orchestrator
 def select-display [
     result_option?: any
 ]: any -> record<name: string, start: closure, complete: closure, fire-start: closure, fire-finish: closure> {
@@ -188,6 +188,11 @@ def select-reporter [
             use reporter_junit.nu
 
             reporter_junit create
+        }
+        "none" => {
+            use display/display_none.nu
+
+            display_none create
         }
         _ => {
             error make { msg: $"Unknown reporter: ($reporter_option)" }

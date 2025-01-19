@@ -7,7 +7,7 @@ export def create [theme: closure, formatter: closure]: nothing -> record {
         name: "display terminal"
         start: { start-suite }
         complete: { complete-suite }
-        results: { [] }
+        results: { }
         has-return-value: false
         fire-start: { |row| start-test $row }
         fire-finish: { |row| $row | complete-test $theme $formatter }
