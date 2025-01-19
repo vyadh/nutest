@@ -5,6 +5,7 @@ use theme.nu
 
 export def create []: nothing -> record {
     {
+        name: "return summary"
         start: {|| ignore }
         complete: { || ignore }
         results: { query-summary }

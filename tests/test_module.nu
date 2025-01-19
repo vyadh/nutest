@@ -17,3 +17,15 @@ def "display retains specified with result" [] {
     assert equal ("terminal" | select-display "table" | get name) "display terminal"
     assert equal ("table" | select-display "summary" | get name) "display table"
 }
+
+#[test]
+def "return default" [] {
+    assert equal ("nothing" | select-return | get name) "return nothing"
+    assert equal (do ("nothing" | select-return | get results)) null
+}
+
+#[test]
+def "return options" [] {
+    assert equal ("summary" | select-return | get name) "return summary"
+    assert equal ("table" | select-return | get name) "return table"
+}

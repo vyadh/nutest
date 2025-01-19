@@ -21,6 +21,7 @@ export def list-tests [
     } | flatten | sort-by suite test
 }
 
+# todo thread panic on below options?
 use completions.nu *
 
 # Discover and run annotated test commands.
@@ -30,7 +31,9 @@ export def run-tests [
     --match-tests: string@"nu-complete tests"   # Regular expression to match against test names (defaults to all)
     --strategy: record     # Override test run behaviour, such as test concurrency (defaults to automatic)
     --display: string@"nu-complete display"     # Display during test run (defaults to terminal, or none if result specified)
-    --reporter: string@"nu-complete reporter" = "terminal" # The reporter used for test result output
+    --return: string@"nu-complete return" = "nothing" # Results to return in a pipeline (defaults to nothing)
+
+    --reporter: string@"nu-complete reporter" = "summary" # The reporter used for test result output
     --formatter: string@"nu-complete formatter" # A formatter for output messages (defaults to reporter-specific)
     --fail                 # Print results and exit with non-zero status if any tests fail (useful for CI/CD systems)
 ]: nothing -> any {
@@ -46,6 +49,8 @@ export def run-tests [
     let test = $match_tests | default ".*"
     let strategy = (default-strategy $reporter) | merge ($strategy | default { })
     let display = $display | select-display  $reporter
+    let returns = $return | select-return
+
     let formatter = $formatter | default null
     let reporter = select-reporter $reporter $formatter
 
@@ -139,6 +144,29 @@ def select-display [
         }
         _ => {
             error make { msg: $"Unknown display: ($display_option)" }
+        }
+    }
+}
+
+# A `return` provides return data to further pipeline steps
+def select-return []: string -> record<name: string, result: closure> {
+    let return_option = $in
+
+    match $return_option {
+        "nothing" => {
+            use "return/return_nothing.nu"
+            return_nothing create
+        }
+        "summary" => {
+            use reporter_summary.nu
+            reporter_summary create
+        }
+        "table" => {
+            use "return/return_table.nu"
+            return_table create
+        }
+        _ => {
+            error make { msg: $"Unknown return: ($return_option)" }
         }
     }
 }
