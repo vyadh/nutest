@@ -200,7 +200,7 @@ While test discovery is done concurrently and quick even with many test files, y
 
 ### Reporting
 
-By default, there is the terminal reporter that outputs the test results as they complete. This is useful for long-running tests where you want to see the results as they happen.
+By default, there is the terminal display that outputs the test results as they complete. This is useful for long-running tests where you want to see the results as they happen.
 
 It is also possible to emit test results as a normal data table that can be processed like other Nushell data. For example, you can filter the results to show only tests that need attention using:
 ```nushell

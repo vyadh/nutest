@@ -17,7 +17,7 @@ def cleanup [] {
 
 #[test]
 def "parse with empty option" [] {
-    let result = "nutest run-tests --reporter table --match-suites " | parse-command-context
+    let result = "nutest run-tests --returns table --match-suites " | parse-command-context
 
     assert equal $result {
         suite: ".*"
@@ -28,7 +28,7 @@ def "parse with empty option" [] {
 
 #[test]
 def "parse with specified option" [] {
-    let result = "nutest run-tests --reporter table --match-suites orc" | parse-command-context
+    let result = "nutest run-tests --returns table --match-suites orc" | parse-command-context
 
     assert equal $result {
         suite: "orc"

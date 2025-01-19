@@ -77,7 +77,7 @@ def format-error [error_format: string]: record -> any {
     }
 }
 
-# Rendered errors have useful info for terminal mode but too much for table-based reporters
+# Rendered errors have useful info for terminal mode but too much for table data
 def error-format-rendered []: record -> string {
     $in.rendered
 }

@@ -11,13 +11,13 @@
 
 ## Milestone: Version 1.0
 
+- WIP: Support multiple reporters so we can print to terminal and save to file
+  - This will partially fix the need for two runs in CI (though also need to consider `--fail` with `save`)
 - Inconsistency in reports in start/complete and fire-start/fire-finish events
-- Exit handling on `--fail` isn't quite right, prints results even if reporter has no return value
+- Exit handling on `--fail` isn't quite right, prints results even if there is no return value
 - Get Topiary Nushell formatting working as commit hook (if it's readable)
 - JUnit test reports:
   - Add [a badge](https://github.com/EnricoMi/publish-unit-test-result-action/?tab=readme-ov-file#create-a-badge-from-test-results) for test results in CI serving as an example
-- Support multiple reporters so we can print to terminal and save to file
-  - This will partially fix the need for two runs in CI (though also need to consider `--fail` with `save`)
 - Versioning strategy, labels and docs/automation
 - Basic contributor agreement if needed
 
@@ -27,23 +27,24 @@
   - Add error information into the expected JUnit failure elements
   - Add test output
   - Investigate use of styling of errors and strip as necessary
+- Support multiple report types in the same run
 - Fluent assertion module with pluggable matchers.
 - Generate test coverage (in llvm-cov format to allow combining with Nushell coverage)
 
 ## Future Ideas
 
 - Support matchers in `list-tests` (a trivial win)
-- Optimisation: If no reporter requires test output (e.g. summary), we can avoid having to process it
+- Optimisation: If nothing requires test output (e.g. summary), we can avoid having to process it
 - Optionally write decoded event stream to file to help debug Nutest itself.
 - Optionally allow running ignored tests.
 - Better support for direct-to-stdout tests by external tools that don't use the print statement. Allow running with sequential or subshell-based processing to capture output. Or even auto-detect and re-run tests.
 - Detect flaky tests by re-running failed tests a few times.
 - More sophisticated change display rather than simple assertion module output, e.g. differences in records and tables, perhaps displayed as tables
     - Perhaps highlight differences in output using background colours like a diff tool.
-- Allow custom reporters
+- Pluggable displays and reports
 - Test timing.
 - Dynamic terminal UI, showing the currently executing suites and tests.
-    - This will resolve not being able to see the currently running tests in the terminal reporter
+    - This will resolve not being able to see the currently running tests in the terminal display
     - Would include things like a progress bar, running total of completed, fails, skips, etc.
     - Would retain error information and output on tail failure
     - If we save historical test run timings, we could:

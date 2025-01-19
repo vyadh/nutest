@@ -16,7 +16,7 @@ export def "nu-complete display" []: nothing -> record<options: record, completi
                 "Output test results as they complete (default when returning nothing)."
             ]
             [
-                "table" # todo rename from table_pretty to display_table
+                "table"
                 "A table listing all tests with decorations and color."
             ]
         ]
@@ -46,33 +46,7 @@ export def "nu-complete returns" []: nothing -> record<options: record, completi
     }
 }
 
-export def "nu-complete reporter" []: nothing -> record<options: record, completions: table<value: string, description: string>> {
-    {
-        options: {
-            sort: false
-        }
-        completions: [
-            [value description];
-            [
-                "terminal"
-                "Output test results as they complete as text. (default)"
-            ]
-            [
-                "table-pretty"
-                "A table listing all tests with decorations and color."
-            ]
-            [
-                "table"
-                "A table listing all test results as data, useful for querying."
-            ]
-            [
-                "summary"
-                "A table with the total tests passed/failed/skipped."
-            ]
-        ]
-    }
-}
-
+# todo no longer needed
 export def "nu-complete formatter" []: nothing -> record<options: record, completions: table<value: string, description: string>> {
     {
         options: {

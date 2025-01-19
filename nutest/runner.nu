@@ -115,7 +115,7 @@ def nutest-299792458-execute-test [
         $context | nutest-299792458-execute-after $after_each
     } catch { |error|
         # It's possible to get a test PASS above then emit FAIL when processing after-each.
-        # This needs to be handled by the reporter. We could work around it here, but since we have
+        # This needs to be handled by the store. We could work around it here, but since we have
         # to handle for after-all outside concurrent processing of tests anyway this is simpler.
         nutest-299792458-fail $error
     }
@@ -172,7 +172,7 @@ alias nutest-299792458-print = print
 
 # Override the print command to provide context for output
 export def print [--stderr (-e), --raw (-r), --no-newline (-n), ...rest: any] {
-    # Capture the stream type to allow downstream rendering in the reporters
+    # Capture the stream type to allow downstream rendering to differentiate between the two
     let stream = if $stderr { "error" } else { "output" }
 
     # Associate the stream type with the list of data items being output
@@ -181,7 +181,7 @@ export def print [--stderr (-e), --raw (-r), --no-newline (-n), ...rest: any] {
         items: $rest
     }
 
-    # Encode to nuon to preserve datatypes of what is being printed for reporter-specific rendering
+    # Encode to nuon to preserve datatypes of what is being printed for display-specific rendering
     # Encode to base64 to avoid newlines in any strings breaking the line-based protocol
     let encoded = $output | to nuon --raw | encode base64
 

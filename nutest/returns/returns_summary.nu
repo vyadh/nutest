@@ -1,4 +1,4 @@
-# A reporter that collects results into a table
+# Collects summary of results to return
 
 use ../store.nu
 

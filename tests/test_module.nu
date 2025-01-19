@@ -2,6 +2,17 @@ use std/assert
 source ../nutest/mod.nu
 
 #[test]
+def "strategy default" [] {
+    assert equal (null | select-strategy) { threads: 0 }
+}
+
+#[test]
+def "strategy override" [] {
+    assert equal ({ threads: 1 } | select-strategy) { threads: 1 }
+    assert equal ({ other: "abc" } | select-strategy) { threads: 0, other: "abc" }
+}
+
+#[test]
 def "display default" [] {
     assert equal (null | select-display null | get name) "display terminal"
 }

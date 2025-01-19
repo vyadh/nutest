@@ -1,5 +1,5 @@
 use ../nutest/orchestrator.nu
-use "../nutest/returns/returns_table.nu"
+use ../nutest/returns/returns_table.nu
 use ../nutest/theme.nu
 use ../nutest/formatter.nu
 use ../nutest/store.nu
@@ -13,7 +13,7 @@ export def setup-tests []: record -> record {
 }
 
 # Encapsulate after-all behaviour
-export def cleanup-tests []: record<reporter: record> -> nothing {
+export def cleanup-tests []: record -> nothing {
     store delete
 }
 
@@ -34,7 +34,7 @@ export def cleanup-test []: record -> nothing {
 export def run [
     code: closure
     strategy: record = { }
-]: record<reporter: record, temp_dir: string> -> record<result: string, output: any> {
+]: record<temp_dir: string> -> record<result: string, output: any> {
 
     let context = $in
     let temp = $context.temp_dir

@@ -12,7 +12,7 @@ Success and failure events are implied by an error being thrown, such as an asse
 
 Output from tests is captured by aliasing the print command. This may include structured data, which is preserved in the event data. This is achieved by converting each item sent to a print command as nuon and then encoding as base64, which ensures a single line event is emitted even if it contains multi-line text.
 
-All events for all suites and tests being run are then collated, ready to use within a reporter to present to the user with flexible output and rendering.
+All events for all suites and tests being run are then collated, ready to use to present to the user with flexible output and rendering.
 
 ## Concurrency
 

@@ -1,4 +1,4 @@
-# A reporter that collects results into a table
+# Displays test results in the terminal as they are output.
 
 use ../store.nu
 use ../theme.nu
