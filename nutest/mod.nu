@@ -32,6 +32,7 @@ export def run-tests [
     --strategy: record     # Overrides test run behaviour, such as test concurrency (defaults to automatic)
     --display: string@"nu-complete display"      # Display during test run (defaults to terminal, or none if result specified)
     --returns: string@"nu-complete returns" = "nothing" # Results to return in a pipeline (defaults to nothing)
+    --report: record<type: string, path: string> # Save a test report to file, e.g. `{ type: "junit", path: "report.xml" }`
     --fail                 # Print results and exit with non-zero status if any tests fail (useful for CI/CD systems)
 ]: nothing -> any {
 
@@ -47,6 +48,7 @@ export def run-tests [
     let strategy = $strategy | select-strategy
     let display = $display | select-display $returns
     let returns = $returns | select-returns
+    let report = $report | select-report
 
     # Discovered suites are of the type:
     # list<record<name: string, path: string, tests<table<name: string, type: string>>>
@@ -63,6 +65,7 @@ export def run-tests [
 
     let result = do $returns.results
     let success = store success
+    try { do $report.save $result } catch { |error| print $error }
 
     store delete
 
@@ -147,6 +150,24 @@ def select-returns []: any -> record<name: string, result: closure> {
         }
         _ => {
             error make { msg: $"Unknown return: ($returns_option)" }
+        }
+    }
+}
+
+def select-report []: any -> record<save: closure> {
+    let report_option = $in
+
+    match $report_option {
+        null => {
+            use report/report_nothing.nu
+            report_nothing create
+        }
+        { type: "junit", path: $path } => {
+            use report/report_junit.nu
+            report_junit create $path
+        }
+        _ => {
+            error make { msg: $"Unknown report: ($report_option)" }
         }
     }
 }

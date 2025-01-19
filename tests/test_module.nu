@@ -40,3 +40,13 @@ def "returns options" [] {
     assert equal ("summary" | select-returns | get name) "returns summary"
     assert equal ("table" | select-returns | get name) "returns table"
 }
+
+#[test]
+def "report default" [] {
+    assert equal (null | select-report | get name) "report nothing"
+}
+
+#[type]
+def "report junit" [] {
+    assert equal ({ type: junit, path: "report.xml" } | select-report | get name) "report junit"
+}

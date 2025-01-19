@@ -288,7 +288,7 @@ job. However, note that using this directly in your shell will exit your shell s
 In order to integrate with CI/CD tools, such as the excellent [GitHub Action to Publish Test Results](https://github.com/EnricoMi/publish-unit-test-result-action), you can output the result in JUnit XML format. The JUnit format was chosen simply as it appears to have the widest level of support. This can be done by specifying the `--report junit` option to the `run-tests` command:
 
 ```nushell
-run-tests --report { type: junit, path: "test-report.xml" }
+run-tests --fail --report { type: junit, path: "test-report.xml" }
 ```
 
 

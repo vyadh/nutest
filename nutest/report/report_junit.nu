@@ -1,4 +1,4 @@
-use store.nu
+use ../store.nu
 
 # JUnit XML format.
 # https://llg.cubic.org/docs/junit
@@ -17,9 +17,11 @@ use store.nu
 #    </testsuite>
 #  </testsuites>
 
-export def create []: nothing -> record {
+export def create [path: string]: nothing -> record<name: string, save: closure, results: closure> {
     {
+        name: "report junit"
         results: { create-report }
+        save: { create-report | save $path }
     }
 }
 

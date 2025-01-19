@@ -11,8 +11,6 @@
 
 ## Milestone: Version 1.0
 
-- WIP: Support printing to terminal and saving to file
-  - Fix the need for two runs in CI (though also need to consider `--fail` with `save`)
 - Exit handling on `--fail` isn't quite right, prints results even if there is no return value
 - Get Topiary Nushell formatting working as commit hook (if it's readable)
 - JUnit test reports:

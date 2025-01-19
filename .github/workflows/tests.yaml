@@ -33,13 +33,8 @@ jobs:
         with:
           version: ${{ matrix.version }}
 
-      # todo broken junit
       - name: Test Nu-Test
-        run: nu -c "use nutest; nutest run-tests --reporter junit | save test-report.xml"
-
-      # Second run currently required as we can only specify one output
-      - name: Test Nu-Test
-        run: nu -c "use nutest; nutest run-tests --display terminal --fail"
+        run: "nu -c 'use nutest; nutest run-tests --fail --report { type: junit, path: test-report.xml }'"
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2

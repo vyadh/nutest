@@ -244,8 +244,8 @@ def "terminal display with rendered error" [] {
     assert str contains $results "some help"
 }
 
-#[ignore]
-def with-junit-reporter [] {
+#[test]
+def with-junit-report [] {
     let temp = $in.temp
     let test_file_3 = $temp | path join "test_3.nu"
     "
@@ -254,10 +254,11 @@ def with-junit-reporter [] {
     #[ignore]
     def test_oof [] { }
     " | save $test_file_3
+    let report_path = $temp | path join "report.xml"
 
-    let results = test-run-raw $"run-tests --path '($temp)' --reporter junit" | strip-xml-whitespace
+    test-run-raw $"run-tests --path '($temp)' --report { type: junit, path: '($report_path)' }"
 
-    assert equal $results ('<testsuites name="nu-test" tests="6" disabled="2" failures="1">
+    assert equal ($report_path | open --raw | strip-xml-whitespace) ('<testsuites name="nu-test" tests="6" disabled="2" failures="1">
   <testsuite name="test_1" tests="2" disabled="0" failures="0">
     <testcase name="test_bar" classname="test_1"/>
     <testcase name="test_foo" classname="test_1"/>
