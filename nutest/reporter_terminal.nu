@@ -4,6 +4,7 @@ use store.nu
 
 export def create [theme: closure, formatter: closure]: nothing -> record {
     {
+        name: "display terminal"
         start: { start-suite }
         complete: { complete-suite }
         results: { [] }

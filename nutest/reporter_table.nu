@@ -5,6 +5,7 @@ use formatter.nu
 
 export def create [theme: closure, formatter: closure]: nothing -> record {
     {
+        name: "display table"
         start: { || ignore }
         complete: { || ignore }
         results: { query-results $theme $formatter }

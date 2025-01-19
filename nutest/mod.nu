@@ -29,10 +29,13 @@ export def run-tests [
     --match-suites: string@"nu-complete suites" # Regular expression to match against suite names (defaults to all)
     --match-tests: string@"nu-complete tests"   # Regular expression to match against test names (defaults to all)
     --strategy: record     # Override test run behaviour, such as test concurrency (defaults to automatic)
+    --display: string@"nu-complete display"     # Display during test run (defaults to terminal, or none if result specified)
     --reporter: string@"nu-complete reporter" = "terminal" # The reporter used for test result output
     --formatter: string@"nu-complete formatter" # A formatter for output messages (defaults to reporter-specific)
     --fail                 # Print results and exit with non-zero status if any tests fail (useful for CI/CD systems)
 ]: nothing -> any {
+
+    # todo remove formatter option
 
     use discover.nu
     use orchestrator.nu
@@ -42,6 +45,7 @@ export def run-tests [
     let suite = $match_suites | default ".*"
     let test = $match_tests | default ".*"
     let strategy = (default-strategy $reporter) | merge ($strategy | default { })
+    let display = $display | select-display  $reporter
     let formatter = $formatter | default null
     let reporter = select-reporter $reporter $formatter
 
@@ -72,6 +76,14 @@ export def run-tests [
     }
 }
 
+def check-path []: string -> string {
+    let path = $in
+    if (not ($path | path exists)) {
+        error make { msg: $"Path doesn't exist: ($path)" }
+    }
+    $path
+}
+
 def default-strategy [reporter: string]: nothing -> record<threads: int> {
     {
         # Rather than using `sys cpu` (an expensive operation), platform-specific
@@ -81,18 +93,54 @@ def default-strategy [reporter: string]: nothing -> record<threads: int> {
         # This is also what the par-each implementation does.
         threads: 0
 
+        # todo consider moving this out to display / report
+
         # Normal rendered errors have useful information for terminal mode,
         # but don't fit well for table-based reporters
         error_format: (if $reporter == "terminal" { "rendered" } else { "compact" })
     }
 }
 
-def check-path []: string -> string {
-    let path = $in
-    if (not ($path | path exists)) {
-        error make { msg: $"Path doesn't exist: ($path)" }
+def select-display [
+    result_option?: any
+]: any -> record<name: string, start: closure, complete: closure, fire-start: closure, fire-finish: closure> {
+
+    let display_option = $in
+
+    let display = match $display_option {
+        null if $result_option != null => "none"
+        null => "terminal"
+        _ => $display_option
     }
-    $path
+
+    match $display {
+        "none" => {
+            use display/display_none.nu
+            display_none create
+        }
+        "terminal" => {
+            use reporter_terminal.nu
+            use formatter.nu
+            use theme.nu
+
+            let theme = theme standard
+            let error_format = "rendered"
+            reporter_terminal create $theme (formatter pretty $theme $error_format)
+        }
+        "table" => {
+            use reporter_table.nu
+            use formatter.nu
+            use theme.nu
+
+            let theme = theme standard
+            let error_format = "compact"
+
+            reporter_table create $theme (formatter pretty $theme $error_format)
+        }
+        _ => {
+            error make { msg: $"Unknown display: ($display_option)" }
+        }
+    }
 }
 
 def select-reporter [

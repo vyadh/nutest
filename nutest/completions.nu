@@ -1,5 +1,28 @@
 use discover.nu
 
+export def "nu-complete display" []: nothing -> record<options: record, completions: table<value: string, description: string>> {
+    {
+        options: {
+            sort: false
+        }
+        completions: [
+            [value description];
+            [
+                "none"
+                "No display output during test run (default when returning results)"
+            ]
+            [
+                "terminal"
+                "Output test results as they complete (default when not return results)"
+            ]
+            [
+                "table" # todo rename from table_pretty to display_table
+                "A table listing all tests with decorations and color."
+            ]
+        ]
+    }
+}
+
 export def "nu-complete reporter" []: nothing -> record<options: record, completions: table<value: string, description: string>> {
     {
         options: {
