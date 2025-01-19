@@ -18,17 +18,17 @@ use store.nu
 #     tests: list<test>
 # }
 export def run-suites [
-    reporter: record,
+    event_processor: record<start: closure, complete: closure, fire-start: closure, fire-finish: closure>
     strategy: record
 ]: list<record<name: string, path: string, tests: table>> -> nothing {
 
     $in | par-each --threads $strategy.threads { |suite|
-        run-suite $reporter $strategy $suite.name $suite.path $suite.tests
+        run-suite $event_processor $strategy $suite.name $suite.path $suite.tests
     }
 }
 
 def run-suite [
-    reporter: record
+    event_processor: record<start: closure, complete: closure, fire-start: closure, fire-finish: closure>
     strategy: record
     suite: string
     path: string
@@ -57,7 +57,7 @@ def run-suite [
                 # Useful for understanding event stream
                 #print ($event | table --expand)
 
-                $event | process-event $reporter
+                $event | process-event $event_processor
             } catch { |error|
                 if $error.msg == "error when loading nuon text" {
                     # Test printed direct to stdout so runner could not capture output,
@@ -73,10 +73,10 @@ def run-suite [
         # This replicates this suite-level failure down to each test
         for test in $tests {
             let template = { timestamp: (date now | format date "%+"), suite: $suite, test: $test.name }
-            $template | merge { type: "start", payload: null } | process-event $reporter
-            $template | merge { type: "result", payload: "FAIL" } | process-event $reporter
-            $template | merge (as-error-output $result.stderr) | process-event $reporter
-            $template | merge { type: "finish", payload: null } | process-event $reporter
+            $template | merge { type: "start", payload: null } | process-event $event_processor
+            $template | merge { type: "result", payload: "FAIL" } | process-event $event_processor
+            $template | merge (as-error-output $result.stderr) | process-event $event_processor
+            $template | merge { type: "finish", payload: null } | process-event $event_processor
         }
     }
 }
@@ -113,16 +113,18 @@ def as-error-output [error: string]: nothing -> record {
     }
 }
 
-def process-event [reporter: record] {
+def process-event [
+    event_processor: record<start: closure, complete: closure, fire-start: closure, fire-finish: closure>
+] {
     let event = $in
     let template = { suite: $event.suite, test: $event.test }
 
     match $event {
         { type: "start" } => {
-            do $reporter.fire-start $template
+            do $event_processor.fire-start $template
         }
         { type: "finish" } => {
-            do $reporter.fire-finish $template
+            do $event_processor.fire-finish $template
         }
         { type: "result" } => {
             let message = $template | merge { result: $event.payload }

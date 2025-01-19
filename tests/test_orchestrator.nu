@@ -32,19 +32,14 @@ def trim []: string -> string {
 }
 
 #[before-all]
-# Since we only have one database it needs to be created once before all tests.
 # We also need to ensure we narrow down results to the unique ones used in each test.
-def reporter-setup []: nothing -> record {
+def setup-store []: nothing -> record {
     store create
-    let reporter = reporter_table create (theme none) (formatter preserved)
-    do $reporter.start
-    { reporter: $reporter }
+    { }
 }
 
 #[after-all]
-def reporter-complete [] {
-    let reporter = $in.reporter
-    do $reporter.complete
+def teardown-store [] {
     store delete
 }
 
@@ -63,7 +58,6 @@ def cleanup-temp-dir [] {
 #[test]
 def run-suite-with-no-tests [] {
     let context = $in
-    let reporter = $context.reporter
     let temp = $context.temp
     let test_file = $temp | path join "test.nu"
     touch $test_file
@@ -306,12 +300,20 @@ def after-all-failure-should-mark-all-failed [] {
 
 def test-run [context: record]: list<record> -> list<record> {
     let suites = $in
-    let reporter = $context.reporter
 
-    $suites | run-suites $reporter { threads: 1 }
+    $suites | run-suites (noop-event-processor) { threads: 1 }
 
-    let results = do $reporter.results
+    let results = store query
     $results | where suite in ($suites | get name)
+}
+
+def noop-event-processor []: nothing -> record<start: closure, complete: closure, fire-start: closure, fire-finish: closure> {
+    {
+        start: { || ignore }
+        complete: { || ignore }
+        fire-start: { |row| ignore }
+        fire-finish: { |row| ignore }
+    }
 }
 
 def create-single-test-suite [temp: string, test: string]: string -> record {

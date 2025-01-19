@@ -11,6 +11,8 @@
 
 ## Milestone: Version 1.0
 
+- Inconsistency in reports in start/complete and fire-start/fire-finish events
+- Exit handling on `--fail` isn't quite right, prints results even if reporter has no return value
 - Get Topiary Nushell formatting working as commit hook (if it's readable)
 - JUnit test reports:
   - Add [a badge](https://github.com/EnricoMi/publish-unit-test-result-action/?tab=readme-ov-file#create-a-badge-from-test-results) for test results in CI serving as an example

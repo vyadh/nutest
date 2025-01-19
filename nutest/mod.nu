@@ -98,7 +98,7 @@ def check-path []: string -> string {
 def select-reporter [
     reporter_option: string
     formatter_option?: string
-]: nothing -> record<start: closure, complete: closure, success: closure, results: closure, 'fire-result': closure, 'fire-output': closure> {
+]: nothing -> record<start: closure, complete: closure, success: closure, results: closure, fire-start: closure, fire-finish: closure> {
 
     match $reporter_option {
         "table-pretty" => {
