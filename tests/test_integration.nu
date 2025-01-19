@@ -42,7 +42,7 @@ def cleanup [] {
 def with-default-table-options [] {
     let temp = $in.temp
 
-    let results = test-run $"run-tests --path '($temp)' --return table"
+    let results = test-run $"run-tests --path '($temp)' --returns table"
 
     assert equal $results [
         { suite: test_1, test: test_bar, result: "PASS", output: ["rab"] }
@@ -53,10 +53,10 @@ def with-default-table-options [] {
 }
 
 #[test]
-def with-different-return [] {
+def with-different-returns [] {
     let temp = $in.temp
 
-    let results = test-run $"run-tests --path '($temp)' --return summary"
+    let results = test-run $"run-tests --path '($temp)' --returns summary"
 
     assert equal $results {
         total: 4
@@ -71,7 +71,7 @@ def with-specific-file [] {
     let temp = $in.temp
     let path = $temp | path join "test_2.nu"
 
-    let results = test-run $"run-tests --path '($path)' --return table"
+    let results = test-run $"run-tests --path '($path)' --returns table"
 
     assert equal $results [
         { suite: test_2, test: test_baz, result: "PASS", output: ["zab"] }
@@ -83,7 +83,7 @@ def with-specific-file [] {
 def with-matching-suite-and-test [] {
     let temp = $in.temp
 
-    let results = test-run $"run-tests --path '($temp)' --return table --match-suites _1 --match-tests test_ba[rz]"
+    let results = test-run $"run-tests --path '($temp)' --returns table --match-suites _1 --match-tests test_ba[rz]"
 
     assert equal $results [
         { suite: test_1, test: test_bar, result: "PASS", output: ["rab"] }
@@ -99,7 +99,7 @@ def exit-on-fail-with-passing-tests [] {
             --no-config-file
             --commands $"
                 use nutest *
-                run-tests --path ($temp) --return table --fail
+                run-tests --path ($temp) --returns table --fail
             "
     ) | complete
 
@@ -122,7 +122,7 @@ def exit-on-fail-with-failing-tests [] {
             --no-config-file
             --commands $"
                 use nutest *
-                run-tests --path ($temp) --return table --fail
+                run-tests --path ($temp) --returns table --fail
             "
     ) | complete
 
@@ -148,7 +148,7 @@ def useful-error-on-non-existent-path [] {
 }
 
 #[test]
-def with-summary-return [] {
+def with-summary-returns [] {
     let temp = $in.temp
     let test_file_3 = $temp | path join "test_3.nu"
     "
@@ -158,7 +158,7 @@ def with-summary-return [] {
     def test_oof [] { }
     " | save $test_file_3
 
-    let results = test-run $"run-tests --path '($temp)' --return summary"
+    let results = test-run $"run-tests --path '($temp)' --returns summary"
 
     assert equal $results {
         total: 6

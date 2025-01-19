@@ -1,7 +1,7 @@
 
 export def create []: nothing -> record {
     {
-        name: "return nothing"
+        name: "returns nothing"
         results: { null }
     }
 }

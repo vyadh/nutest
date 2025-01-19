@@ -31,7 +31,7 @@ export def run-tests [
     --match-tests: string@"nu-complete tests"   # Regular expression to match against test names (defaults to all)
     --strategy: record     # Override test run behaviour, such as test concurrency (defaults to automatic)
     --display: string@"nu-complete display"     # Display during test run (defaults to terminal, or none if result specified)
-    --return: string@"nu-complete return" = "nothing" # Results to return in a pipeline (defaults to nothing)
+    --returns: string@"nu-complete returns" = "nothing" # Results to return in a pipeline (defaults to nothing)
 
     --reporter: string@"nu-complete reporter" = "none" # The reporter used for test result output
     --formatter: string@"nu-complete formatter" # A formatter for output messages (defaults to reporter-specific)
@@ -49,7 +49,7 @@ export def run-tests [
     let test = $match_tests | default ".*"
     let strategy = (default-strategy $reporter) | merge ($strategy | default { })
     let display = $display | select-display  $reporter
-    let returns = $return | select-return
+    let returns = $returns | select-returns
 
     let formatter = $formatter | default null
     let reporter = select-reporter $reporter $formatter
@@ -137,25 +137,25 @@ def select-display [
     }
 }
 
-# A `return` provides return data to further pipeline steps
-def select-return []: string -> record<name: string, result: closure> {
-    let return_option = $in
+# The `returns` provides data to downstream pipeline steps
+def select-returns []: string -> record<name: string, result: closure> {
+    let returns_option = $in
 
-    match $return_option {
+    match $returns_option {
         "nothing" => {
-            use "return/return_nothing.nu"
-            return_nothing create
+            use returns/returns_nothing.nu
+            returns_nothing create
         }
         "summary" => {
-            use "return/return_summary.nu"
-            return_summary create
+            use returns/returns_summary.nu
+            returns_summary create
         }
         "table" => {
-            use "return/return_table.nu"
-            return_table create
+            use returns/returns_table.nu
+            returns_table create
         }
         _ => {
-            error make { msg: $"Unknown return: ($return_option)" }
+            error make { msg: $"Unknown return: ($returns_option)" }
         }
     }
 }

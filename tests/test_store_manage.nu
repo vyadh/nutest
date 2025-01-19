@@ -44,7 +44,7 @@ def "runs with previous unclean run" [] {
                 store create
 
                 use nutest
-                nutest run-tests --path '($temp)' --return table
+                nutest run-tests --path '($temp)' --returns table
             "
     ) | complete
 

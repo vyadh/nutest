@@ -7,7 +7,7 @@ export def create []: nothing -> record {
     let formatter = formatter unformatted
 
     {
-        name: "return table"
+        name: "returns table"
         results: { query-results $formatter }
     }
 }

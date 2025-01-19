@@ -2,7 +2,7 @@ use std/assert
 use harness.nu
 use ../nutest/formatter.nu
 use ../nutest/theme.nu
-use "../nutest/return/return_table.nu" # todo needed?
+use "../nutest/returns/returns_table.nu" # todo needed?
 use "../nutest/display/display_table.nu"
 
 #[before-all]

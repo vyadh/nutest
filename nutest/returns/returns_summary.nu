@@ -4,7 +4,7 @@ use ../store.nu
 
 export def create []: nothing -> record {
     {
-        name: "return summary"
+        name: "returns summary"
         start: {|| ignore }
         complete: { || ignore }
         results: { query-summary }

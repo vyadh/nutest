@@ -79,7 +79,7 @@ def format-error [error_format: string]: record -> any {
 
 # Rendered errors have useful info for terminal mode but too much for table-based reporters
 def error-format-rendered []: record -> string {
-    return $in.rendered
+    $in.rendered
 }
 
 def error-format-compact []: record -> string {

@@ -19,13 +19,13 @@ def "display retains specified with result" [] {
 }
 
 #[test]
-def "return default" [] {
-    assert equal ("nothing" | select-return | get name) "return nothing"
-    assert equal (do ("nothing" | select-return | get results)) null
+def "returns default" [] {
+    assert equal ("nothing" | select-returns | get name) "returns nothing"
+    assert equal (do ("nothing" | select-returns | get results)) null
 }
 
 #[test]
-def "return options" [] {
-    assert equal ("summary" | select-return | get name) "return summary"
-    assert equal ("table" | select-return | get name) "return table"
+def "returns options" [] {
+    assert equal ("summary" | select-returns | get name) "returns summary"
+    assert equal ("table" | select-returns | get name) "returns table"
 }

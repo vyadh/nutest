@@ -1,5 +1,5 @@
 use ../nutest/orchestrator.nu
-use "../nutest/return/return_table.nu"
+use "../nutest/returns/returns_table.nu"
 use ../nutest/theme.nu
 use ../nutest/formatter.nu
 use ../nutest/store.nu
@@ -38,7 +38,7 @@ export def run [
 
     let context = $in
     let temp = $context.temp_dir
-    let returns = return_table create
+    let returns = returns_table create
     let strategy = { threads: 1 } | merge $strategy
 
     let test = random chars

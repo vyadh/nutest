@@ -23,7 +23,7 @@ export def "nu-complete display" []: nothing -> record<options: record, completi
     }
 }
 
-export def "nu-complete return" []: nothing -> record<options: record, completions: table<value: string, description: string>> {
+export def "nu-complete returns" []: nothing -> record<options: record, completions: table<value: string, description: string>> {
     {
         options: {
             sort: false
@@ -32,15 +32,15 @@ export def "nu-complete return" []: nothing -> record<options: record, completio
             [value description];
             [
                 "nothing"
-                "Return no results from the test run."
+                "Returns no results from the test run."
             ]
             [
                 "table"
-                "Return a table listing all test results."
+                "Returns a table listing all test results."
             ]
             [
                 "summary"
-                "Return a summary of the test results."
+                "Returns a summary of the test results."
             ]
         ]
     }
