@@ -87,5 +87,5 @@ jobs:
       - name: Test Nushell
         # Nushell used here so use of workspace directory works consistently across platforms
         shell: nu {0}
-        run: nu -c $"use ($env.GITHUB_WORKSPACE)/nutest; nutest run-tests --reporter terminal --fail --path tests"
+        run: nu -c $"use ($env.GITHUB_WORKSPACE)/nutest; nutest run-tests --fail --path tests"
         working-directory: nushell/crates/nu-std

@@ -150,7 +150,7 @@ Will return:
 - [x] Setup/teardown with context available to tests
 - [x] Filtering of the suites and tests to run
 - [x] Terminal completions for suites and tests
-- [x] Reporting in various ways, including queryable Nushell data tables
+- [x] Outputting test results in various ways, including queryable Nushell data tables
 - [x] Test output captured and shown against test results
 - [x] Parallel test execution and concurrency control
 - [x] CI/CD support
@@ -174,7 +174,7 @@ Specify before/after for each test via `[before-each]` and `[after-each]` annota
 
 These setup/teardown commands can also be used to generate contexts used by each test, see Writing Tests section for ane example.
 
-### Filtering
+### Filtering Suites and Tests
 
 Allows filter of suites and tests to run via a pattern, such as:
 ```nushell
@@ -198,22 +198,33 @@ run-tests --match-tests parse<tab>
 
 While test discovery is done concurrently and quick even with many test files, you can specify `--match-suites <pattern>` before `--match-tests` to greatly reduce the amount of work nu-test needs to do to find the tests you want to run.
 
-### Reporting
+### Results Output
 
-By default, there is the terminal display that outputs the test results as they complete. This is useful for long-running tests where you want to see the results as they happen.
+There are several ways to output test results in nutest:
+- Displaying to the terminal
+- Returning data for pipelines
+- Reporting to file
 
-It is also possible to emit test results as a normal data table that can be processed like other Nushell data. For example, you can filter the results to show only tests that need attention using:
+#### Terminal Display
+
+By default, nutest displays tests in a textual format as they complete, implicitly as `--display terminal`. This can also be displayed as a table using `--display table` at the end of the run. Examples of these two display types can be seen in the screenshots above.
+
+Terminal output can be turned off using `--display nothing`.
+
+#### Returning Data
+
+No Nushell library is complete without being able to return data to query and manipulate. In nutest, you can query and manipulate the results. For example, to show only tests that need attention using:
+
 ```nushell
-run-tests --reporter table | where result in [SKIP, FAIL]
+run-tests --returns table | where result in [SKIP, FAIL]
 ```
 
-See screenshots above for examples of the output (in that case using `--reporter table-pretty`).
-
-Finally, there is a reporter that just shows the summary of the test run:
+Alternatively, you can return a summary of the test run as a record using:
 ```nushell
-run-tests --reporter summary
+run-tests --returns summary
 ```
-Will return:
+
+Which will be shown as:
 ```
 ╭─────────┬────╮
 │ total   │ 54 │
@@ -222,6 +233,14 @@ Will return:
 │ skipped │ 3  │
 ╰─────────┴────╯
 ```
+
+If data is selected to be returned the display report will be turned off, but can be re-enabled by using the `--display` option explicitly.
+
+The combination of `--display` and `--returns` can be used to be able to see the running tests and also query and manipulate the output once it is complete. It is also helpful for saving output to a file in a format not supported out of the box by the reporting functionality.
+
+#### Reporting to File
+
+Lastly, tests reports can be output to file. See the CI/CD Integration for more details.
 
 
 ### Test Output
@@ -266,10 +285,10 @@ job. However, note that using this directly in your shell will exit your shell s
 
 ### Test Report Integration
 
-In order to integrate with CI/CD tools, such as the excellent [GitHub Action to Publish Test Results](https://github.com/EnricoMi/publish-unit-test-result-action), you can output the result in JUnit XML format. The JUnit format was chosen simply as it appears to have the widest level of support. This can be done by specifying the `--reporter junit` option to the `run-tests` command:
+In order to integrate with CI/CD tools, such as the excellent [GitHub Action to Publish Test Results](https://github.com/EnricoMi/publish-unit-test-result-action), you can output the result in JUnit XML format. The JUnit format was chosen simply as it appears to have the widest level of support. This can be done by specifying the `--report junit` option to the `run-tests` command:
 
 ```nushell
-run-tests --reporter junit | save test-report.xml
+run-tests --report { type: junit, path: "test-report.xml" }
 ```
 
 
