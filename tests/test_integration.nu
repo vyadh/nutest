@@ -91,25 +91,27 @@ def with-matching-suite-and-test [] {
 }
 
 #[test]
-def exit-on-fail-with-passing-tests [] {
+def "fail option still returns result on passing tests" [] {
     let temp = $in.temp
 
     let result = (
         ^$nu.current-exe
             --no-config-file
-            --commands $"
+            --commands ($"
                 use nutest *
-                run-tests --path ($temp) --returns table --fail
-            "
+                run-tests --path ($temp) --fail --display table --returns summary
+                    | get total" + ' | $"Total: ($in)"'
+            )
     ) | complete
 
     let output = $result.stdout | ansi strip
-    assert ($output =~ "test_1[ │]+test_foo[ │]+PASS[ │]+") "Tests are output"
+    assert ($output =~ "test_1[ │]+test_foo[ │]+✅ PASS[ │]+") "Table is output"
+    assert ($output =~ "Total: 4") "Result is available to query"
     assert equal $result.exit_code 0 "Exit code is 0"
 }
 
 #[test]
-def exit-on-fail-with-failing-tests [] {
+def "fail option exit code on failing tests" [] {
     let temp = $in.temp
     let test_file_3 = $temp | path join "test_3.nu"
     "

@@ -63,14 +63,14 @@ export def run-tests [
 
     let result = do $returns.results
     let success = store success
-    try { do $report.save $result } catch { |error| print $error }
+    try { do $report.save $result } catch { |error| print -e $error }
 
     store delete
 
     # To reflect the exit code we need to print the results instead
-    if ($fail) {
+    if ($fail and not $success) {
         print $result
-        exit (if $success { 0 } else { 1 })
+        exit 1
     } else {
         $result
     }
