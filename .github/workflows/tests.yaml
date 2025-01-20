@@ -9,6 +9,9 @@ on:
   schedule:
     - cron: '0 7 * * *' # Run every morning at 7am UTC
 
+permissions:
+  contents: read
+
 jobs:
   nutest-tests:
     name: Run Tests
