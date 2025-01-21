@@ -1,5 +1,11 @@
 # Nu-test
 
+![CI/CD](https://github.com/vyadh/nu-test/actions/workflows/tests.yaml/badge.svg)
+![Tests](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgist.githubusercontent.com%2Fvyadh%2F0cbdca67f966d7ea2e6e1eaf7c9083a3%2Fraw%2Ftest-summary.json&query=%24.total&label=Tests)
+![Passed](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgist.githubusercontent.com%2Fvyadh%2F0cbdca67f966d7ea2e6e1eaf7c9083a3%2Fraw%2Ftest-summary.json&query=%24.passed&label=Passed&color=%2331c654)
+![Failed](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgist.githubusercontent.com%2Fvyadh%2F0cbdca67f966d7ea2e6e1eaf7c9083a3%2Fraw%2Ftest-summary.json&query=%24.failed&label=Failed&color=red)
+![Skipped](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgist.githubusercontent.com%2Fvyadh%2F0cbdca67f966d7ea2e6e1eaf7c9083a3%2Fraw%2Ftest-summary.json&query=%24.skipped&label=Skipped&color=yellow)
+
 A [Nushell](https://www.nushell.sh) test runner.
 
 ![An example nu-test run](resources/test-run.png)

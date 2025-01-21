@@ -11,14 +11,13 @@
 
 ## Milestone: Version 1.0
 
-- Get Topiary Nushell formatting working as commit hook (if it's readable)
-- JUnit test reports:
-  - Add [a badge](https://github.com/EnricoMi/publish-unit-test-result-action/?tab=readme-ov-file#create-a-badge-from-test-results) for test results in CI serving as an example
+- Use step outputs for file references
 - Versioning strategy, labels and docs/automation
 - Basic contributor agreement if needed
 
 ## Post v1 Roadmap
 
+- Get Topiary Nushell formatting working as commit hook (if it's readable)
 - JUnit test reports:
   - Add error information into the expected JUnit failure elements
   - Add test output
