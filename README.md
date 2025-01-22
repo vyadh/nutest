@@ -37,6 +37,7 @@ First-time installation:
 
 ```nushell
 git https://github.com/vyadh/nutest.git
+do { cd nutest; git checkout <version> } # Where <version> is the latest release
 nupm install nutest --path
 ```
 
@@ -54,6 +55,7 @@ First-time installation:
 
 ```nushell
 git https://github.com/vyadh/nutest.git
+do { cd nutest; git checkout <version> } # Where <version> is the latest release
 cp -r nutest/nutest <a directory referenced by NU_LIB_DIRS / $env.NU_LIB_DIRS>
 ```
 

@@ -9,11 +9,6 @@
   - Same for before-all and after-all.
   - We could try to accumulate as much context as possible, but it doesn't seem worth complicating the existing design currently.
 
-## Milestone: Version 1.0
-
-- Versioning strategy, labels and docs/automation
-- Basic contributor agreement if needed
-
 ## Post v1 Roadmap
 
 - Get Topiary Nushell formatting working as commit hook (if it's readable)
