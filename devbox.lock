@@ -1,0 +1,53 @@
+{
+  "lockfile_version": "1",
+  "packages": {
+    "nushell@latest": {
+      "last_modified": "2024-12-26T01:25:00Z",
+      "resolved": "github:NixOS/nixpkgs/16e046229f3b4f53257973a5532bcbb72457d2f2#nushell",
+      "source": "devbox-search",
+      "version": "0.101.0",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/gjgck7ays80f1fkhwc4ny5jwcdpi093h-nushell-0.101.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/gjgck7ays80f1fkhwc4ny5jwcdpi093h-nushell-0.101.0"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/ciymw62irm1ny3cd3m9px72l7l8myrqh-nushell-0.101.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/ciymw62irm1ny3cd3m9px72l7l8myrqh-nushell-0.101.0"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/z0f7kgp7pl3iyzdqns8gk084g6dchkvj-nushell-0.101.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/z0f7kgp7pl3iyzdqns8gk084g6dchkvj-nushell-0.101.0"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/sbkllymdppc0fkv6c6qhw81194xzvmkd-nushell-0.101.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/sbkllymdppc0fkv6c6qhw81194xzvmkd-nushell-0.101.0"
+        }
+      }
+    }
+  }
+}
