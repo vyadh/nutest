@@ -11,7 +11,6 @@
 
 ## Milestone: Version 1.0
 
-- Use step outputs for file references
 - Versioning strategy, labels and docs/automation
 - Basic contributor agreement if needed
 
@@ -29,6 +28,7 @@
 ## Future Ideas
 
 - Support matchers in `list-tests` (a trivial win)
+- Allow before-all and before-each to be specified without returning context
 - Optimisation: If nothing requires test output (e.g. summary), we can avoid having to process it
 - Optionally write decoded event stream to file to help debug Nutest itself.
 - Optionally allow running ignored tests.

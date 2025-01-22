@@ -51,7 +51,7 @@ def testsuites []: table<suite: string, test: string, result: string, output: li
     {
         tag: "testsuites"
         attributes: {
-            name: "nu-test"
+            name: "nutest"
             tests: $"($stats.total)"
             disabled: $"($stats.skipped)"
             failures: $"($stats.failed)"

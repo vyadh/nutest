@@ -1,18 +1,18 @@
-# Nu-test
+# Nutest
 
-![CI/CD](https://github.com/vyadh/nu-test/actions/workflows/tests.yaml/badge.svg)
+![CI/CD](https://github.com/vyadh/nutest/actions/workflows/tests.yaml/badge.svg)
 ![Tests](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgist.githubusercontent.com%2Fvyadh%2F0cbdca67f966d7ea2e6e1eaf7c9083a3%2Fraw%2Ftest-summary.json&query=%24.total&label=Tests)
 ![Passed](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgist.githubusercontent.com%2Fvyadh%2F0cbdca67f966d7ea2e6e1eaf7c9083a3%2Fraw%2Ftest-summary.json&query=%24.passed&label=Passed&color=%2331c654)
 ![Failed](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgist.githubusercontent.com%2Fvyadh%2F0cbdca67f966d7ea2e6e1eaf7c9083a3%2Fraw%2Ftest-summary.json&query=%24.failed&label=Failed&color=red)
 ![Skipped](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgist.githubusercontent.com%2Fvyadh%2F0cbdca67f966d7ea2e6e1eaf7c9083a3%2Fraw%2Ftest-summary.json&query=%24.skipped&label=Skipped&color=yellow)
 
-A [Nushell](https://www.nushell.sh) test runner.
+A [Nushell](https://www.nushell.sh) test framework.
 
-![An example nu-test run](resources/test-run.png)
+![An example nutest run](resources/test-run.png)
 
 *^ Tests are structured data that can be processed just like any other table.*
 
-![An example nu-test run](resources/test-run-terminal.png)
+![An example nutest run](resources/test-run-terminal.png)
 
 *^ Terminal mode - test results appear as they complete.*
 
@@ -36,8 +36,8 @@ Note: Nu-test is fully functional but currently still in pre-1.0 development.
 First-time installation:
 
 ```nushell
-git https://github.com/vyadh/nu-test.git
-nupm install nu-test --path
+git https://github.com/vyadh/nutest.git
+nupm install nutest --path
 ```
 
 Usage:
@@ -53,8 +53,8 @@ nutest run-tests
 First-time installation:
 
 ```nushell
-git https://github.com/vyadh/nu-test.git
-cp -r nu-test/nutest <a directory referenced by NU_LIB_DIRS / $env.NU_LIB_DIRS>
+git https://github.com/vyadh/nutest.git
+cp -r nutest/nutest <a directory referenced by NU_LIB_DIRS / $env.NU_LIB_DIRS>
 ```
 
 Usage:
@@ -70,7 +70,7 @@ nutest run-tests
 
 ### Test Suites
 
-A recognised test suite (a Nushell file containing tests) is recognised by nu-test is defined as a filename matching one of the following patterns somewhere within the path:
+A recognised test suite (a Nushell file containing tests) is recognised by nutest is defined as a filename matching one of the following patterns somewhere within the path:
 - `test_*.nu`
 - `test-*.nu`
 - `*_test.nu`
@@ -202,7 +202,7 @@ Typing the following and pressing tab will show all available tests that contain
 run-tests --match-tests parse<tab>
 ```
 
-While test discovery is done concurrently and quick even with many test files, you can specify `--match-suites <pattern>` before `--match-tests` to greatly reduce the amount of work nu-test needs to do to find the tests you want to run.
+While test discovery is done concurrently and quick even with many test files, you can specify `--match-suites <pattern>` before `--match-tests` to greatly reduce the amount of work nutest needs to do to find the tests you want to run.
 
 ### Results Output
 

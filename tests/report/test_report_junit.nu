@@ -158,7 +158,7 @@ def "testsuites with suites" [] {
     let result = $data | testsuites | to xml --self-closed
 
     assert equal $result ('
-        <testsuites name="nu-test" tests="3" disabled="1" failures="1">
+        <testsuites name="nutest" tests="3" disabled="1" failures="1">
             <testsuite name="suite1" tests="1" disabled="0" failures="0">
                 <testcase name="testA" classname="suite1"/>
             </testsuite>

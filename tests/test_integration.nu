@@ -260,7 +260,7 @@ def with-junit-report [] {
 
     test-run-raw $"run-tests --path '($temp)' --report { type: junit, path: '($report_path)' }"
 
-    assert equal ($report_path | open --raw | strip-xml-whitespace) ('<testsuites name="nu-test" tests="6" disabled="2" failures="1">
+    assert equal ($report_path | open --raw | strip-xml-whitespace) ('<testsuites name="nutest" tests="6" disabled="2" failures="1">
   <testsuite name="test_1" tests="2" disabled="0" failures="0">
     <testcase name="test_bar" classname="test_1"/>
     <testcase name="test_foo" classname="test_1"/>
