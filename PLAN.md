@@ -21,7 +21,8 @@
   - Add error information into the expected JUnit failure elements
   - Add test output
   - Investigate use of styling of errors and strip as necessary
-- Support multiple report types in the same run
+- Ensure badges are still generated if tests fail
+  - This is a case where multiple outputs would be useful
 - Fluent assertion module with pluggable matchers.
 - Generate test coverage (in llvm-cov format to allow combining with Nushell coverage)
 

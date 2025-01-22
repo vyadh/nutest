@@ -297,6 +297,14 @@ In order to integrate with CI/CD tools, such as the excellent [GitHub Action to 
 run-tests --fail --report { type: junit, path: "test-report.xml" }
 ```
 
+### Badges
+
+![Tests](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgist.githubusercontent.com%2Fvyadh%2F0cbdca67f966d7ea2e6e1eaf7c9083a3%2Fraw%2Ftest-summary.json&query=%24.total&label=Tests)
+![Passed](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgist.githubusercontent.com%2Fvyadh%2F0cbdca67f966d7ea2e6e1eaf7c9083a3%2Fraw%2Ftest-summary.json&query=%24.passed&label=Passed&color=%2331c654)
+![Failed](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgist.githubusercontent.com%2Fvyadh%2F0cbdca67f966d7ea2e6e1eaf7c9083a3%2Fraw%2Ftest-summary.json&query=%24.failed&label=Failed&color=red)
+![Skipped](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgist.githubusercontent.com%2Fvyadh%2F0cbdca67f966d7ea2e6e1eaf7c9083a3%2Fraw%2Ftest-summary.json&query=%24.skipped&label=Skipped&color=yellow)
+
+These badges are generated from the last run on the main branch by saving a summary of the test run to a Gist and leveraging the [shields.io](https://shields.io) project by to query that data by generating a [Dynamic JSON Badge](https://shields.io/badges/dynamic-json-badge). You can see how that can be achieved by looking at [the GitHub Actions workflow in this repository](.github/workflows/tests.yaml).
 
 ## Alternatives
 
