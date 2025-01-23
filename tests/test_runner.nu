@@ -452,11 +452,7 @@ def signature-after-that-accepts-non-record [] {
     let result = test-run "suite" $plan |
         where type in ["result", "output"]
 
-    # Check only supported on Nushell >= 0.101.1 (currently nightly so we check)
-    let version = version | get version | split row '.' | each { into int }
-    let supported = $version.0 >= 0 and $version.1 >= 101 and $version.2 >= 1
-
-    if $supported {
+    if (supports-non-record-types) {
         assert equal $result [
             [suite test type payload];
             # Nushell currently allows this, perhaps because we're not using the type as a string.
@@ -480,6 +476,17 @@ def signature-after-that-accepts-non-record [] {
                 { stream: "error", items: ["Input type not supported."] }
             ]
         ]
+    }
+}
+
+def supports-non-record-types []: nothing -> bool {
+    let version_str = version | get version
+    if ($version_str | str contains "nightly") {
+        return true
+    } else {
+        # Only supported on Nushell >= 0.101.1
+        let version = $version_str | split row '.' | each { into int }
+        $version.0 >= 0 and $version.1 >= 101 and $version.2 >= 1
     }
 }
 
