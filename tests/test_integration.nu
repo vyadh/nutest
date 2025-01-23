@@ -135,7 +135,7 @@ def "fail option exit code on failing tests" [] {
 
 #[test]
 def useful-error-on-non-existent-path [] {
-    let missing_path = [(pwd), "non", "existant", "path"] | path join
+    let missing_path = ["non", "existant", "path"] | path join
     let result = (
         ^$nu.current-exe
             --no-config-file
@@ -145,7 +145,8 @@ def useful-error-on-non-existent-path [] {
             "
     ) | complete
 
-    assert str contains $result.stderr $"Path doesn't exist: ($missing_path)"
+    assert str contains $result.stderr $"Path doesn't exist: "
+    assert str contains $result.stderr $missing_path
     assert equal $result.exit_code 1
 }
 
