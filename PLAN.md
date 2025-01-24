@@ -11,13 +11,14 @@
 
 ## Post v1 Roadmap
 
+- Ensure badges are still generated even if tests fail
+  - This is a case where multiple outputs would be useful
+  - Or perhaps better, we could expose a data api. E.g. --results-hook { |provider| ... }
 - Get Topiary Nushell formatting working as commit hook (if it's readable)
 - JUnit test reports:
   - Add error information into the expected JUnit failure elements
   - Add test output
   - Investigate use of styling of errors and strip as necessary
-- Ensure badges are still generated if tests fail
-  - This is a case where multiple outputs would be useful
 - Fluent assertion module with pluggable matchers.
 - Generate test coverage (in llvm-cov format to allow combining with Nushell coverage)
 

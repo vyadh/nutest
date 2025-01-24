@@ -24,12 +24,10 @@ Nushell 0.101.0 or later.
 
 ## Motivation
 
-Writing tests in Nushell is both powerful and expressive. Not only for testing Nushell code, but also other things, such as APIs, infrastructure, and other scripts. However, Nushell doesn't currently include a test runner for Nu scripts in the standard library. While a runner is not strictly necessary, Nutest aims to encourage writing tests for scripts by making testing more easily accessible.
+Writing tests in Nushell is both powerful and expressive. Not only for testing Nushell code, but also other things, such as APIs, infrastructure, and other scripts. Nutest aims to encourage writing tests for all sorts of things by making testing more accessible.
 
 
 ## Install and Run
-
-Note: Nu-test is fully functional but currently still in pre-1.0 development.
 
 ### Using [nupm](https://github.com/nushell/nupm)
 
@@ -72,7 +70,7 @@ nutest run-tests
 
 ### Test Suites
 
-A recognised test suite (a Nushell file containing tests) is recognised by nutest is defined as a filename matching one of the following patterns somewhere within the path:
+A recognised test suite (a Nushell file containing tests) is recognised by nutest as a filename matching one of the following patterns somewhere within the search path, being the working directory tree or via `--path`:
 - `test_*.nu`
 - `test-*.nu`
 - `*_test.nu`
@@ -80,16 +78,16 @@ A recognised test suite (a Nushell file containing tests) is recognised by nutes
 
 ### Test Commands
 
-**Nu-test** uses the command description as a tag system for tests, test discovery will ignore non-tagged commands. It supports:
+**Nutest** uses the command description as a tag system for tests, test discovery will ignore non-tagged commands. It supports:
 
-| tag                 | description                             |
-|---------------------|-----------------------------------------|
-| **\[test\]**        | this is the main tag to annotate tests. | 
-| **\[before-all\]**  | this is run once before all tests.      |
-| **\[before-each\]** | this is run before each test.           |
-| **\[after-all\]**   | this is run once after all tests.       |
-| **\[after-each\]**  | this is run after each test.            |
-| **\[ignore\]**      | ignores the test but still collects it. |
+| tag             | description                             |
+|-----------------|-----------------------------------------|
+| `[test]`        | this is the main tag to annotate tests. | 
+| `[before-all]`  | this is run once before all tests.      |
+| `[before-each]` | this is run before each test.           |
+| `[after-all]`   | this is run once after all tests.       |
+| `[after-each]`  | this is run after each test.            |
+| `[ignore]`      | ignores the test but still collects it. |
 
 For example:
 
@@ -155,32 +153,30 @@ Will return:
 ## Current Features
 
 - [x] Flexible test definitions
-- [x] Setup/teardown with context available to tests
-- [x] Filtering of the suites and tests to run
+- [x] Setup/teardown with created context available to tests
+- [x] Filtering of suites and tests
 - [x] Terminal completions for suites and tests
 - [x] Outputting test results in various ways, including queryable Nushell data tables
 - [x] Test output captured and shown against test results
 - [x] Parallel test execution and concurrency control
 - [x] CI/CD support
   - [x] Non-zero exit code in the form of a `--fail` flag
-  - [x] Test report integration with a wide array of tools
+  - [x] Test report integration compatible with a wide array of tools
 
 ### Flexible Tests
 
-Supports tests scripts in flexible configurations:
-- Single file with both implementation and tests
-- Separate implementation and test files
-- Just test files only
-  - This would commonly be the case when using Nushell to test other things, such as for testing bash scripts, APIs, infrastructure. All the things Nushell is great at.
-- Nushell modules.
+Supports running various configurations of tests scripts in flexible configurations, whether defined as a 
+Nushell module or scripts that reference other Nushell commands.
 
-Nushell scripts being tested can either be utilised from their public interface as a module via `use <test-file>.nu` or testing their private interface by `source <test-file>.nu`.
+Scripts being tested can either be utilised from their public interface as a module via `use <test-file>.nu` or testing their private interface by `source <test-file>.nu`.
+
+Tests are not limited to use with just Nushell scripts. Nutest combined with the power of Nushell can be used to test command-line tools, APIs, infrastructure or bash/other scripts. Add in use of something like [WireMock](https://wiremock.org) Nushell's `http` commands and mocked HTTP endpoints can be configured for tools under tests with the convenience of Nushell records and defined with the test.   
 
 ### Context and Setup/Teardown
 
-Specify before/after for each test via `[before-each]` and `[after-each]` annotations, or for all tests via `[before-all]` and `[after-all]`.
+Specify before/after stages for each test via `[before-each]` and `[after-each]` annotations, or for all tests via `[before-all]` and `[after-all]`.
 
-These setup/teardown commands can also be used to generate contexts used by each test, see Writing Tests section for ane example.
+These setup/teardown commands can also be used to generate contexts used by each test, see Writing Tests section for an example.
 
 ### Filtering Suites and Tests
 
@@ -204,7 +200,7 @@ Typing the following and pressing tab will show all available tests that contain
 run-tests --match-tests parse<tab>
 ```
 
-While test discovery is done concurrently and quick even with many test files, you can specify `--match-suites <pattern>` before `--match-tests` to greatly reduce the amount of work nutest needs to do to find the tests you want to run.
+While test discovery is done concurrently and performant even with many test files, you can specify `--match-suites <pattern>` before `--match-tests` to greatly reduce the amount of work nutest needs to do to find the tests you want to run.
 
 ### Results Output
 
@@ -215,13 +211,13 @@ There are several ways to output test results in nutest:
 
 #### Terminal Display
 
-By default, nutest displays tests in a textual format as they complete, implicitly as `--display terminal`. This can also be displayed as a table using `--display table` at the end of the run. Examples of these two display types can be seen in the screenshots above.
+By default, nutest displays tests in a textual format so they can be displayed as they complete, or explicitly as `--display terminal`. Results can also be displayed as a table using `--display table`, which will appear at the end of the run. Examples of these two display types can be seen in the screenshots above.
 
-Terminal output can be turned off using `--display nothing`.
+Terminal output can also be turned off using `--display nothing`.
 
 #### Returning Data
 
-No Nushell library is complete without being able to return data to query and manipulate. In nutest, you can query and manipulate the results. For example, to show only tests that need attention using:
+In line with the Nushell philosophy, tests results are also data that can be queried and manipulated. For example, to show only tests that need attention using:
 
 ```nushell
 run-tests --returns table | where result in [SKIP, FAIL]
@@ -242,9 +238,11 @@ Which will be shown as:
 ╰─────────┴────╯
 ```
 
-If data is selected to be returned the display report will be turned off, but can be re-enabled by using the `--display` option explicitly.
+This particular feature is used to generate the badges at the top of this README as part of the CI test run.
 
-The combination of `--display` and `--returns` can be used to be able to see the running tests and also query and manipulate the output once it is complete. It is also helpful for saving output to a file in a format not supported out of the box by the reporting functionality.
+If a `--returns` is specified, the display report will be deactivated by default, but can be re-enabled by using a `--display` option explicitly.
+
+The combination of `--display` and `--returns` can be used to both see the running tests and also query and manipulate the output once it is complete. It is also helpful for saving output to a file in a format not supported out of the box by the reporting functionality.
 
 #### Reporting to File
 
@@ -255,6 +253,8 @@ Lastly, tests reports can be output to file. See the CI/CD Integration for more 
 
 Output from the `print` command to stdout and stderr will be captured and shown against test results, which is useful for debugging failing tests.
 
+Output of external commands cannot currently be captured unless specifically handled in the tests by outputting using the `print` command.
+
 
 ### Parallel Test Execution
 
@@ -262,7 +262,7 @@ Tests written in Nutest are run concurrently by default.
 
 This is a good design constraint for self-contained tests that run efficiently. The default concurrency strategy is geared for CPU-bound tests, maximising the use of available CPU cores. However, some cases may need adjustment to run efficiently. For example, IO-bound tests may benefit from lower concurrency and tests waiting on external resources may benefit by not being limited to the available CPU cores.
 
-The level of concurrency adjusted or even disabled by specifying the `--strategy { threads: <n> }` option to the `run-tests` command, where `<n>` is the number of concurrently executing machine threads. The default is handling the concurrency automatically.
+The level of concurrency adjusted or even disabled by specifying the `--strategy { threads: <n> }` option to the `run-tests` command, where `<n>` is the number of concurrently executing machine threads. The default handles the concurrency level automatically based on the available hardware.
 
 See the Concurrency section under How Does It Work? for more details.
 
@@ -275,14 +275,14 @@ def threads []: nothing -> record {
 }
 ```
 
-This would be beneficial in a project where most tests should run concurrently by default, but a subset perhaps require exclusive access to a resource, or one that needs resetting on a per-test basis.
+This would be beneficial in a project where most tests should run concurrently by default, but a subset perhaps require exclusive access to a resource, or one that needs a setup/tear down cycle via `before-each` and `after-each`.
 
 
 ### CI/CD Support
 
 #### Exit Codes
 
-In normal operation the tests will be run and the results will be returned as a table with the exit code always set to 0. To avoid manually checking the results, the `--fail` flag can be used to set the exit code to 1 if any tests fail. In this mode, the test results will be printed in the default format and cannot be interrogated.
+In normal operation the tests will be run and the results will be returned as a table with the exit code always set to 0. To avoid manually checking the results, the `--fail` flag can be used to set the exit code to 1 if any tests fail. In this mode, if a test fails, the results will only be printed in the default format and cannot be interrogated due to the need to invoke `exit 1` without a result.
 
 ```nushell
 run-tests --fail
@@ -293,7 +293,7 @@ job. However, note that using this directly in your shell will exit your shell s
 
 ### Test Report Integration
 
-In order to integrate with CI/CD tools, such as the excellent [GitHub Action to Publish Test Results](https://github.com/EnricoMi/publish-unit-test-result-action), you can output the result in JUnit XML format. The JUnit format was chosen simply as it appears to have the widest level of support. This can be done by specifying the `--report` option to the `run-tests` command:
+In order to integrate with CI/CD tools, such as the excellent [GitHub Action to Publish Test Results](https://github.com/EnricoMi/publish-unit-test-result-action), you can output the result in the JUnit XML format. The JUnit format was chosen simply as it appears to have the widest level of support by tooling. The report can be created by by specifying the `--report` option to the `run-tests` command:
 
 ```nushell
 run-tests --fail --report { type: junit, path: "test-report.xml" }
@@ -306,12 +306,10 @@ run-tests --fail --report { type: junit, path: "test-report.xml" }
 ![Failed](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgist.githubusercontent.com%2Fvyadh%2F0cbdca67f966d7ea2e6e1eaf7c9083a3%2Fraw%2Ftest-summary.json&query=%24.failed&label=Failed&color=red)
 ![Skipped](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgist.githubusercontent.com%2Fvyadh%2F0cbdca67f966d7ea2e6e1eaf7c9083a3%2Fraw%2Ftest-summary.json&query=%24.skipped&label=Skipped&color=yellow)
 
-These badges are generated from the last run on the main branch by saving a summary of the test run to a Gist and leveraging the [shields.io](https://shields.io) project by to query that data by generating a [Dynamic JSON Badge](https://shields.io/badges/dynamic-json-badge). You can see how that can be achieved by looking at [the GitHub Actions workflow in this repository](.github/workflows/tests.yaml).
+The above badges serve as an example of how to directly leverage nutest for downstream use. In this case, these badges are generated from the last run on the main branch by saving a summary of the test run to a Gist and leveraging the [shields.io](https://shields.io) project by to query that data by generating a [Dynamic JSON Badge](https://shields.io/badges/dynamic-json-badge). You can see how that can be achieved by looking at [the GitHub Actions workflow in this repository](.github/workflows/tests.yaml).
 
-## Alternatives
+## Alternative Tools
 
-Nushell has its own private runner for the standard library `testing.nu`.
+Nushell has an internal runner for the standard library `testing.nu` but is not itself part of the standard library.
 
-There is also a runner in [nupm](https://github.com/nushell/nupm), the Nushell package manager.
-
-Both of these runners work on modules and so cannot be used for testing independent scripts. This runner is generic. It works with any Nu script, be that single files or modules.
+The Nushell package manager [Nupm](https://github.com/nushell/nupm), provides module-focused testing for exported commands.
