@@ -115,7 +115,7 @@ jobs:
       - name: Install Nushell Binary
         uses: hustcer/setup-nu@v3
         with:
-          version: "*"
+          version: "nightly"
 
       - name: Test Nushell
         # Nushell used here so use of workspace directory works consistently across platforms
