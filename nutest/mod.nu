@@ -55,8 +55,6 @@ export def run-tests [
         | discover suite-files --matcher $suite
         | discover test-suites --matcher $test
 
-    $test_suites | manifest-errors
-
     store create
 
     do $display.run-start
@@ -76,16 +74,6 @@ export def run-tests [
     } else {
         $result
     }
-}
-
-# Manifest the data to avoid laziness causing errors to be thrown in the wrong context
-def manifest-errors []: any -> nothing {
-    # This type should be: table<name: string, path: string, tests: table<name: string, type: string>>
-    let suites = $in
-    # Some parser errors might be a `list<error>`, collecting will cause it to be thrown here
-    $suites | collect
-    # Otherwise we do have a table that might have error instead of tests, so we and we need to try to collect
-    $suites | each { |suite| $suite.tests | collect }
 }
 
 def check-path []: string -> string {

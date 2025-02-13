@@ -28,9 +28,17 @@ export def test-suites [
 ]: list<string> -> table<name: string, path: string, tests:table<name: string, type: string>> {
 
     let suite_files = $in
-    $suite_files
+    let result = $suite_files
         | par-each { discover-suite $in }
         | filter-tests $matcher
+
+    # The following manifests the data to avoid laziness causing errors to be thrown in the wrong context
+    # Some parser errors might be a `list<error>`, collecting will cause it to be thrown here
+    $result | collect
+    # Others are only apparent collecting the tests table
+    $result | each { |suite| $suite.tests | collect }
+
+    $result
 }
 
 def discover-suite [test_file: string]: nothing -> record<name: string, path: string, tests: table<name: string, type: string>> {
@@ -81,7 +89,7 @@ def parse-test [test: record<name: string, description: string>]: nothing -> rec
 
 def filter-tests [
     matcher: string
-]: table<name: string, path: string, tests:table<name: string, type: string>> -> table<name: string, path: string, tests:table<name: string, type: string>> {
+]: table<name: string, path: string, tests:table<name: string, type: string>> -> table<name: string, path: string, tests: table<name: string, type: string>> {
 
     let tests = $in
     $tests
