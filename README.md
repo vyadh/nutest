@@ -93,8 +93,9 @@ For example:
 
 ```nushell
 use std assert
+use std/testing *
 
-#[before-each]
+@before-each
 def setup [] {
   print "before each"
   {
@@ -102,26 +103,26 @@ def setup [] {
   }
 }
 
-#[test]
+@test
 def "some-data is xxx" [] {
   let context = $in
   print $"Running test A: ($context.data)"
   assert equal "xxx" $context.data
 }
 
-#[test]
+@test
 def "is one equal one" [] {
   print $"Running test B: ($in.data)"
   assert equal 1 1
 }
 
-#[test]
+@test
 def "is two equal two" [] {
   print $"Running test C: ($in.data)"
   assert equal 2 2
 }
 
-#[after-each]
+@after-each
 def cleanup [] {
   let context = $in
   print "after each"
