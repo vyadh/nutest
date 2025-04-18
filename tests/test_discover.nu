@@ -1,7 +1,8 @@
 use std/assert
+use std/testing *
 use ../nutest/discover.nu
 
-#[before-each]
+@before-each
 def setup [] {
     let temp = mktemp --directory
     {
@@ -9,13 +10,13 @@ def setup [] {
     }
 }
 
-#[after-each]
+@after-each
 def cleanup [] {
     let context = $in
     rm --recursive $context.temp
 }
 
-#[test]
+@test
 def "suite files with none available" [] {
     let temp = $in.temp
 
@@ -24,7 +25,7 @@ def "suite files with none available" [] {
     assert equal $result []
 }
 
-#[test]
+@test
 def "suite files with specified file path" [] {
     let temp = $in.temp
     let file = $temp | path join "test_foo.nu"
@@ -37,7 +38,7 @@ def "suite files with specified file path" [] {
     ]
 }
 
-#[test]
+@test
 def "suite files with default glob" [] {
     let temp = $in.temp
     mkdir ($temp | path join "subdir")
@@ -59,7 +60,7 @@ def "suite files with default glob" [] {
     ]
 }
 
-#[test]
+@test
 def "suite files via specified glob" [] {
     let temp = $in.temp
 
@@ -74,7 +75,7 @@ def "suite files via specified glob" [] {
     ]
 }
 
-#[test]
+@test
 def "suite files with matcher" [] {
     let temp = $in.temp
     mkdir ($temp | path join "subdir")
@@ -94,7 +95,7 @@ def "suite files with matcher" [] {
     ]
 }
 
-#[test]
+@test
 def "list tests when no suites" [] {
     let temp = $in.temp
     let suite_files = []
@@ -104,7 +105,7 @@ def "list tests when no suites" [] {
     assert equal $result []
 }
 
-#[test]
+@test
 def "tests for all supported test directives" [] {
     let temp = $in.temp
     let test_file = $temp | path join "test.nu"
@@ -167,7 +168,7 @@ def "tests for all supported test directives" [] {
     }]
 }
 
-#[test]
+@test
 def "tests with an unsupported attribute specified first" [] {
     let temp = $in.temp
     let test_file = $temp | path join "test.nu"
@@ -194,7 +195,7 @@ def "tests with an unsupported attribute specified first" [] {
     }]
 }
 
-#[test]
+@test
 def "tests with an unsupported description and supported attribute" [] {
     let temp = $in.temp
     let test_file = $temp | path join "test.nu"
@@ -219,7 +220,7 @@ def "tests with an unsupported description and supported attribute" [] {
     }]
 }
 
-#[test]
+@test
 def "tests with an unsupported attribute and supported description" [] {
     let temp = $in.temp
     let test_file = $temp | path join "test.nu"
@@ -246,7 +247,7 @@ def "tests with an unsupported attribute and supported description" [] {
     }]
 }
 
-#[test]
+@test
 def "tests for unsupported test directives are not discovered" [] {
     let temp = $in.temp
     let test_file = $temp | path join "test.nu"
@@ -261,7 +262,7 @@ def "tests for unsupported test directives are not discovered" [] {
     def some-command [] {
     }
 
-    #[test]
+    @test
     def stub [] {
     }
     " | save $test_file
@@ -277,7 +278,7 @@ def "tests for unsupported test directives are not discovered" [] {
     }]
 }
 
-#[test]
+@test
 def "tests in multiple suites" [] {
     let temp = $in.temp
     let test_file_1 = $temp | path join "test_1.nu"
@@ -285,14 +286,18 @@ def "tests in multiple suites" [] {
     let suite_files = [$test_file_1, $test_file_2]
 
     "
-    #[test]
+    use std/testing *
+
+    @test
     def test_foo [] { }
-    #[test]
+    @test
     def test_bar [] { }
     " | save $test_file_1
 
     "
-    #[test]
+    use std/testing *
+
+    @test
     def test_baz [] { }
     def test_qux [] { }
     #[other]
@@ -321,24 +326,28 @@ def "tests in multiple suites" [] {
     ]
 }
 
-#[test]
-def "tests suites with matcher" [] {
+@test
+def "tests for suites with matcher" [] {
     let temp = $in.temp
     let test_file_1 = $temp | path join "test_1.nu"
     let test_file_2 = $temp | path join "test_2.nu"
     let suite_files = [$test_file_1, $test_file_2]
 
     "
-    #[test]
+    use std/testing *
+
+    @test
     def test_foo [] { }
-    #[ignore]
+    @ignore
     def test_bar [] { }
     " | save $test_file_1
 
     "
-    #[test]
+    use std/testing *
+
+    @test
     def test_baz [] { }
-    #[ignore]
+    @ignore
     def test_qux [] { }
     " | save $test_file_2
 
@@ -362,23 +371,25 @@ def "tests suites with matcher" [] {
     ]
 }
 
-#[test]
+@test
 def "tests suites retaining non-tests when no-match" [] {
     let temp = $in.temp
     let test_file = $temp | path join "test.nu"
     let suite_files = [$test_file]
 
     "
-    #[ignore]
+    use std/testing *
+
+    @ignore
     def test_foo [] { }
 
-    #[test]
+    @test
     def test_bar [] { }
 
-    #[before-each]
+    @before-each
     def test_baz [] { }
 
-    #[after-all]
+    @after-all
     def test_qux [] { }
     " | save $test_file
 
@@ -397,20 +408,22 @@ def "tests suites retaining non-tests when no-match" [] {
     ]
 }
 
-#[test]
+@test
 def "tests suites excluded suites with no test matches" [] {
     let temp = $in.temp
     let test_file = $temp | path join "test.nu"
     let suite_files = [$test_file]
 
     "
-    #[test]
+    use std/testing *
+
+    @test
     def test_foo [] { }
 
-    #[test]
+    @test
     def test_bar [] { }
 
-    #[ignore]
+    @ignore
     def test_baz [] { }
 
     #[other]

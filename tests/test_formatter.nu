@@ -1,11 +1,12 @@
 use std/assert
+use std/testing *
 use ../nutest/formatter.nu
 use ../nutest/theme.nu
 
 # The follow tests provide a unit-test focused view of the formatter module.
 # More comprehensive integration tests can be found in output and error tests.
 
-#[test]
+@test
 def data-and-metadata [] {
     let formatter = formatter preserved
 
@@ -20,7 +21,7 @@ def data-and-metadata [] {
     ]
 }
 
-#[test]
+@test
 def data-only [] {
     let formatter = formatter unformatted
 
@@ -34,7 +35,7 @@ def data-only [] {
     ]
 }
 
-#[test]
+@test
 def pretty-with-theme-none [] {
     let formatter = formatter pretty (theme none) "compact"
 
@@ -52,7 +53,7 @@ def pretty-with-theme-none [] {
     )
 }
 
-#[test]
+@test
 def pretty-with-theme-standard [] {
     let formatter = formatter pretty (theme standard) "compact"
 
@@ -66,7 +67,7 @@ def pretty-with-theme-standard [] {
     )
 }
 
-#[test]
+@test
 def "pretty with rendered error" [] {
     let formatter = formatter pretty (theme standard) "rendered"
 

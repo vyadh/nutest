@@ -34,7 +34,7 @@ def execute-plan-test [] {
     ]
 }
 
-#[test]
+@test
 def execute-plan-with-error [] {
     let plan = [
         { name: "testing", type: "test", execute: "{ failure }" }
@@ -51,7 +51,7 @@ def execute-plan-with-error [] {
     ]
 }
 
-#[test]
+@test
 def execute-plan-tests [] {
     let plan = [
         { name: "test_success", type: "test", execute: "{ success }" }
@@ -86,7 +86,7 @@ def execute-plan-tests [] {
     ] | sort-by suite test)
 }
 
-#[test]
+@test
 def execute-test-types-basic [] {
     let plan = [
         { name: "bool", type: "test", execute: "{ print true }" }
@@ -110,7 +110,7 @@ def execute-test-types-basic [] {
     ]
 }
 
-#[test]
+@test
 def execute-test-types-structured [] {
     let plan = [
         { name: "list", type: "test", execute: "{ print [1, '2', 3min] }" }
@@ -128,7 +128,7 @@ def execute-test-types-structured [] {
     ]
 }
 
-#[test]
+@test
 def execute-test-with-multiple-lines [] {
     let plan = [
         { name: "multi-print", type: "test", execute: "{ print 'one'; print 'two' }" }
@@ -147,7 +147,7 @@ def execute-test-with-multiple-lines [] {
     ]
 }
 
-#[test]
+@test
 def execute-test-with-multiple-lines-deep [] {
     let plan = [
         { name: "list", type: "test", execute: "{ print [1, '2\n3', 4min] }" }
@@ -165,7 +165,7 @@ def execute-test-with-multiple-lines-deep [] {
     ]
 }
 
-#[test]
+@test
 def execute-before-each-test [] {
     let plan = [
         { name: "test", type: "test", execute: "{ assert-context-received }" }
@@ -183,7 +183,7 @@ def execute-before-each-test [] {
     ]
 }
 
-#[test]
+@test
 def execute-after-each-test [] {
     let plan = [
         { name: "test", type: "test", execute: "{ assert-context-received }" }
@@ -203,7 +203,7 @@ def execute-after-each-test [] {
     ]
 }
 
-#[test]
+@test
 def execute-before-and-after-each-captures-output [] {
     let plan = [
         { name: "before-each", type: "before-each", execute: "{ success; get-context }" }
@@ -229,8 +229,8 @@ def execute-before-and-after-each-captures-output [] {
     ]
 }
 
-#[test]
 # This kind output is not associated with tests by the runner
+@test
 def execute-before-and-after-all-captures-output [] {
     let plan = [
         { name: "before-all", type: "before-all", execute: "{ print 1; print -e 2; get-context }" }
@@ -261,7 +261,7 @@ def execute-before-and-after-all-captures-output [] {
      ]
 }
 
-#[test]
+@test
 def execute-before-each-error-handling [] {
     let plan = [
         { name: "test", type: "test", execute: "{ noop }" }
@@ -279,7 +279,7 @@ def execute-before-each-error-handling [] {
     ]
 }
 
-#[test]
+@test
 def execute-after-each-error-handling [] {
     let plan = [
         { name: "test", type: "test", execute: "{ noop }" }
@@ -298,7 +298,7 @@ def execute-after-each-error-handling [] {
     ]
 }
 
-#[test]
+@test
 def execute-before-all-error-handling [] {
     let plan = [
         { name: "test1", type: "test", execute: "{ noop }" }
@@ -321,7 +321,7 @@ def execute-before-all-error-handling [] {
     ]
 }
 
-#[test]
+@test
 def execute-after-all-error-handling [] {
     let plan = [
         { name: "test1", type: "test", execute: "{ noop }" }
@@ -379,7 +379,7 @@ def assert-context-received [] {
     assert equal $context (get-context)
 }
 
-#[test]
+@test
 def signature-before-that-returns-nothing [] {
     let plan = [
         { name: "all-has-output", type: "before-all", execute: "{ { value1: 'preserved-all' } }" }
@@ -400,7 +400,7 @@ def signature-before-that-returns-nothing [] {
     ]
 }
 
-#[test]
+@test
 def signature-after-that-accepts-nothing [] {
     let plan = [
         { name: "some-context", type: "before-all", execute: "{ { key: 'value' } }" }
@@ -421,7 +421,7 @@ def signature-after-that-accepts-nothing [] {
 def after-no-input []: nothing -> nothing {
 }
 
-#[test]
+@test
 def signature-before-each-that-returns-non-record [] {
     let plan = [
         { name: "returns-string", type: "before-each", execute: "{ 'value' }" }
@@ -440,7 +440,7 @@ def signature-before-each-that-returns-non-record [] {
     ]
 }
 
-#[test]
+@test
 def signature-before-all-that-returns-non-record [] {
     let plan = [
         { name: "returns-string", type: "before-all", execute: "{ 'value' }" }
@@ -459,7 +459,7 @@ def signature-before-all-that-returns-non-record [] {
     ]
 }
 
-#[test]
+@test
 def signature-after-that-accepts-non-record [] {
     let plan = [
         [name, type, execute];
@@ -513,7 +513,7 @@ def accepts-string []: string -> nothing {
     print $in
 }
 
-#[test]
+@test
 def full-cycle-context [] {
     let plan = [
         { name: "before-all", type: "before-all", execute: "{ fc-before-all }" }

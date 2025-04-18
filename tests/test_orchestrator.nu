@@ -1,4 +1,5 @@
 use std/assert
+use std/testing *
 use ../nutest/orchestrator.nu [
     create-suite-plan-data
     run-suites
@@ -7,7 +8,7 @@ use ../nutest/store.nu
 use ../nutest/theme.nu
 use ../nutest/formatter.nu
 
-#[test]
+@test
 def validate-test-plan [] {
     let tests = [
         { name: "test_a", type: "test" }
@@ -30,31 +31,31 @@ def trim []: string -> string {
     $in | str replace --all --regex '[\n\r ]+' ' '
 }
 
-#[before-all]
 # We also need to ensure we narrow down results to the unique ones used in each test.
+@before-all
 def setup-store []: nothing -> record {
     store create
     { }
 }
 
-#[after-all]
+@after-all
 def teardown-store [] {
     store delete
 }
 
-#[before-each]
+@before-each
 def setup-temp-dir []: nothing -> record {
     let temp = mktemp --tmpdir --directory
     { temp: $temp }
 }
 
-#[after-each]
+@after-each
 def cleanup-temp-dir [] {
     let context = $in
     rm --recursive $context.temp
 }
 
-#[test]
+@test
 def run-suite-with-no-tests [] {
     let context = $in
     let temp = $context.temp
@@ -67,7 +68,7 @@ def run-suite-with-no-tests [] {
     assert equal $results []
 }
 
-#[test]
+@test
 def run-suite-with-passing-test [] {
     let context = $in
     let temp = $context.temp
@@ -86,7 +87,7 @@ def run-suite-with-passing-test [] {
     ]
 }
 
-#[test]
+@test
 def run-suite-with-ignored-test [] {
     let context = $in
     let temp = $context.temp
@@ -105,7 +106,7 @@ def run-suite-with-ignored-test [] {
     ]
 }
 
-#[test]
+@test
 def run-suite-with-broken-test [] {
     let context = $in
     let temp = $context.temp
@@ -129,7 +130,7 @@ def run-suite-with-broken-test [] {
     assert str contains $output "def broken-test"
 }
 
-#[test]
+@test
 def run-suite-with-missing-test [] {
     let context = $in
     let temp = $context.temp
@@ -152,7 +153,7 @@ def run-suite-with-missing-test [] {
     assert str contains ($output.items | str join '') "`missing-test` is neither a Nushell built-in or a known external command"
 }
 
-#[test]
+@test
 def run-suite-with-failing-test [] {
     let context = $in
     let temp = $context.temp
@@ -174,7 +175,7 @@ def run-suite-with-failing-test [] {
     assert str contains $output "These are not equal."
 }
 
-#[test]
+@test
 def run-suite-with-multiple-tests [] {
     let context = $in
     let temp = $context.temp
@@ -198,7 +199,7 @@ def run-suite-with-multiple-tests [] {
     ]
 }
 
-#[test]
+@test
 def run-multiple-suites [] {
     let context = $in
     let temp = $context.temp
@@ -219,7 +220,7 @@ def run-multiple-suites [] {
     ] | sort-by suite test)
 }
 
-#[test]
+@test
 def run-test-with-output [] {
     let context = $in
     let temp = $context.temp
@@ -238,7 +239,7 @@ def run-test-with-output [] {
     ]
 }
 
-#[test]
+@test
 def run-before-after-with-output [] {
     let context = $in
     let temp = $context.temp
@@ -269,9 +270,9 @@ def run-before-after-with-output [] {
     ]
 }
 
-#[test]
 # This test is to ensure that even though we get multiple results for a test,
 # (both a PASS then a FAIL) the end result is just a FAIL
+@test
 def after-all-failure-should-mark-all-failed [] {
     let context = $in
     let temp = $context.temp
@@ -325,6 +326,7 @@ def create-suite [temp: string, suite: string]: nothing -> record {
 
     $"
         use std/assert
+        use std/testing *
     " | save $path
 
     {

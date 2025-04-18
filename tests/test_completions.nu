@@ -1,7 +1,8 @@
 use std/assert
+use std/testing *
 source ../nutest/completions.nu
 
-#[before-each]
+@before-each
 def setup [] {
     let temp = mktemp --directory
     {
@@ -9,13 +10,13 @@ def setup [] {
     }
 }
 
-#[after-each]
+@after-each
 def cleanup [] {
     let context = $in
     rm --recursive $context.temp
 }
 
-#[test]
+@test
 def "parse with empty option" [] {
     let result = "nutest run-tests --returns table --match-suites " | parse-command-context
 
@@ -26,7 +27,7 @@ def "parse with empty option" [] {
     }
 }
 
-#[test]
+@test
 def "parse with specified option" [] {
     let result = "nutest run-tests --returns table --match-suites orc" | parse-command-context
 
@@ -37,7 +38,7 @@ def "parse with specified option" [] {
     }
 }
 
-#[test]
+@test
 def "parse with extra space" [] {
     let result = "nutest run-tests  --match-suites  orc" | parse-command-context
 
@@ -48,7 +49,7 @@ def "parse with extra space" [] {
     }
 }
 
-#[test]
+@test
 def "parse when fully specified" [] {
     let result = "nutest run-tests --match-suites sui --match-tests te --path ../something" | parse-command-context
 
@@ -59,7 +60,7 @@ def "parse when fully specified" [] {
     }
 }
 
-#[test]
+@test
 def "parse with space in value" [] {
     let result = 'nutest run-tests --match-tests "parse some" --path ../something'  | parse-command-context
 
@@ -70,7 +71,7 @@ def "parse with space in value" [] {
     }
 }
 
-#[test]
+@test
 def "parse with prior commands" [] {
     let result = "use nutest; nutest run-tests --match-suites sui --match-tests te --path ../something" | parse-command-context
 
@@ -81,7 +82,7 @@ def "parse with prior commands" [] {
     }
 }
 
-#[test]
+@test
 def "complete suites" [] {
     let temp = $in.temp
     touch ($temp | path join "test_foo.nu")
@@ -96,7 +97,7 @@ def "complete suites" [] {
     ]
 }
 
-#[test]
+@test
 def "complete tests" [] {
     let temp = $in.temp
 
@@ -105,17 +106,21 @@ def "complete tests" [] {
     let test_file_2 = $temp | path join "test_2.nu"
 
     "
-    #[test]
+    use std/testing *
+
+    @test
     def some_foo1 [] { }
     " | save $test_file_1
     '
-    #[test]
+    use std/testing *
+
+    @test
     def "some foo2" [] { }
-    #[ignore]
+    @ignore
     def some_foo3 [] { }
-    #[before-each]
+    @before-each
     def some_foo4 [] { }
-    #[test]
+    @test
     def some_foo5 [] { }
     ' | save $test_file_2
 

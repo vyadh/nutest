@@ -1,4 +1,5 @@
 use std/assert
+use std/testing *
 use ../harness.nu
 use ../../nutest/formatter.nu
 use ../../nutest/theme.nu
@@ -6,27 +7,27 @@ use ../../nutest/display/display_table.nu
 use ../../nutest/errors.nu
 
 
-#[before-all]
+@before-all
 def setup-tests []: record -> record {
     $in | harness setup-tests
 }
 
-#[after-all]
+@after-all
 def cleanup-tests []: record -> nothing {
     $in | harness cleanup-tests
 }
 
-#[before-each]
+@before-each
 def setup-test []: record -> record {
     $in | harness setup-test
 }
 
-#[after-each]
+@after-each
 def cleanup-test []: record -> nothing {
     $in | harness cleanup-test
 }
 
-#[test]
+@test
 def "assertion is compact" [] {
     let test = {
         assert equal 1 2
@@ -42,7 +43,7 @@ def "assertion is compact" [] {
     " | trim-all)
 }
 
-#[test]
+@test
 def "basic compact" [] {
     let code = {
         error make { msg: 'some error' }
@@ -53,7 +54,7 @@ def "basic compact" [] {
     assert equal $result.output "some error"
 }
 
-#[test]
+@test
 def "full unformatted" [] {
     let code = {
         let variable = 'span source'
@@ -78,7 +79,7 @@ def "full unformatted" [] {
     assert equal ($details.help) "some help"
 }
 
-#[test]
+@test
 def "full compact" [] {
     let code = {
         let variable = 'span source'

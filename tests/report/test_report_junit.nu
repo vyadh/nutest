@@ -1,7 +1,8 @@
 use std/assert
+use std/testing *
 source ../../nutest/report/report_junit.nu
 
-#[test]
+@test
 def "count when no tests" [] {
     let data = []
 
@@ -14,7 +15,7 @@ def "count when no tests" [] {
     }
 }
 
-#[test]
+@test
 def "count with suites of all states" [] {
     let data = [
         { suite: "suite1", test: "test1A", result: "PASS" }
@@ -57,7 +58,7 @@ def "count with suites of all states" [] {
     }
 }
 
-#[test]
+@test
 def "testcase pass" [] {
     let data = { suite: "suite", test: "test", result: "PASS", output: [] }
 
@@ -68,7 +69,7 @@ def "testcase pass" [] {
     ' | strip-xml-whitespace)
 }
 
-#[test]
+@test
 def "testcase fail" [] {
     let data = { suite: "suite", test: "test", result: "FAIL", output: [] }
 
@@ -81,7 +82,7 @@ def "testcase fail" [] {
     ' | strip-xml-whitespace)
 }
 
-#[test]
+@test
 def "testcase skip" [] {
     let data = { suite: "suite", test: "test", result: "SKIP", output: [] }
 
@@ -94,7 +95,7 @@ def "testcase skip" [] {
     ' | strip-xml-whitespace)
 }
 
-#[test]
+@test
 def "testsuite with no tests" [] {
     let data = []
 
@@ -106,7 +107,7 @@ def "testsuite with no tests" [] {
     }
 }
 
-#[test]
+@test
 def "testsuite with test stats" [] {
     let data = [[suite, test, result, output];
         ["suite1", "test1A", "PASS", []]
@@ -124,7 +125,7 @@ def "testsuite with test stats" [] {
     ' | strip-xml-whitespace)
 }
 
-#[test]
+@test
 def "testsuite with tests" [] {
     let data = [[suite, test, result, output];
         ["suite1", "test1A", "PASS", []]
@@ -147,7 +148,7 @@ def "testsuite with tests" [] {
     ' | strip-xml-whitespace)
 }
 
-#[test]
+@test
 def "testsuites with suites" [] {
     let data = [[suite, test, result, output];
         ["suite1", "testA", "PASS", []]

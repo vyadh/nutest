@@ -69,6 +69,8 @@ def create-closure-suite [temp: string, test: string]: closure -> record {
 
     $"
         use std/assert
+        use std/testing *
+
         def ($test) [] {
             do ($code)
         }

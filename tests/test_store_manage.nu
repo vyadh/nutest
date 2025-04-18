@@ -1,4 +1,5 @@
 use std/assert
+use std/testing *
 use ../nutest/store.nu
 
 #[strategy]
@@ -6,7 +7,7 @@ def sequential []: nothing -> record {
     { threads: 1 }
 }
 
-#[before-each]
+@before-each
 def create-test-dir []: record -> record {
     let temp = mktemp --tmpdir --directory
     {
@@ -14,24 +15,24 @@ def create-test-dir []: record -> record {
     }
 }
 
-#[after-each]
+@after-each
 def cleanup-test-dir [] {
     let context = $in
     rm --recursive $context.temp
 }
 
-#[test]
+@test
 def "delete a created store" [] {
     let store = store create
     store delete
 }
 
-#[test]
+@test
 def "delete succeeds even no results tables" [] {
     store delete
 }
 
-#[test]
+@test
 def "runs with previous unclean run" [] {
     let context = $in
     let temp = $context.temp

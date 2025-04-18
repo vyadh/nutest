@@ -1,17 +1,18 @@
 use std/assert
+use std/testing *
 source ../nutest/errors.nu
 
-# [before-all]
+@before-all
 def setup [] {
     $env.NU_BACKTRACE = 1
 }
 
-# [after-all]
+@after-all
 def teardown [] {
     $env.NU_BACKTRACE = 0
 }
 
-# [test]
+@test
 def normal-error-is-unmodified [] {
     let error = try { error make { msg: "normal error", help: "help text" } } catch { $in }
 
@@ -25,7 +26,7 @@ def normal-error-is-unmodified [] {
     }
 }
 
-# [test]
+@test
 def chained-error-is-unwrapped [] {
     def throw-error [] {
         error make { msg: "original error", help: "help text" }
@@ -45,7 +46,7 @@ def chained-error-is-unwrapped [] {
     }
 }
 
-# [test]
+@test
 def nested-chain-error-is-unwrapped [] {
     def throw-error [] {
         error make { msg: "original error", help: "help text" }

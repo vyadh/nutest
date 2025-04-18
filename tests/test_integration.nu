@@ -1,8 +1,9 @@
 use std/assert
+use std/testing *
 
 # To avoid collisions with the database, we run each test  in a subshell.
 
-#[before-each]
+@before-each
 def setup []: nothing -> record {
     let temp = mktemp --tmpdir --directory
     setup-tests $temp
@@ -17,28 +18,32 @@ def setup-tests [temp: string] {
     let test_file_2 = $temp | path join "test_2.nu"
 
     "
-    #[test]
+    use std/testing *
+
+    @test
     def test_foo [] { print oof }
-    #[test]
+    @test
     def test_bar [] { print -e rab }
     " | save $test_file_1
 
     "
-    #[test]
+    use std/testing *
+
+    @test
     def test_baz [] { print zab }
-    #[ignore]
+    @ignore
     def test_qux [] { print xuq }
     def test_quux [] { print xuuq }
     " | save $test_file_2
 }
 
-#[after-each]
+@after-each
 def cleanup [] {
     let context = $in
     rm --recursive $context.temp
 }
 
-#[test]
+@test
 def with-default-table-options [] {
     let temp = $in.temp
 
@@ -52,7 +57,7 @@ def with-default-table-options [] {
     ]
 }
 
-#[test]
+@test
 def with-different-returns [] {
     let temp = $in.temp
 
@@ -66,7 +71,7 @@ def with-different-returns [] {
     }
 }
 
-#[test]
+@test
 def with-specific-file [] {
     let temp = $in.temp
     let path = $temp | path join "test_2.nu"
@@ -79,7 +84,7 @@ def with-specific-file [] {
     ]
 }
 
-#[test]
+@test
 def with-matching-suite-and-test [] {
     let temp = $in.temp
 
@@ -90,7 +95,7 @@ def with-matching-suite-and-test [] {
     ]
 }
 
-#[test]
+@test
 def "fail option still returns result on passing tests" [] {
     let temp = $in.temp
 
@@ -110,12 +115,14 @@ def "fail option still returns result on passing tests" [] {
     assert equal $result.exit_code 0 "Exit code is 0"
 }
 
-#[test]
+@test
 def "fail option exit code on failing tests" [] {
     let temp = $in.temp
     let test_file_3 = $temp | path join "test_3.nu"
     "
-    #[test]
+    use std/testing *
+
+    @test
     def test_quux [] { error make { msg: 'Ouch' } }
     " | save $test_file_3
 
@@ -133,7 +140,7 @@ def "fail option exit code on failing tests" [] {
     assert equal $result.exit_code 1
 }
 
-#[test]
+@test
 def useful-error-on-non-existent-path [] {
     let missing_path = ["non", "existant", "path"] | path join
     let result = (
@@ -150,14 +157,16 @@ def useful-error-on-non-existent-path [] {
     assert equal $result.exit_code 1
 }
 
-#[test]
+@test
 def with-summary-returns [] {
     let temp = $in.temp
     let test_file_3 = $temp | path join "test_3.nu"
     "
-    #[test]
+    use std/testing *
+
+    @test
     def test_quux [] { error make { msg: 'Ouch' } }
-    #[ignore]
+    @ignore
     def test_oof [] { }
     " | save $test_file_3
 
@@ -171,14 +180,16 @@ def with-summary-returns [] {
     }
 }
 
-#[test]
+@test
 def list-tests-as-table [] {
     let temp = $in.temp
 
     "
-    #[test]
+    use std/testing *
+
+    @test
     def test_zat [] { print oof }
-    #[before-each]
+    @before-each
     def setup [] { print -e rab }
     " | save ($temp | path join "test_3.nu")
 
@@ -193,14 +204,16 @@ def list-tests-as-table [] {
     ]
 }
 
-#[test]
+@test
 def "terminal display" [] {
     let temp = $in.temp
     let test_file_3 = $temp | path join "test_3.nu"
     "
-    #[test]
+    use std/testing *
+
+    @test
     def test_quux [] { error make { msg: 'Ouch' } }
-    #[ignore]
+    @ignore
     def test_oof [] { }
     " | save $test_file_3
 
@@ -220,12 +233,14 @@ def "terminal display" [] {
     assert ($results | str ends-with "Test run completed: 6 total, 3 passed, 1 failed, 2 skipped\n")
 }
 
-#[test]
+@test
 def "terminal display with rendered error" [] {
     let temp = $in.temp
     let test_file_3 = $temp | path join "test_3.nu"
     "
-    #[test]
+    use std/testing *
+
+    @test
     def test_quux [] {
         let variable = 'span source'
 
@@ -248,14 +263,16 @@ def "terminal display with rendered error" [] {
     assert str contains $results "some help"
 }
 
-#[test]
+@test
 def with-junit-report [] {
     let temp = $in.temp
     let test_file_3 = $temp | path join "test_3.nu"
     "
-    #[test]
+    use std/testing *
+
+    @test
     def test_quux [] { error make { msg: 'Ouch' } }
-    #[ignore]
+    @ignore
     def test_oof [] { }
     " | save $test_file_3
     let report_path = $temp | path join "report.xml"
