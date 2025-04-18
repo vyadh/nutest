@@ -38,9 +38,10 @@ def run-suite [
 
     # Run with forced colour to get colourised rendered error output
     let result = with-env { FORCE_COLOR: true } {
+        const runner_module = path self "runner.nu"
         (^$nu.current-exe
             --commands $"
-                use (runner-module) *
+                use ($runner_module) *
                 source ($path)
                 nutest-299792458-execute-suite ($strategy | to nuon) ($suite) ($plan_data)
         ")
@@ -78,18 +79,6 @@ def run-suite [
             $template | merge (as-error-output $result.stderr) | process-event $event_processor
             $template | merge { type: "finish", payload: null } | process-event $event_processor
         }
-    }
-}
-
-# todo Need to investigate below. Is this still relevant if not going in the std lib?
-def runner-module []: nothing -> string {
-    let in_std = scope modules | where file == "std/testing/mod.nu" | is-not-empty
-    if $in_std {
-        "std/testing/runner.nu"
-    } else {
-        # Can't just use `path self` directly for both cases, as it's currently wrong for virtual/std files
-        const runner_nu = path self "runner.nu"
-        $runner_nu
     }
 }
 
