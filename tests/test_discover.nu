@@ -105,7 +105,180 @@ def "list tests when no suites" [] {
 }
 
 #[test]
-def "tests suites found" [] {
+def "tests for all supported test directives" [] {
+    let temp = $in.temp
+    let test_file = $temp | path join "test.nu"
+
+    "
+    use std/testing *
+
+    @test
+    def attr-test [] { }
+    @ignore
+    def attr-ignore [] { }
+    @before-all
+    def attr-before-all [] { }
+    @after-all
+    def attr-after-all [] { }
+    @before-each
+    def attr-before-each [] { }
+    @after-each
+    def attr-after-each [] { }
+
+    #[test]
+    def desc-test [] { }
+    #[ignore]
+    def desc-ignore [] { }
+    #[before-all]
+    def desc-before-all [] { }
+    #[after-all]
+    def desc-after-all [] { }
+    #[before-each]
+    def desc-before-each [] { }
+    #[after-each]
+    def desc-after-each [] { }
+
+    #[strategy]
+    def desc-strategy [] { }
+    " | save $test_file
+
+    let result = [$test_file] | discover test-suites | sort
+
+    assert equal $result [{
+        name: "test"
+        path: $test_file
+        tests: [
+            { name: "attr-after-all", type: "after-all" }
+            { name: "attr-after-each", type: "after-each" }
+            { name: "attr-before-all", type: "before-all" }
+            { name: "attr-before-each", type: "before-each" }
+            { name: "attr-ignore", type: "ignore" }
+            # todo no equivalent to @strategy yet
+            #{ name: "attr-strategy", type: "strategy" }
+            { name: "attr-test", type: "test" }
+            { name: "desc-after-all", type: "after-all" }
+            { name: "desc-after-each", type: "after-each" }
+            { name: "desc-before-all", type: "before-all" }
+            { name: "desc-before-each", type: "before-each" }
+            { name: "desc-ignore", type: "ignore" }
+            { name: "desc-strategy", type: "strategy" }
+            { name: "desc-test", type: "test" }
+        ]
+    }]
+}
+
+#[test]
+def "tests with an unsupported attribute specified first" [] {
+    let temp = $in.temp
+    let test_file = $temp | path join "test.nu"
+
+    "
+    use std/testing *
+
+    alias \"attr other\" = echo
+
+    @other
+    @test
+    def some-test [] {
+    }
+    " | save $test_file
+
+    let result = [$test_file] | discover test-suites | sort
+
+    assert equal $result [{
+        name: "test"
+        path: $test_file
+        tests: [
+            { name: "some-test", type: "test" }
+        ]
+    }]
+}
+
+#[test]
+def "tests with an unsupported description and supported attribute" [] {
+    let temp = $in.temp
+    let test_file = $temp | path join "test.nu"
+
+    "
+    use std/testing *
+
+    #[other]
+    @test
+    def some-test [] {
+    }
+    " | save $test_file
+
+    let result = [$test_file] | discover test-suites | sort
+
+    assert equal $result [{
+        name: "test"
+        path: $test_file
+        tests: [
+            { name: "some-test", type: "test" }
+        ]
+    }]
+}
+
+#[test]
+def "tests with an unsupported attribute and supported description" [] {
+    let temp = $in.temp
+    let test_file = $temp | path join "test.nu"
+
+    "
+    use std/testing *
+
+    alias \"attr other\" = echo
+
+    #[test]
+    @other
+    def some-test [] {
+    }
+    " | save $test_file
+
+    let result = [$test_file] | discover test-suites | sort
+
+    assert equal $result [{
+        name: "test"
+        path: $test_file
+        tests: [
+            { name: "some-test", type: "test" }
+        ]
+    }]
+}
+
+#[test]
+def "tests for unsupported test directives are not discovered" [] {
+    let temp = $in.temp
+    let test_file = $temp | path join "test.nu"
+
+    "
+    use std/testing *
+
+    alias \"attr two\" = echo
+
+    #[one]
+    @two
+    def some-command [] {
+    }
+
+    #[test]
+    def stub [] {
+    }
+    " | save $test_file
+
+    let result = [$test_file] | discover test-suites | sort
+
+    assert equal $result [{
+        name: "test"
+        path: $test_file
+        tests: [
+            { name: "stub", type: "test" }
+        ]
+    }]
+}
+
+#[test]
+def "tests in multiple suites" [] {
     let temp = $in.temp
     let test_file_1 = $temp | path join "test_1.nu"
     let test_file_2 = $temp | path join "test_2.nu"
@@ -142,7 +315,7 @@ def "tests suites found" [] {
             path: $test_file_2
             tests: [
                 { name: "test_baz", type: "test" }
-                { name: "test_quux", type: "other" }
+                # Unsupported types removed
             ]
         }
     ]

@@ -48,6 +48,7 @@ def nutest-299792458-execute-suite-internal [
         $in | get --ignore-errors $key | default []
     }
 
+    # Also see the list in discover.nu
     let strategy = $plan | find-or-default "strategy" { execute: { {} } } # Closure in record
     let before_all = $plan | get-or-empty "before-all"
     let before_each = $plan | get-or-empty "before-each"

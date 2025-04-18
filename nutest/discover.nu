@@ -2,6 +2,17 @@ use std/assert
 
 const default_pattern = '**/{*[\-_]test,test[\-_]*}.nu'
 
+# Also see the filtering in runner.nu
+const supported_types = [
+    "test",
+    "ignore",
+    "before-all",
+    "after-all",
+    "before-each",
+    "after-each",
+    "strategy"
+]
+
 export def suite-files [
     --glob: string = $default_pattern
     --matcher: string = ".*"
@@ -53,13 +64,17 @@ def discover-suite [test_file: string]: nothing -> record<name: string, path: st
     }
 }
 
-# Query any method with a specific tag in the description
+# Query any method with attributes or a specific tag in the description
+# This may include non-test commands but they will be filtered out later
 def test-query [file: string]: nothing -> string {
     let query = "
         scope commands
-            | where ( $it.type == 'custom' and $it.description =~ '\\[[a-z-]+\\]' )
+            | where ( $it.type == 'custom' and (
+                ($it.attributes | is-not-empty) or ($it.description =~ '\\[[a-z-]+\\]')
+            ))
             | each { |item| {
                 name: $item.name
+                attributes: ($item.attributes | get name)
                 description: $item.description
             } }
             | to nuon
@@ -67,7 +82,11 @@ def test-query [file: string]: nothing -> string {
     $"source ($file); ($query)"
 }
 
-def parse-suite [test_file: string, tests: list<record<name: string, description: string>>]: nothing -> record<name: string, path: string, tests: table<name: string, type: string>> {
+def parse-suite [
+    test_file: string
+    tests: list<record<name: string, attributes: list<string>, description: string>>
+]: nothing -> record<name: string, path: string, tests: table<name: string, type: string>> {
+
     {
         name: ($test_file | path parse | get stem)
         path: $test_file
@@ -75,16 +94,28 @@ def parse-suite [test_file: string, tests: list<record<name: string, description
     }
 }
 
-def parse-test [test: record<name: string, description: string>]: nothing -> record<name: string, type: string> {
-    let type = $test.description
-        | parse --regex '.*\[([a-z-]+)\].*'
-        | get capture0
-        | first
+def parse-test [
+    test: record<name: string, attributes: list<string>, description: string>
+]: nothing -> record<name: string, type: string> {
 
     {
-        name: $test.name,
-        type: $type
+        name: $test.name
+        type: ($test | parse-type)
     }
+}
+
+def parse-type []: record<attributes: list<string>, description: string> -> string {
+    let metadata = $in
+
+    $metadata.attributes
+        | append ($metadata.description | description-attributes)
+        | where $it in $supported_types
+        | get 0 --ignore-errors
+        | default "unsupported"
+}
+
+def description-attributes []: string -> list<string> {
+    $in | parse --regex '.*\[([a-z-]+)\].*' | get capture0
 }
 
 def filter-tests [
@@ -97,9 +128,11 @@ def filter-tests [
             {
                 name: $suite.name
                 path: $suite.path
-                tests: ($suite.tests | where
+                tests: ( $suite.tests
+                    # Filter out unsupported types
+                    | where $it.type in $supported_types
                     # Filter only 'test' and 'ignore' by pattern
-                    ($it.type != "test" and $it.type != "ignore") or $it.name =~ $matcher
+                    | where ($it.type != "test" and $it.type != "ignore") or $it.name =~ $matcher
                 )
             }
         }

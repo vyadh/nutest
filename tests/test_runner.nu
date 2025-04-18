@@ -1,4 +1,5 @@
 use std/assert
+use std/testing *
 use ../nutest/formatter.nu
 use ../nutest/theme.nu
 use ../nutest/errors.nu
@@ -7,7 +8,7 @@ const success_message = "I'd much rather be happy than right any day"
 const warning_message = "Don't Panic"
 const failure_message = "No tea"
 
-#[test]
+@test
 def execute-plan-empty [] {
     let plan = []
 
@@ -16,7 +17,7 @@ def execute-plan-empty [] {
     assert equal $results []
 }
 
-#[test]
+@test
 def execute-plan-test [] {
     let plan = [
         { name: "testing", type: "test", execute: "{ success }" }
