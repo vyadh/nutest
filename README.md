@@ -19,7 +19,8 @@ A [Nushell](https://www.nushell.sh) test framework.
 
 ## Requirements
 
-Nushell 0.101.0 or later.
+Needs Nushell 0.103.0 or later.
+If Nushell 0.101.0+ is required, use Nutest v1.0.1.
 
 
 ## Motivation
@@ -153,6 +154,8 @@ Will return:
 
 ## Current Features
 
+- [x] Supports using Nushell attributes (e.g. `@test`)
+  - Note: The previous format of `#[test]` annotations is still supported but deprecated
 - [x] Flexible test definitions
 - [x] Setup/teardown with created context available to tests
 - [x] Filtering of suites and tests
