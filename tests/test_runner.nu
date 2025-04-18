@@ -1,6 +1,7 @@
 use std/assert
 use ../nutest/formatter.nu
 use ../nutest/theme.nu
+use ../nutest/errors.nu
 
 const success_message = "I'd much rather be happy than right any day"
 const warning_message = "Don't Panic"
@@ -28,6 +29,23 @@ def execute-plan-test [] {
         [ "suite", "testing", "start", null ]
         [ "suite", "testing", "output", { stream: "output", items: [$success_message] } ]
         [ "suite", "testing", "result", "PASS" ]
+        [ "suite", "testing", "finish", null ]
+    ]
+}
+
+#[test]
+def execute-plan-with-error [] {
+    let plan = [
+        { name: "testing", type: "test", execute: "{ failure }" }
+    ]
+
+    let results = test-run "suite" $plan
+
+    assert equal $results [
+        [suite test type payload];
+        [ "suite", "testing", "start", null ]
+        [ "suite", "testing", "result", "FAIL" ]
+        [ "suite", "testing", "output", { stream: "error", items: [$failure_message] } ]
         [ "suite", "testing", "finish", null ]
     ]
 }
@@ -599,7 +617,7 @@ def reformat-errors []: record<stream: string, items: list<any>> -> record<strea
     $in | update items { |event|
         $event.items | each { |item|
             if ($item | looks-like-error) {
-                $item | get msg
+                $item | errors unwrap-error | get msg
             } else {
                 $item
             }

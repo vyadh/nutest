@@ -1,3 +1,4 @@
+use errors.nu
 
 # We use `query db` here rather than `stor create` as we need full SQLite features
 export def create [] {
@@ -78,7 +79,8 @@ def retry-on-lock [table: string, operation: closure] {
             do $operation
             break
         } catch { |e|
-            let reason = ($e.json | from json).labels?.0?.text?
+            let error = $e | errors unwrap-error
+            let reason = ($error.json | from json).labels?.0?.text?
             if $reason == $"database table is locked: ($table)" {
                 # Retry after a random sleep to avoid contention
                 sleep (random int ..25 | into duration --unit ms)

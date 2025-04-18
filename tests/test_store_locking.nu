@@ -1,5 +1,6 @@
 use std/assert
 source ../nutest/store.nu
+use ../nutest/errors.nu
 
 #[before-all]
 def create-store []: record -> record {
@@ -54,7 +55,7 @@ def retry-on-table-lock-fails [] {
         retry-on-lock $table $operation
         assert false # Should not reach here
     } catch { |e|
-        let result = ($e.json | from json).msg
+        let result = $e | errors unwrap-error | get json | from json | get msg
         assert str contains $result $"Failed to insert into ($table) after"
     }
     assert equal ($context | attempt-count) 20
@@ -96,7 +97,7 @@ def retry-on-table-lock-throws-other-errors [] {
         retry-on-lock $table $operation
         assert false # Should not reach here
     } catch { |e|
-        let result = ($e.json | from json).msg
+        let result = $e | errors unwrap-error | get json | from json | get msg
         assert equal $result "some other error"
     }
     assert equal ($context | attempt-count) 1

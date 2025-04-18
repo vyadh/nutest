@@ -209,13 +209,14 @@ def "terminal display" [] {
 
     # The ordering of the suites is currently indeterminate so we need to match tests specifically
     assert ($results | str starts-with "Running tests...")
-    assert ($results =~ $"✅ PASS test_1 test_foo\n  oof")
-    assert ($results =~ $"✅ PASS test_1 test_bar\n  rab")
-    assert ($results =~ $"✅ PASS test_2 test_baz\n  zab")
-    assert ($results =~ $"🚧 SKIP test_2 test_qux")
+    assert ($results =~ "✅ PASS test_1 test_foo\n  oof")
+    assert ($results =~ "✅ PASS test_1 test_bar\n  rab")
+    assert ($results =~ "✅ PASS test_2 test_baz\n  zab")
+    assert ($results =~ "🚧 SKIP test_2 test_qux")
     # We use '.' as version 0.101.0 used '×', newer versions use 'x'
-    assert ($results =~ $"❌ FAIL test_3 test_quux\n  Error:[\n ]+. Ouch")
-    assert ($results =~ $"🚧 SKIP test_3 test_oof")
+    # We need to account for chained errors introduced in 0.103.0 here
+    assert ($results =~ "❌ FAIL test_3 test_quux(?:.|\n)*?Error:[\n ]+[×x] Ouch")
+    assert ($results =~ "🚧 SKIP test_3 test_oof")
     assert ($results | str ends-with "Test run completed: 6 total, 3 passed, 1 failed, 2 skipped\n")
 }
 

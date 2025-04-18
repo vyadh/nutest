@@ -1,3 +1,4 @@
+use errors.nu
 
 # A formatter that preserves the data as-is, including stream metadata, useful for tests.
 export def preserved []: nothing -> closure {
@@ -83,7 +84,7 @@ def error-format-rendered []: record -> string {
 }
 
 def error-format-compact []: record -> string {
-    let error = $in
+    let error = $in | errors unwrap-error
 
     let json = $error.json | from json
     let message = $json.msg

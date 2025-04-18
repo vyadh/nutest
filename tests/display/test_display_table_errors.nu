@@ -3,6 +3,8 @@ use ../harness.nu
 use ../../nutest/formatter.nu
 use ../../nutest/theme.nu
 use ../../nutest/display/display_table.nu
+use ../../nutest/errors.nu
+
 
 #[before-all]
 def setup-tests []: record -> record {
@@ -69,7 +71,8 @@ def "full unformatted" [] {
     # Use default 'unformatted' formatter
     let result = $in | run $code
 
-    let details = $result.data.output.0.json | from json
+    let error = $result.data.output.0 | errors unwrap-error
+    let details = $error.json | from json
     assert equal ($details.msg) "a decorated error"
     assert equal ($details.labels.0.text) "happened here"
     assert equal ($details.help) "some help"
