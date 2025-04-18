@@ -79,16 +79,16 @@ A recognised test suite (a Nushell file containing tests) is recognised by nutes
 
 ### Test Commands
 
-**Nutest** uses the command description as a tag system for tests, test discovery will ignore non-tagged commands. It supports:
+**Nutest** uses Nushell command attributes as a tag system for tests, test discovery will ignore non-tagged commands. It supports:
 
-| tag             | description                             |
-|-----------------|-----------------------------------------|
-| `[test]`        | this is the main tag to annotate tests. | 
-| `[before-all]`  | this is run once before all tests.      |
-| `[before-each]` | this is run before each test.           |
-| `[after-all]`   | this is run once after all tests.       |
-| `[after-each]`  | this is run after each test.            |
-| `[ignore]`      | ignores the test but still collects it. |
+| attribute      | description                             |
+|----------------|-----------------------------------------|
+| `@test`        | this is the main tag to annotate tests. | 
+| `@before-all`  | this is run once before all tests.      |
+| `@before-each` | this is run before each test.           |
+| `@after-all`   | this is run once after all tests.       |
+| `@after-each`  | this is run after each test.            |
+| `@ignore`      | ignores the test but still collects it. |
 
 For example:
 
