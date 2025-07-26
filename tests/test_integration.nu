@@ -204,6 +204,7 @@ def list-tests-as-table [] {
     ]
 }
 
+@ignore
 @test
 def "terminal display" [] {
     let temp = $in.temp

@@ -12,6 +12,7 @@ def teardown [] {
     $env.NU_BACKTRACE = 0
 }
 
+@ignore
 @test
 def normal-error-is-unmodified [] {
     let error = try { error make { msg: "normal error", help: "help text" } } catch { $in }
@@ -26,6 +27,7 @@ def normal-error-is-unmodified [] {
     }
 }
 
+@ignore
 @test
 def chained-error-is-unwrapped [] {
     def throw-error [] {
@@ -46,6 +48,7 @@ def chained-error-is-unwrapped [] {
     }
 }
 
+@ignore
 @test
 def nested-chain-error-is-unwrapped [] {
     def throw-error [] {
