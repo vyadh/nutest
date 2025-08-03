@@ -110,7 +110,7 @@ def parse-type []: record<attributes: list<string>, description: string> -> stri
     $metadata.attributes
         | append ($metadata.description | description-attributes)
         | where $it in $supported_types
-        | get 0 --ignore-errors
+        | get 0 --optional
         | default "unsupported"
 }
 

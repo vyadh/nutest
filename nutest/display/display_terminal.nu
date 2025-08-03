@@ -37,7 +37,7 @@ def complete-suite []: nothing -> nothing {
 
 def count [key: string]: record -> int {
     $in
-        | get --ignore-errors $key
+        | get --optional $key
         | default []
         | length
 }
