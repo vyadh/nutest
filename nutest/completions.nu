@@ -109,7 +109,7 @@ def parse-command-context []: string -> record<suite: string, test: string, path
 
 # A slight variation on get, which also translates empty strings to null
 def get-or-null [name: string]: record -> string {
-    let value = $in | get --ignore-errors $name
+    let value = $in | get --optional $name
     if ($value | is-empty) {
         null
     } else {

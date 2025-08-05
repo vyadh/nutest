@@ -41,11 +41,11 @@ def nutest-299792458-execute-suite-internal [
     let plan = $suite_data | group-by type
 
     def find-or-default [key: string, default: record]: record -> record {
-        let values = $in | get --ignore-errors $key
+        let values = $in | get --optional $key
         if ($values | is-empty) { $default } else { $values | first }
     }
     def get-or-empty [key: string]: record -> list {
-        $in | get --ignore-errors $key | default []
+        $in | get --optional $key | default []
     }
 
     # Also see the list in discover.nu

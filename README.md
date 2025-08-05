@@ -19,7 +19,7 @@ A [Nushell](https://www.nushell.sh) test framework.
 
 ## Requirements
 
-Needs Nushell 0.103.0 or later.
+Needs Nushell 0.106.0 or later.
 If Nushell 0.101.0+ is required, use Nutest v1.0.1.
 
 
