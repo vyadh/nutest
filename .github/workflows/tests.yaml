@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Nushell Binary
-        uses: hustcer/setup-nu@v3
+        uses: vyadh/setup-nu@feature/proxies
         with:
           version: ${{ matrix.version }}
 
