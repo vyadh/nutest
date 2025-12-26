@@ -29,6 +29,11 @@ def cleanup-test []: record -> nothing {
 
 @test
 def "assertion is compact" [] {
+    # From 0.109.2+ the assertion message is already compact and this function is no longer required
+    if ((version).major > 0 or (version).minor > 109 or ((version).minor == 109 and (version).patch > 1)) {
+        return
+    }
+
     let test = {
         assert equal 1 2
     }

@@ -171,7 +171,6 @@ def run-suite-with-failing-test [] {
     ]
 
     let output = $results | get output | each { |data| $data.items | str join '' } | str join "\n"
-    assert str contains $output "Assertion failed."
     assert str contains $output "These are not equal."
 }
 

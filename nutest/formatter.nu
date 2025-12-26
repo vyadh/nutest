@@ -100,7 +100,13 @@ def error-format-compact []: record -> string {
             | str replace --all "originates from here" ''
         } | str join "\n"
 
-        if ($message | str contains "Assertion failed") {
+        # From 0.109.2+ the error message is already compact and this is no longer required
+        let already_compacted_message = (
+            (version).major > 0 or
+            (version).minor > 109 or
+            ((version).minor == 109 and (version).patch > 1)
+        )
+        if (not $already_compacted_message and ($message | str contains "Assertion failed")) {
             let formatted = ($detail
                 | str replace --all --regex '\n[ ]+Left' "|>Left"
                 | str replace --all --regex '\n[ ]+Right' "|>Right"
