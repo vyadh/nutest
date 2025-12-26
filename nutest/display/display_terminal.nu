@@ -55,13 +55,16 @@ def complete-test [theme: closure, formatter: closure]: record -> nothing {
         error make { msg: $"No test results found for: ($event)" }
     }
     let row = $result | first
-    let formatted = format-result $row.result $theme
 
-    if ($row.output | is-not-empty) {
-        let output = $row.output | format-output $formatter
-        print $"($formatted) ($suite) ($test)\n($output)"
-    } else {
-        print $"($formatted) ($suite) ($test)"
+    if $row.result != "PASS" {
+        let formatted = format-result $row.result $theme
+
+        if ($row.output | is-not-empty) {
+            let output = $row.output | format-output $formatter
+            print $"($formatted) ($suite) ($test)\n($output)"
+        } else {
+            print $"($formatted) ($suite) ($test)"
+        }
     }
 }
 
