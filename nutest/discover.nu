@@ -30,7 +30,8 @@ def list-files [ pattern: string ]: string -> list<string> {
         [$path]
     } else {
         cd $path
-        glob $pattern
+        # We use `path expand` to normalise paths and needed on Mac that expands symlinks
+        glob $pattern | each { path expand }
     }
 }
 
