@@ -30,7 +30,7 @@ def list-files [ pattern: string ]: string -> list<string> {
         [$path]
     } else {
         cd $path
-        glob $pattern
+        glob $pattern | each { path expand }
     }
 }
 
