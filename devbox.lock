@@ -2,54 +2,54 @@
   "lockfile_version": "1",
   "packages": {
     "github:NixOS/nixpkgs/nixpkgs-unstable": {
-      "last_modified": "2026-01-19T00:39:23Z",
-      "resolved": "github:NixOS/nixpkgs/bde09022887110deb780067364a0818e89258968?lastModified=1768783163&narHash=sha256-tLj4KcRDLakrlpvboTJDKsrp6z2XLwyQ4Zmo%2Bw8KsY4%3D"
+      "last_modified": "2026-02-27T06:27:13Z",
+      "resolved": "github:NixOS/nixpkgs/c0f3d81a7ddbc2b1332be0d8481a672b4f6004d6?lastModified=1772173633&narHash=sha256-MOH58F4AIbCkh6qlQcwMycyk5SWvsqnS%2FTCfnqDlpj4%3D"
     },
     "nushell@latest": {
-      "last_modified": "2026-01-01T04:40:00Z",
-      "resolved": "github:NixOS/nixpkgs/c04833a1e584401bb63c1a63ddc51a71e6aa457a#nushell",
+      "last_modified": "2026-02-23T15:40:43Z",
+      "resolved": "github:NixOS/nixpkgs/80d901ec0377e19ac3f7bb8c035201e2e098cc97#nushell",
       "source": "devbox-search",
-      "version": "0.109.1",
+      "version": "0.110.0",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/2s036lqk99r67ybkp0kanmf9glvy6pxv-nushell-0.109.1",
+              "path": "/nix/store/dpamc82hjiwiapwq3rlfmmywqzi01da7-nushell-0.110.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/2s036lqk99r67ybkp0kanmf9glvy6pxv-nushell-0.109.1"
+          "store_path": "/nix/store/dpamc82hjiwiapwq3rlfmmywqzi01da7-nushell-0.110.0"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/bjk4pm5wx70d3kzfsm1dka4wxk3kwg5i-nushell-0.109.1",
+              "path": "/nix/store/y6r8nq341b0y62cnfwdfbi2a3l0vack5-nushell-0.110.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/bjk4pm5wx70d3kzfsm1dka4wxk3kwg5i-nushell-0.109.1"
+          "store_path": "/nix/store/y6r8nq341b0y62cnfwdfbi2a3l0vack5-nushell-0.110.0"
         },
         "x86_64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/c12irvz24a11rr6ipv3asdsa1n2ni9wp-nushell-0.109.1",
+              "path": "/nix/store/sm8npfhcsr2zq94w29k5m67fkqjkwdla-nushell-0.110.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/c12irvz24a11rr6ipv3asdsa1n2ni9wp-nushell-0.109.1"
+          "store_path": "/nix/store/sm8npfhcsr2zq94w29k5m67fkqjkwdla-nushell-0.110.0"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/8sg8hqx1m20lq50sksq9fw4x9g0bxf8x-nushell-0.109.1",
+              "path": "/nix/store/kw0x9qkrhrrjli7iyzcyal5213gvn4pj-nushell-0.110.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/8sg8hqx1m20lq50sksq9fw4x9g0bxf8x-nushell-0.109.1"
+          "store_path": "/nix/store/kw0x9qkrhrrjli7iyzcyal5213gvn4pj-nushell-0.110.0"
         }
       }
     }

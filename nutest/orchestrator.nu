@@ -44,8 +44,8 @@ def run-suite [
                 use ($runner_module) *
                 source ($path)
                 nutest-299792458-execute-suite ($strategy | to nuon) ($suite) ($plan_data)
-        ")
-    } | complete
+        " | complete)
+    }
 
     # Useful for understanding plan
     #print $'($plan_data)'
