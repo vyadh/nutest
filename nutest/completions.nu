@@ -8,7 +8,7 @@ export def "nu-complete display" []: nothing -> record<options: record, completi
         completions: [
             [value description];
             [
-                "none" # rename nothing
+                "nothing"
                 "No display output during test run (default when returning a result)."
             ]
             [
