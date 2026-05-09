@@ -6,7 +6,7 @@
 
 # Discover annotated test commands.
 export def list-tests [
-    --path: string # Location of tests (defaults to current directory)
+    --path: path # Location of tests (defaults to current directory)
 ]: nothing -> table<suite: string, test: string> {
 
     use discover.nu
@@ -129,7 +129,7 @@ def select-display [
 }
 
 # The `returns` provides data to downstream pipeline steps
-def select-returns []: any -> record<name: string, result: closure> {
+def select-returns []: any -> record<name: string, results: closure> {
     let returns_option = $in
 
     match $returns_option {
