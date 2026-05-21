@@ -43,7 +43,9 @@ def run-suite [
             --commands $"
                 use ($runner_module) *
                 source ($path)
-                nutest-299792458-execute-suite ($strategy | to nuon) ($suite) ($plan_data)
+                let full_path = '($path)' | path expand
+                let span_offset = view files | where filename == $full_path | first | get start
+                nutest-299792458-execute-suite ($strategy | to nuon) ($suite) ($plan_data) --span-offset $span_offset
         " | complete)
     }
 
@@ -106,7 +108,11 @@ def process-event [
     event_processor: record<run-start: closure, run-complete: closure, test-start: closure, test-complete: closure>
 ] {
     let event = $in
-    let template = { suite: $event.suite, test: $event.test }
+    let template = {
+        suite: $event.suite
+        span_offset: $event.span_offset
+        test: $event.test
+    }
 
     match $event {
         { type: "start" } => {

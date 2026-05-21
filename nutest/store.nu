@@ -11,6 +11,7 @@ export def create [] {
             suite TEXT NOT NULL,
             test TEXT NULL,
             result TEXT NOT NULL,
+            span_offset INT,
             PRIMARY KEY (suite, test)
         )
     "
@@ -19,7 +20,8 @@ export def create [] {
         CREATE TABLE nu_test_output (
             suite TEXT NOT NULL,
             test TEXT NULL,
-            data TEXT NOT NULL
+            data TEXT NOT NULL,
+            span_offset INT
         )
     "
 
@@ -38,14 +40,15 @@ export def delete [] {
 export def insert-result [ row: record<suite: string, test: string, result: string> ] {
     retry-on-lock "nu_test_results" {
         stor open | query db "
-            INSERT INTO nu_test_results (suite, test, result)
-            VALUES (:suite, :test, :result)
+            INSERT INTO nu_test_results (suite, test, result, span_offset)
+            VALUES (:suite, :test, :result, :span_offset)
             ON CONFLICT(suite, test)
             DO UPDATE SET result = excluded.result
         " --params {
             suite: $row.suite
             test: $row.test
             result: $row.result
+            span_offset: $row.span_offset
         }
     }
 
@@ -107,10 +110,10 @@ export def success []: nothing -> bool {
     not $has_failures
 }
 
-export def query []: nothing -> table<suite: string, test: string, result: string, output: table<stream: string, items: list<any>>> {
+export def query []: nothing -> table<suite: string, test: string, result: string, span_offset: int, output: table<stream: string, items: list<any>>> {
     let db = stor open
     $db | query db "
-        SELECT suite, test, result
+        SELECT suite, test, result, span_offset
         FROM nu_test_results
         ORDER BY suite, test
     " | insert output { |row|
@@ -138,7 +141,7 @@ def query-result [
 
     $db
         | query db "
-            SELECT suite, test, result
+            SELECT suite, test, result, span_offset
             FROM nu_test_results
             WHERE suite = :suite AND test = :test
         " --params { suite: $suite test: $test }

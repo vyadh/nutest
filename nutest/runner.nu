@@ -23,9 +23,14 @@ export def nutest-299792458-execute-suite [
     default_strategy: record<threads: int>
     suite: string
     suite_data: table
+    --span-offset: int
 ] {
     # We reset the test name to avoid collisions around tests within tests
-    with-env { NU_TEST_SUITE_NAME: $suite, NU_TEST_NAME: null } {
+    with-env {
+        NU_TEST_SUITE_NAME: $suite
+        NU_TEST_SPAN_OFFSET: $span_offset
+        NU_TEST_NAME: null
+    } {
         nutest-299792458-execute-suite-internal $default_strategy $suite_data
     }
 
@@ -193,6 +198,7 @@ def nutest-299792458-emit [type: string, payload: any = null] {
     let event = {
         timestamp: (date now | format date "%+")
         suite: $env.NU_TEST_SUITE_NAME
+        span_offset: $env.NU_TEST_SPAN_OFFSET?
         test: $env.NU_TEST_NAME?
         type: $type
         payload: $payload
