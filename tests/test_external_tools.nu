@@ -32,7 +32,7 @@ def non-captured-output-is-ignored [] {
         print "Only this text"
     }
 
-    let result = $in | harness run $code
+    let result = $in | harness do-run $code
 
     assert equal ($result | reject suite test) {
         result: "PASS"

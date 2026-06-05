@@ -38,7 +38,7 @@ def "assertion is compact" [] {
         assert equal 1 2
     }
 
-    let result = $in | run $test
+    let result = $in | do-run $test
 
     assert equal ($result.output | trim-all) ("
         Assertion failed.
@@ -54,7 +54,7 @@ def "basic compact" [] {
         error make { msg: 'some error' }
     }
 
-    let result = $in | run $code
+    let result = $in | do-run $code
 
     assert equal $result.output "some error"
 }
@@ -75,7 +75,7 @@ def "full unformatted" [] {
     }
 
     # Use default 'unformatted' formatter
-    let result = $in | run $code
+    let result = $in | do-run $code
 
     let error = $result.data.output.0 | errors unwrap-error
     let details = $error.json | from json
@@ -99,15 +99,15 @@ def "full compact" [] {
         }
     }
 
-    let result = $in | run $code
+    let result = $in | do-run $code
 
     assert equal $result.output "a decorated error\nsome help"
 }
 
 # See test_integration.nu / "terminal display with rendered error" for rendered test
 
-def run [code: closure]: record -> record<data: record, output: string> {
-    let result = $in | harness run $code
+def do-run [code: closure]: record -> record<data: record, output: string> {
+    let result = $in | harness do-run $code
     assert equal $result.result "FAIL"
 
     let output = do (display_table create).results

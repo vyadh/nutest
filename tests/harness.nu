@@ -31,7 +31,7 @@ export def cleanup-test []: record -> nothing {
     }
 }
 
-export def run [
+export def do-run [
     code: closure
     strategy: record = { }
 ]: record<temp_dir: string> -> record<result: string, output: any> {
