@@ -35,7 +35,7 @@ Writing tests in Nushell is both powerful and expressive. Not only for testing N
 First-time installation:
 
 ```nushell
-git https://github.com/vyadh/nutest.git
+git clone https://github.com/vyadh/nutest.git
 do { cd nutest; git checkout <version> } # Where <version> is the latest release
 nupm install nutest --path
 ```
@@ -53,7 +53,7 @@ nutest run-tests
 First-time installation:
 
 ```nushell
-git https://github.com/vyadh/nutest.git
+git clone https://github.com/vyadh/nutest.git
 do { cd nutest; git checkout <version> } # Where <version> is the latest release
 cp -r nutest/nutest <a directory referenced by NU_LIB_DIRS / $env.NU_LIB_DIRS>
 ```
