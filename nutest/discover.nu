@@ -80,7 +80,7 @@ def test-query [file: string]: nothing -> string {
             } }
             | to nuon
     "
-    $"source \"($file)\"; ($query)"
+    $"source '($file)'; ($query)"
 }
 
 def parse-suite [
