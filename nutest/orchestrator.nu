@@ -42,7 +42,7 @@ def run-suite [
         (^$nu.current-exe
             --commands $"
                 use ($runner_module) *
-                source ($path)
+                source \"($path)\"
                 nutest-299792458-execute-suite ($strategy | to nuon) ($suite) ($plan_data)
         " | complete)
     }
