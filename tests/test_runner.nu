@@ -608,6 +608,7 @@ def test-run [suite: string, plan: list<record>]: nothing -> table<suite, test, 
                 }
             }
     )
+    | reject span_offset?
 }
 
 def decode-output []: string -> record<stream: string, items: list<any>> {

@@ -113,8 +113,8 @@ def run-suite-with-broken-test [] {
 
     let test_file = $temp | path join "broken-test.nu"
     "def broken-test" | save $test_file # Parse error
-    let tests = [{ name: "broken-test", type: "test" }]
-    let suites = [{ name: "broken", path: $test_file, tests: $tests }]
+    let tests = [{ name: "broken-test", type: "test", span_offset: 0 }]
+    let suites = [{ name: "broken", path: $test_file, tests: $tests, span_offset: 0 }]
     let results = $suites | test-run $context
 
     assert equal ($results | reject output) [
@@ -303,7 +303,7 @@ def test-run [context: record]: list<record> -> list<record> {
     $suites | run-suites (noop-event-processor) { threads: 1 }
 
     let results = store query
-    $results | where suite in ($suites | get name)
+    $results | where suite in ($suites | get name) | reject span_offset
 }
 
 def noop-event-processor []: nothing -> record<run-start: closure, run-complete: closure, test-start: closure, test-complete: closure> {
