@@ -1,12 +1,12 @@
 use errors.nu
 
 # A formatter that preserves the data as-is, including stream metadata, useful for tests.
-export def preserved []: nothing -> closure {
+export def preserved []: any -> closure {
     { $in }
 }
 
 # A formatter that preserves the data only, useful for querying.
-export def unformatted []: nothing -> closure {
+export def unformatted []: any -> closure {
     #table<stream: string, items: list<any>> -> list<any>
     {
         $in
@@ -19,7 +19,7 @@ export def unformatted []: nothing -> closure {
 export def pretty [
     theme: closure
     error_format: string
-]: nothing -> closure {
+]: any -> closure {
 
     #table<stream: string, items: list<any>> -> string
     {

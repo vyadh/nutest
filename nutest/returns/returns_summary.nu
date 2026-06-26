@@ -2,14 +2,14 @@
 
 use ../store.nu
 
-export def create []: nothing -> record {
+export def create []: any -> record {
     {
         name: "returns summary"
         results: { query-summary }
     }
 }
 
-def query-summary []: nothing -> record<total: int, passed: int, failed: int, skipped: int> {
+def query-summary []: any -> record<total: int, passed: int, failed: int, skipped: int> {
     let results = store query
     let by_result = $results | group-by result
 
