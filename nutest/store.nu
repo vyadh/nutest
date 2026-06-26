@@ -80,7 +80,7 @@ def retry-on-lock [table: string, operation: closure] {
             break
         } catch { |e|
             let error = $e | errors unwrap-error
-            let reason = ($error.json | from json).labels?.0?.text?
+            let reason = $error.details.labels?.0?.text?
             if $reason == $"database table is locked: ($table)" {
                 # Retry after a random sleep to avoid contention
                 sleep (random int ..25 | into duration --unit ms)

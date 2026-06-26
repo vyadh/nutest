@@ -77,7 +77,7 @@ def "pretty with rendered error" [] {
         { stream: "error", items: [
             {
                 msg: 'placeholder'
-                json: '[]'
+                details: {}
                 rendered: 'a wonderfully decorated error'
             }
         ]}

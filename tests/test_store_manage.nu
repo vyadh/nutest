@@ -9,6 +9,7 @@ def sequential []: nothing -> record {
 
 @before-each
 def create-test-dir []: record -> record {
+    null # drop $in
     let temp = mktemp --tmpdir --directory
     {
         temp: $temp

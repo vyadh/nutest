@@ -59,11 +59,9 @@ def pretty-format-item [error_format: string]: any -> any {
 
 def looks-like-error []: any -> bool {
     let value = $in
-    if ($value | describe | str starts-with "record") {
-        let columns = $value | columns
-        ("msg" in $columns) and ("rendered" in $columns) and ("json" in $columns)
-    } else {
-        false
+    match $value {
+        {$msg, $rendered, $details} => true,
+        _ => false
     }
 }
 
@@ -86,10 +84,10 @@ def error-format-rendered []: record -> string {
 def error-format-compact []: record -> string {
     let error = $in | errors unwrap-error
 
-    let json = $error.json | from json
-    let message = $json.msg
-    let help = $json | get help?
-    let labels = $json | get labels?
+    let details = $error.details
+    let message = $details.msg
+    let help = $details | get help?
+    let labels = $details | get labels?
 
     if $help != null {
         $"($message)\n($help)"

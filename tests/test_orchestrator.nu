@@ -316,8 +316,9 @@ def noop-event-processor []: nothing -> record<run-start: closure, run-complete:
 }
 
 def create-single-test-suite [temp: string, test: string]: string -> record {
+    let IN = $in
     let suite = create-suite $temp $test
-    $in | append-test $temp $suite $test
+    $IN | append-test $temp $suite $test
 }
 
 def create-suite [temp: string, suite: string]: nothing -> record {

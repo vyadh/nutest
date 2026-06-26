@@ -628,10 +628,8 @@ def reformat-errors []: record<stream: string, items: list<any>> -> record<strea
 
 def looks-like-error []: any -> bool {
     let value = $in
-    if ($value | describe | str starts-with "record") {
-        let columns = $value | columns
-        ("msg" in $columns) and ("rendered" in $columns) and ("json" in $columns)
-    } else {
-        false
+    match $value {
+        {$msg, $rendered, $details} => true,
+        _ => false
     }
 }

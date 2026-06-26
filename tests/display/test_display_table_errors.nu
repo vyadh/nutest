@@ -78,7 +78,7 @@ def "full unformatted" [] {
     let result = $in | do-run $code
 
     let error = $result.data.output.0 | errors unwrap-error
-    let details = $error.json | from json
+    let details = $error.details
     assert equal ($details.msg) "a decorated error"
     assert equal ($details.labels.0.text) "happened here"
     assert equal ($details.help) "some help"
