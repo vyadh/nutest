@@ -66,6 +66,7 @@ def complete-test [theme: closure, formatter: closure]: record -> nothing {
             print $"($formatted) ($suite) ($test)"
         }
     }
+    ignore
 }
 
 def format-result [result: string, theme: closure]: nothing -> string {

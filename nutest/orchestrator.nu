@@ -25,6 +25,7 @@ export def run-suites [
     $in | par-each --threads $strategy.threads { |suite|
         run-suite $event_processor $strategy $suite.name $suite.path $suite.tests
     }
+    | ignore
 }
 
 def run-suite [

@@ -89,6 +89,7 @@ def nutest-299792458-execute-tests [
             nutest-299792458-emit "finish"
         }
     }
+    | ignore
 }
 
 def nutest-299792458-execute-test [

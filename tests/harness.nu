@@ -14,7 +14,7 @@ export def setup-tests []: record -> record {
 
 # Encapsulate after-all behaviour
 export def cleanup-tests []: record -> nothing {
-    store delete
+    store delete | ignore
 }
 
 # Encapsulate before-each behaviour
