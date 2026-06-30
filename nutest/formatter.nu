@@ -1,12 +1,12 @@
 use errors.nu
 
 # A formatter that preserves the data as-is, including stream metadata, useful for tests.
-export def preserved []: nothing -> closure {
+export def preserved []: any -> closure {
     { $in }
 }
 
 # A formatter that preserves the data only, useful for querying.
-export def unformatted []: nothing -> closure {
+export def unformatted []: any -> closure {
     #table<stream: string, items: list<any>> -> list<any>
     {
         $in
@@ -19,7 +19,7 @@ export def unformatted []: nothing -> closure {
 export def pretty [
     theme: closure
     error_format: string
-]: nothing -> closure {
+]: any -> closure {
 
     #table<stream: string, items: list<any>> -> string
     {
@@ -59,11 +59,9 @@ def pretty-format-item [error_format: string]: any -> any {
 
 def looks-like-error []: any -> bool {
     let value = $in
-    if ($value | describe | str starts-with "record") {
-        let columns = $value | columns
-        ("msg" in $columns) and ("rendered" in $columns) and ("json" in $columns)
-    } else {
-        false
+    match $value {
+        {$msg, $rendered, $details} => true,
+        _ => false
     }
 }
 
@@ -86,10 +84,10 @@ def error-format-rendered []: record -> string {
 def error-format-compact []: record -> string {
     let error = $in | errors unwrap-error
 
-    let json = $error.json | from json
-    let message = $json.msg
-    let help = $json | get help?
-    let labels = $json | get labels?
+    let details = $error.details
+    let message = $details.msg
+    let help = $details | get help?
+    let labels = $details | get labels?
 
     if $help != null {
         $"($message)\n($help)"

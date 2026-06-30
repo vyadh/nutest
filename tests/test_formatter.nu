@@ -8,6 +8,7 @@ use ../nutest/theme.nu
 
 @test
 def data-and-metadata [] {
+    let ctx = $in
     let formatter = formatter preserved
 
     assert equal ([] | do $formatter) []
@@ -23,6 +24,7 @@ def data-and-metadata [] {
 
 @test
 def data-only [] {
+    let ctx = $in
     let formatter = formatter unformatted
 
     assert equal ([] | do $formatter) []
@@ -37,6 +39,7 @@ def data-only [] {
 
 @test
 def pretty-with-theme-none [] {
+    let ctx = $in
     let formatter = formatter pretty (theme none) "compact"
 
     assert equal ([] | do $formatter) ""
@@ -55,6 +58,7 @@ def pretty-with-theme-none [] {
 
 @test
 def pretty-with-theme-standard [] {
+    let ctx = $in
     let formatter = formatter pretty (theme standard) "compact"
 
     assert equal ([] | do $formatter) ""
@@ -69,6 +73,7 @@ def pretty-with-theme-standard [] {
 
 @test
 def "pretty with rendered error" [] {
+    let ctx = $in
     let formatter = formatter pretty (theme standard) "rendered"
 
     assert equal ([] | do $formatter) ""
@@ -77,7 +82,7 @@ def "pretty with rendered error" [] {
         { stream: "error", items: [
             {
                 msg: 'placeholder'
-                json: '[]'
+                details: {}
                 rendered: 'a wonderfully decorated error'
             }
         ]}

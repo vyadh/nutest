@@ -80,7 +80,7 @@ def retry-on-lock [table: string, operation: closure] {
             break
         } catch { |e|
             let error = $e | errors unwrap-error
-            let reason = ($error.json | from json).labels?.0?.text?
+            let reason = $error.details.labels?.0?.text?
             if $reason == $"database table is locked: ($table)" {
                 # Retry after a random sleep to avoid contention
                 sleep (random int ..25 | into duration --unit ms)
@@ -107,13 +107,16 @@ export def success []: nothing -> bool {
     not $has_failures
 }
 
-export def query []: nothing -> table<suite: string, test: string, result: string, output: table<stream: string, items: list<any>>> {
+export def query []: [
+    nothing -> table<suite: string, test: string, result: string, output: list<any>>
+] {
     let db = stor open
     $db | query db "
         SELECT suite, test, result
         FROM nu_test_results
         ORDER BY suite, test
     " | insert output { |row|
+        null # drop $in
         query-output $db $row.suite $row.test
     }
 }
@@ -121,13 +124,17 @@ export def query []: nothing -> table<suite: string, test: string, result: strin
 export def query-test [
     suite: string
     test: string
-]: nothing -> table<suite: string, test: string, result: string, output: table<stream: string, items: list<any>>> {
+]: [
+    nothing -> table<suite: string, test: string, result: string, output:      table<stream: string, items: list<any>>>
+    nothing -> table<suite: string, test: string, result: string, output: list<table<stream: string, items: list<any>>>>
+] {
 
     let db = stor open
-    query-result $db $suite $test
-        | insert output { |row|
-            query-output $db $row.suite $row.test
-        }
+    let results = query-result $db $suite $test
+    $results | insert output { |row|
+        null # drop $in
+        query-output $db $row.suite $row.test
+    }
 }
 
 def query-result [
@@ -148,7 +155,10 @@ def query-output [
     db: any
     suite: string
     test: string
-]: nothing -> table<stream: string, items: list<any>> {
+]: [
+    nothing ->      table<stream: string, items: list<any>>
+    nothing -> list<table<stream: string, items: list<any>>>
+] {
 
     let result = $db | query db "
             SELECT data

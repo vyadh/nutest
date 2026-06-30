@@ -2,24 +2,24 @@
 # This script allow us to unpack them so they look like the original error given that
 # for whatever reason, `$env.NU_BACKTRACE = 0` doesn't appear to work
 
-export def unwrap-error []: record<msg: string, rendered: string, json: string> -> record<msg: string, rendered: string, json: string> {
-    let original = $in | select msg rendered json
+export def unwrap-error []: record<msg: string, rendered: string, details: record> -> record<msg: string, rendered: string, details: record> {
+    let original = $in | select msg rendered details
 
     mut error = $original
-    mut json = $error.json | from json
-    while (("inner" in $json) and ($json.inner | is-not-empty)) {
-        $json = $error.json | from json | get inner | first
+    mut details = $error.details
+    while (("inner" in $details) and ($details.inner | is-not-empty)) {
+        $details = $error.details | get inner | first
         $error = $error | merge {
-            msg: $json.msg
-            json: ($json | to json)
+            msg: $details.msg
+            details: $details
         }
     }
 
     $original | merge {
         msg: $error.msg
         rendered: ($error.rendered | last-rendered)
-        labels: $json.labels
-        json: $error.json
+        labels: $details.labels
+        details: $error.details
     }
 }
 

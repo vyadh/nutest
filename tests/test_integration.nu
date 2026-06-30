@@ -115,7 +115,6 @@ def "fail option still returns result on passing tests" [] {
     assert equal $result.exit_code 0 "Exit code is 0"
 }
 
-@ignore # This fails under 0.110.1 nightly. See https://github.com/nushell/nushell/issues/17674
 @test
 def "fail option exit code on failing tests" [] {
     let temp = $in.temp
@@ -141,7 +140,6 @@ def "fail option exit code on failing tests" [] {
     assert equal $result.exit_code 1
 }
 
-@ignore # This fails under 0.110.1 nightly. See https://github.com/nushell/nushell/issues/17674
 @test
 def useful-error-on-non-existent-path [] {
     let missing_path = ["non", "existant", "path"] | path join

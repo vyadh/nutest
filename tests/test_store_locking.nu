@@ -16,6 +16,7 @@ def delete-store [] {
 
 @before-each
 def create-state-file []: record -> record {
+    null # drop $in
     let state_file = mktemp
     { state_file: $state_file }
 }
@@ -56,7 +57,7 @@ def retry-on-table-lock-fails [] {
         retry-on-lock $table $operation
         assert false # Should not reach here
     } catch { |e|
-        let result = $e | errors unwrap-error | get json | from json | get msg
+        let result = $e | errors unwrap-error | get details | get msg
         assert str contains $result $"Failed to insert into ($table) after"
     }
     assert equal ($context | attempt-count) 20
@@ -98,7 +99,7 @@ def retry-on-table-lock-throws-other-errors [] {
         retry-on-lock $table $operation
         assert false # Should not reach here
     } catch { |e|
-        let result = $e | errors unwrap-error | get json | from json | get msg
+        let result = $e | errors unwrap-error | get details | get msg
         assert equal $result "some other error"
     }
     assert equal ($context | attempt-count) 1

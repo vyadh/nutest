@@ -21,7 +21,7 @@ def normal-error-is-unmodified [] {
 
     assert equal $result.msg "normal error"
     assert ($result.rendered | ansi strip | find --regex "^Error: [ ×x\n]+ normal error.*" | is-not-empty)
-    assert equal ($result.json | from json | select msg help) {
+    assert equal ($result.details | select msg help) {
         msg: "normal error"
         help: "help text"
     }
@@ -42,7 +42,7 @@ def chained-error-is-unwrapped [] {
 
     assert equal $result.msg "original error"
     assert ($result.rendered | ansi strip | find --regex "^Error: [ ×x\n]+ original error.*" | is-not-empty)
-    assert equal ($result.json | from json | select msg help) {
+    assert equal ($result.details | select msg help) {
         msg: "original error"
         help: "help text"
     }
@@ -66,7 +66,7 @@ def nested-chain-error-is-unwrapped [] {
 
     assert equal $result.msg "original error"
     assert ($result.rendered | ansi strip | find --regex "^Error: [ ×x\n]+ original error.*" | is-not-empty)
-    assert equal ($result.json | from json | select msg help) {
+    assert equal ($result.details | select msg help) {
         msg: "original error"
         help: "help text"
     }
