@@ -141,6 +141,26 @@ def "fail option exit code on failing tests" [] {
 }
 
 @test
+def "nutest installed in path with space" [] {
+    let temp = $in.temp
+    const nutest_source = path self | path dirname | path dirname | path join "nutest"
+    let install_dir = $temp | path join "lib dir"
+    mkdir $install_dir
+    cp --recursive $nutest_source $install_dir
+
+    let result = (
+        ^$nu.current-exe
+            --no-config-file
+            --commands $"
+                use '($install_dir | path join nutest)' *
+                run-tests --path '($temp)' --fail --display nothing
+            "
+    ) | complete
+
+    assert equal $result.exit_code 0 $result.stderr
+}
+
+@test
 def useful-error-on-non-existent-path [] {
     let missing_path = ["non", "existant", "path"] | path join
     let result = (

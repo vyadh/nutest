@@ -42,7 +42,7 @@ def run-suite [
         const runner_module = path self "runner.nu"
         (^$nu.current-exe
             --commands $"
-                use ($runner_module) *
+                use '($runner_module)' *
                 source '($path)'
                 nutest-299792458-execute-suite ($strategy | to nuon) ($suite) ($plan_data)
         " | complete)
